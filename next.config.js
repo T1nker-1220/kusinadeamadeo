@@ -1,7 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['blglkqttwesxmtbczvxd.supabase.co'], // Supabase storage domain
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'blglkqttwesxmtbczvxd.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/a/**',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   // Enable React strict mode for better development experience
@@ -53,4 +66,6 @@ const nextConfig = {
     instrumentationHook: true,
     optimizeCss: true,
   },
-} 
+}
+
+module.exports = nextConfig 

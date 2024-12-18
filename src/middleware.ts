@@ -11,11 +11,12 @@ export async function middleware(request: NextRequest) {
     res.headers.set('x-pathname', request.nextUrl.pathname)
 
     // Refresh session if expired - required for Server Components
-    await supabase.auth.getSession()
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    if (sessionError) {
+      console.error('Session error in middleware:', sessionError)
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
 
     // Check if this is an admin route
     const isAdminRoute = request.nextUrl.pathname.startsWith("/admin")
@@ -32,12 +33,24 @@ export async function middleware(request: NextRequest) {
 
     // If no session and trying to access protected routes
     if (!session && (isProtectedRoute || isAdminRoute)) {
+      console.log('No session, redirecting to login')
       return NextResponse.redirect(new URL("/login", request.url))
     }
 
     // If not admin trying to access admin routes
-    if (isAdminRoute && (!session || session.user.email !== process.env.NEXT_PUBLIC_BUSINESS_EMAIL)) {
-      return NextResponse.redirect(new URL("/", request.url))
+    if (isAdminRoute) {
+      if (!session) {
+        console.log('No session for admin route, redirecting to login')
+        return NextResponse.redirect(new URL("/login", request.url))
+      }
+      
+      console.log('Admin route check - User email:', session.user.email)
+      console.log('Admin route check - Expected email:', process.env.NEXT_PUBLIC_BUSINESS_EMAIL)
+      
+      if (session.user.email !== process.env.NEXT_PUBLIC_BUSINESS_EMAIL) {
+        console.log('Non-admin user attempting to access admin route')
+        return NextResponse.redirect(new URL("/", request.url))
+      }
     }
 
     return res
