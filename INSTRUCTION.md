@@ -1054,33 +1054,95 @@ export class ErrorBoundary extends React.Component {
 
 ### Category Structure
 1. Main Categories:
-   - Budget Meals
-   - Silog Meals
-   - Ala Carte
-   - Beverages
-   - Special Orders
+   - Budget Meals (₱35-₱60)
+   - Silog Meals (₱85-₱100)
+   - Ala Carte (₱20-₱60)
+   - Beverages (₱29-₱39)
+   - Special Orders (Bulk Orders)
 
 2. Product Fields:
-   - Name
-   - Description
-   - Base Price
-   - Category
-   - Image
-   - Availability Status
+   - Name (required)
+   - Description (required)
+   - Base Price (if applicable)
+   - Category (required)
+   - Image URL (required)
+   - Availability Status (required)
    - Variants (if applicable)
+   - Add-ons (if applicable)
 
 ### Variant System
 1. Types:
-   - Size Options
-   - Add-ons
-   - Flavor Options
-   - Special Requests
+   - Size Options (e.g., Coke Float: 16oz/22oz)
+   - Add-ons (e.g., Siomai, Shanghai, Skinless, Egg)
+   - Flavor Options (e.g., Waffle: Chocolate/Cheese/Hotdog)
+   - Special Requests (for bulk orders)
 
 2. Pricing Rules:
-   - Base price for standard item
-   - Add-on prices as specified
-   - Size adjustments if applicable
-   - Special request handling
+   - Base Price Products:
+     * Fixed price items (e.g., Hotsilog: ₱60)
+     * Range price items (e.g., Chaofan: ₱45-₱50)
+   
+   - No Base Price Products (Variant-based):
+     * Size-based pricing (e.g., Coke Float: 16oz ₱29, 22oz ₱39)
+     * Flavor-based pricing (e.g., Waffle variants all ₱15)
+     * Type-based pricing (e.g., Siomai variants all ₱5)
+
+3. Add-on Pricing:
+   - Siomai (+₱5)
+   - Shanghai (+₱5)
+   - Skinless (+₱10)
+   - Egg (+₱15)
+   - Hotdog (+₱15)
+   - Extra Sauce (+₱5)
+
+### Image Management
+1. Directory Structure:
+   - Main Product Images: `/public/images/products/`
+   - Variant Images: `/public/images/variants/`
+   - Category Images: `/public/images/categories/`
+
+2. Naming Convention:
+   - Products: `productname.jpg` (e.g., hotsilog.jpg)
+   - Variants: `variantname.jpg` (e.g., siomai.jpg)
+   - Categories: `category-name.jpg` (e.g., budget-meals.jpg)
+
+### Special Handling
+
+1. Budget Meals:
+   - Base items with optional add-ons
+   - Clear pricing for each add-on
+   - Combination rules for add-ons
+
+2. Beverages:
+   - Size-based variants (16oz/22oz)
+   - Flavor options with fixed prices
+   - Clear size and flavor combinations
+
+3. Special Orders:
+   - Bulk order capabilities
+   - Custom combinations
+   - Special pricing rules
+   - Add-on quantity tracking
+
+### Product Display Rules
+
+1. Menu Organization:
+   - Group by category
+   - Sort by popularity within category
+   - Clear variant indicators
+   - Visible add-on options
+
+2. Price Display:
+   - Show base price if applicable
+   - Display variant prices clearly
+   - List all add-on costs
+   - Indicate bulk order pricing
+
+3. Availability:
+   - Real-time stock status
+   - Time-based availability
+   - Special order lead times
+   - Seasonal item indicators
 
 ## 6. Operating Hours
 

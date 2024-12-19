@@ -36,7 +36,7 @@ export interface Cart {
 }
 ```
 
-### 1.2 Cart Store
+### 1.2 Cart Store with Mobile Support
 ```typescript
 // src/stores/useCart.ts
 import { create } from 'zustand'
@@ -245,7 +245,7 @@ const calculateItemCount = (items: CartItem[]): number => {
 
 ## Step 2: Order System
 
-### 2.1 Order Types
+### 2.1 Order Types with Mobile Support
 ```typescript
 // src/types/order.ts
 export interface OrderItem extends Omit<CartItem, 'id'> {
@@ -255,11 +255,11 @@ export interface OrderItem extends Omit<CartItem, 'id'> {
 
 export interface Order {
   id: string
-  receiptId: string
+  receiptId: string // Format: [A-Z]{2}[0-9]{2}
   customer: {
     name: string
     email: string
-    phone: string
+    phone: string // Format: 09XX or +639XX
     address: string
   }
   items: OrderItem[]
@@ -302,7 +302,7 @@ export interface CreateOrderInput {
 }
 ```
 
-### 2.2 Order Database Schema
+### 2.2 Order Database Schema with Audit
 ```sql
 -- Create orders table
 CREATE TABLE orders (
@@ -353,9 +353,23 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create trigger for order updates
+CREATE OR REPLACE FUNCTION update_order_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_order_timestamp
+  BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_order_timestamp();
 ```
 
-### 2.3 Order API Routes
+### 2.3 Mobile-Optimized Order API Routes
 ```typescript
 // src/app/api/orders/route.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
@@ -383,7 +397,7 @@ export async function POST(req: Request) {
   
   const input: CreateOrderInput = await req.json()
   
-  // Validate operating hours
+  // Validate operating hours (8 AM to 10 PM)
   const now = new Date()
   const hour = now.getHours()
   if (hour < 8 || hour >= 22) {
@@ -393,7 +407,7 @@ export async function POST(req: Request) {
     )
   }
   
-  // Create order
+  // Create order with receipt ID
   const { data: order, error } = await supabase
     .from('orders')
     .insert({
@@ -453,7 +467,7 @@ async function generateReceiptId(): Promise<string> {
 }
 ```
 
-## Step 3: Email Templates
+## Step 3: Mobile-First Email Templates
 
 ### 3.1 Order Confirmation Email
 ```typescript
@@ -564,7 +578,8 @@ export const OrderConfirmationEmail = ({
 }
 
 const main = {
-  backgroundColor: '#ffffff',
+  backgroundColor: 'var(--surface-primary)',
+  color: 'var(--text-primary)',
 }
 
 const container = {
@@ -575,59 +590,223 @@ const container = {
 
 const section = {
   padding: '24px',
-  backgroundColor: '#f6f9fc',
+  backgroundColor: 'var(--surface-secondary)',
   borderRadius: '12px',
 }
 
 const text = {
-  color: '#333',
+  color: 'var(--text-primary)',
   fontSize: '16px',
   lineHeight: '24px',
+  fontFamily: 'var(--font-body)',
 }
 
 const h1 = {
-  color: '#333',
+  color: 'var(--text-primary)',
   fontSize: '24px',
   fontWeight: '600',
   lineHeight: '32px',
   margin: '0 0 24px',
+  fontFamily: 'var(--font-display)',
 }
 
 const h2 = {
-  color: '#333',
+  color: 'var(--text-primary)',
   fontSize: '20px',
   fontWeight: '600',
   lineHeight: '28px',
   margin: '0 0 16px',
+  fontFamily: 'var(--font-accent)',
 }
 
 const orderDetails = {
   margin: '24px 0',
   padding: '16px',
-  backgroundColor: '#ffffff',
+  backgroundColor: 'var(--surface-elevated)',
   borderRadius: '8px',
 }
 
 const variantText = {
-  color: '#666',
+  color: 'var(--text-secondary)',
   fontSize: '14px',
   lineHeight: '20px',
   marginLeft: '16px',
+  fontFamily: 'var(--font-body)',
 }
 
 const total = {
-  color: '#333',
+  color: 'var(--text-primary)',
   fontSize: '18px',
   fontWeight: '600',
   margin: '16px 0 0',
-  borderTop: '1px solid #e0e0e0',
+  borderTop: '1px solid var(--border-color)',
   paddingTop: '16px',
+  fontFamily: 'var(--font-accent)',
 }
 
 const footer = {
-  color: '#666',
+  color: 'var(--text-tertiary)',
   fontSize: '14px',
   lineHeight: '24px',
   textAlign: 'center' as const,
   marginTop: '32px',
+  fontFamily: 'var(--font-body)',
 }
+```
+
+### 3.2 Mobile-Optimized Cart Components
+```typescript
+// src/components/cart/CartItem.tsx
+import { CartItem } from '@/types/cart'
+import { useCart } from '@/stores/useCart'
+import { formatPrice } from '@/lib/utils'
+import Image from 'next/image'
+
+export const CartItemCard = ({ item }: { item: CartItem }) => {
+  const { updateQuantity, removeItem } = useCart()
+
+  return (
+    <div className="mobile-card">
+      <div className="flex gap-4">
+        <div className="relative w-20 h-20">
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <h3 className="mobile-text--title">{item.name}</h3>
+          
+          {item.variants && (
+            <div className="mobile-text--caption mt-1">
+              {item.variants.size && (
+                <span>Size: {item.variants.size.name}</span>
+              )}
+              {item.variants.addOns?.map((addon) => (
+                <span key={addon.name}>
+                  • {addon.name} (+₱{addon.price})
+                </span>
+              ))}
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between mt-2">
+            <div className="mobile-text--subtitle">
+              ₱{formatPrice(item.totalPrice)}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                className="touch-button--icon"
+                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                disabled={item.quantity <= 1}
+              >
+                -
+              </button>
+              
+              <span className="mobile-text--subtitle w-8 text-center">
+                {item.quantity}
+              </span>
+              
+              <button
+                className="touch-button--icon"
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {item.specialInstructions && (
+        <div className="mt-2 mobile-text--caption">
+          Note: {item.specialInstructions}
+        </div>
+      )}
+      
+      <button
+        className="touch-button touch-button--danger mt-2 w-full"
+        onClick={() => removeItem(item.id)}
+      >
+        Remove
+      </button>
+    </div>
+  )
+}
+```
+
+### 3.3 Mobile-Optimized Order Components
+```typescript
+// src/components/orders/OrderCard.tsx
+import { Order } from '@/types/order'
+import { formatPrice, formatDate } from '@/lib/utils'
+
+export const OrderCard = ({ order }: { order: Order }) => {
+  return (
+    <div className="mobile-card">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="mobile-text--title">
+            Order #{order.receiptId}
+          </h3>
+          <p className="mobile-text--caption">
+            {formatDate(order.createdAt)}
+          </p>
+        </div>
+        
+        <div className={`order-status order-status--${order.status}`}>
+          {order.status}
+        </div>
+      </div>
+      
+      <div className="mt-4 space-y-2">
+        {order.items.map((item) => (
+          <div key={item.productId} className="flex justify-between">
+            <span className="mobile-text--subtitle">
+              {item.quantity}x {item.name}
+            </span>
+            <span className="mobile-text--subtitle">
+              ₱{formatPrice(item.totalPrice)}
+            </span>
+          </div>
+        ))}
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-border-color">
+        <div className="flex justify-between">
+          <span className="mobile-text--title">Total</span>
+          <span className="mobile-text--title">
+            ₱{formatPrice(order.subtotal)}
+          </span>
+        </div>
+      </div>
+      
+      <div className="mt-4 space-y-2">
+        <p className="mobile-text--caption">
+          Payment: {order.payment.method.toUpperCase()}
+          {order.payment.method === 'gcash' && (
+            <span> • Ref: {order.payment.reference}</span>
+          )}
+        </p>
+        
+        <p className="mobile-text--caption">
+          Delivery to: {order.delivery.address}
+        </p>
+        
+        {order.delivery.instructions && (
+          <p className="mobile-text--caption">
+            Note: {order.delivery.instructions}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+```
+
+</rewritten_file>

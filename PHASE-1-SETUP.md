@@ -1,5 +1,20 @@
 # Phase 1: Complete Initial Setup & Authentication
 
+## Overview
+This document outlines the complete setup process and implementation details for Phase 1 of the Kusina De Amadeo web application.
+
+## Table of Contents
+1. [Project Setup](#step-1-project-setup)
+2. [Database Schema](#step-2-database-schema-setup)
+3. [Authentication Setup](#step-3-authentication-setup)
+4. [Initial Files Setup](#step-4-initial-files-setup)
+5. [Testing Setup](#step-5-testing-setup)
+6. [Deployment Setup](#step-6-deployment-setup)
+7. [Recent Changes & Fixes](#step-7-recent-changes--fixes)
+8. [Best Practices & Guidelines](#step-8-best-practices--guidelines)
+9. [Known Issues & Solutions](#step-9-known-issues--solutions)
+10. [Maintenance & Updates](#step-10-maintenance--updates)
+
 ## Step 1: Project Setup
 
 ### 1.1 Create Next.js Project
@@ -55,7 +70,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=your_google_client_secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_NAME="Kusina de Amadeo"
 NEXT_PUBLIC_BUSINESS_EMAIL=kusinadeamadeo@gmail.com
-NEXT_PUBLIC_CONTACT_EMAIL=marquezjohnnathanieljade@gmail.com
+NEXT_PUBLIC_CONTACT_EMAIL=kusinadeamadeo@gmail.com
 NEXT_PUBLIC_BUSINESS_PHONE="+63 960 508 8715"
 NEXT_PUBLIC_BUSINESS_LANDLINE="(046) 890-9060"
 NEXT_PUBLIC_BUSINESS_ADDRESS="107 i Purok 4 Dagatan, Amadeo, Cavite"
@@ -77,8 +92,19 @@ NEXT_PUBLIC_MAX_PREORDER_DAYS=7
 NEXT_PUBLIC_GCASH_NUMBER="09605088715"
 NEXT_PUBLIC_GCASH_NAME="John Nathaniel Marquez"
 
+# Image Configuration
+NEXT_PUBLIC_MAX_IMAGE_SIZE=5242880 # 5MB in bytes
+NEXT_PUBLIC_ALLOWED_IMAGE_TYPES=["image/jpeg", "image/png", "image/webp"]
+
 # Resend Configuration
+NEXT_PUBLIC_RESEND_EMAIL=kusinadeamadeo@gmail.com
 RESEND_API_KEY=your_resend_api_key
+
+# Vector Configuration
+SUPABASE_VECTOR_HEALTH_CHECK_TIMEOUT=300
+DOCKER_HOST=npipe:////.//pipe//docker_engine
+DOCKER_BUILDKIT=1
+COMPOSE_DOCKER_CLI_BUILD=1
 EOL
 ```
 
@@ -92,21 +118,14 @@ npm install -g supabase
 # Initialize Supabase in your project
 npx supabase init
 
-# Login to Supabase CLI (get access token from dashboard.supabase.com/account/tokens)
+# Login to Supabase CLI
 npx supabase login
 
-# Link your project (replace with your project reference ID)
+# Link your project
 npx supabase link --project-ref your-project-ref
 
 # Create migrations directory
 mkdir -p supabase/migrations
-
-# Add database scripts to package.json
-npm pkg set scripts.db:status="supabase status"
-npm pkg set scripts.db:pull="supabase db pull"
-npm pkg set scripts.db:push="supabase db push"
-npm pkg set scripts.db:reset="supabase db reset"
-npm pkg set scripts.db:types="supabase gen types typescript --local > src/types/supabase.ts"
 ```
 
 ### 2.1 Create Tables
@@ -192,34 +211,6 @@ CREATE TABLE order_items (
 );
 ```
 
-### 2.2 Apply Migrations
-```bash
-# Check database status
-npm run db:status
-
-# Push migrations to database
-npm run db:push
-
-# Generate TypeScript types
-npm run db:types
-```
-
-### 2.3 Insert Initial Data
-
-```sql
--- Insert admin user
-INSERT INTO users (email, role)
-VALUES ('kusinadeamadeo@gmail.com', 'admin');
-
--- Insert categories
-INSERT INTO categories (name, description) VALUES
-('Budget Meals', 'Affordable meal options'),
-('Silog Meals', 'Filipino breakfast meals with rice and egg'),
-('Ala Carte', 'Individual dishes'),
-('Beverages', 'Drinks and refreshments'),
-('Special Orders', 'Custom and special menu items');
-```
-
 ## Step 3: Authentication Setup
 
 ### 3.1 Configure Google OAuth
@@ -238,61 +229,242 @@ INSERT INTO categories (name, description) VALUES
 1. Go to Supabase Dashboard > Authentication
 2. Enable Google OAuth provider
 3. Add Google OAuth credentials
-4. Configure email templates for:
-   - Welcome email
-   - Magic link
-   - Change email
-   - Reset password
+4. Configure email templates
 
-## Step 4: Initial Files Setup
+### 3.3 Authentication Components
 
-### 4.1 Create Base Components
+```typescript
+// src/app/auth/callback/route.ts
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
 
-Create essential UI components in `src/components/ui`:
-
-- Button
-- Input
-- Form
-- Card
-- Modal
-- Toast
-- Loading
-- ErrorBoundary
-
-### 4.2 Setup Authentication Context
-
-Create authentication context in `src/lib/auth.ts`
-
-### 4.3 Setup Supabase Client
-
-Create Supabase client in `src/lib/supabase/client.ts`
-
-### 4.4 Setup Theme Configuration
-
-Create theme configuration in `src/styles/theme.ts`
-
-## Step 5: Testing Setup
-
-### 5.1 Install Testing Dependencies
-
-```bash
-npm install --save-dev jest @testing-library/react @testing-library/jest-dom @types/jest jest-environment-jsdom
+export async function GET(request: Request) {
+  try {
+    // Create a new supabase client with the correct cookie store
+    const supabase = createRouteHandlerClient({ 
+      cookies
+    })
+    
+    // Implementation details...
+  } catch (error) {
+    console.error('Auth callback error:', error)
+    return NextResponse.redirect(new URL('/auth/error', request.url))
+  }
+}
 ```
 
-### 5.2 Configure Jest
+### 3.4 Middleware Protection
 
-Create jest.config.js with Next.js configuration
+```typescript
+// src/middleware.ts
+export async function middleware(request: NextRequest) {
+  try {
+    const res = NextResponse.next()
+    const supabase = createMiddlewareClient({ req: request, res })
 
-## Step 6: Deployment Setup
+    // Implementation details...
+  } catch (error) {
+    console.error('Middleware error:', error)
+    return NextResponse.redirect(new URL("/", request.url))
+  }
+}
 
-### 6.1 Configure Build Settings
+export const config = {
+  matcher: [
+    "/admin/:path*",
+    "/login",
+    "/register",
+    "/orders/:path*",
+    "/cart",
+    "/checkout",
+  ],
+}
+```
 
-Update next.config.js for production optimization
+## Step 4: Navigation System
 
-### 6.2 Setup Error Monitoring
+### 4.1 Navigation Components
 
-Configure error boundary and logging system
+```typescript
+// Navigation items configuration
+const navItems = [
+  {
+    title: "Menu",
+    href: "/menu",
+  },
+  {
+    title: "Orders",
+    href: "/orders",
+    requiresAuth: true,
+  },
+]
+```
 
-### 6.3 Performance Monitoring
+### 4.2 Mobile Navigation
 
-Setup Core Web Vitals monitoring
+```typescript
+// Mobile menu state management
+const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+// Close menu on route changes
+useEffect(() => {
+  setIsMobileMenuOpen(false)
+}, [pathname])
+
+// Prevent body scroll when menu is open
+useEffect(() => {
+  if (isMobileMenuOpen) {
+    document.body.style.overflow = "hidden"
+  } else {
+    document.body.style.overflow = "unset"
+  }
+}, [isMobileMenuOpen])
+```
+
+## Step 5: Image Configuration
+
+### 5.1 Next.js Image Configuration
+
+```javascript
+// next.config.js
+{
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'blglkqttwesxmtbczvxd.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/a/**',
+      },
+    ],
+  },
+}
+```
+
+## Step 6: Recent Fixes & Changes
+
+### 6.1 Authentication Fixes
+- Fixed cookie handling in auth callback
+- Improved session management
+- Added proper error logging
+- Fixed admin route protection
+- Added user metadata handling
+
+### 6.2 Navigation Improvements
+- Implemented avatar-based mobile menu
+- Added dropdown functionality
+- Fixed menu item visibility
+- Improved mobile responsiveness
+- Added proper state management
+
+### 6.3 Image Handling
+- Fixed Google avatar loading
+- Added image optimization
+- Implemented proper fallbacks
+- Added loading priority
+- Fixed remote patterns
+
+## Step 7: Best Practices & Guidelines
+
+### 7.1 Code Organization
+- Keep components small and focused
+- Use TypeScript for type safety
+- Follow the Single Responsibility Principle
+- Implement proper error boundaries
+- Use meaningful component and file names
+
+### 7.2 Error Handling
+```typescript
+try {
+  const { error } = await operation()
+  if (error) throw error
+} catch (error) {
+  console.error('Context:', error)
+  handleError(error)
+}
+```
+
+### 7.3 State Management
+```typescript
+// Good
+const [isLoading, setIsLoading] = useState(false)
+const [error, setError] = useState<Error | null>(null)
+const [data, setData] = useState<Data | null>(null)
+
+// Bad
+const [state, setState] = useState({
+  isLoading: false,
+  error: null,
+  data: null,
+})
+```
+
+## Step 8: Things to Avoid
+
+### 8.1 Code Practices
+❌ Don't write duplicate code
+❌ Don't skip error handling
+❌ Don't use any type
+❌ Don't hardcode values
+❌ Don't mix concerns
+
+### 8.2 Security
+❌ Don't expose API keys
+❌ Don't store sensitive data in localStorage
+❌ Don't trust user input
+❌ Don't skip input validation
+❌ Don't ignore security warnings
+
+### 8.3 Performance
+❌ Don't skip image optimization
+❌ Don't ignore bundle size
+❌ Don't skip lazy loading
+❌ Don't block the main thread
+❌ Don't ignore memory leaks
+
+## Step 9: Testing Strategy
+
+### 9.1 Unit Tests
+```typescript
+describe('Authentication', () => {
+  it('should handle Google sign-in', async () => {
+    // Test implementation
+  })
+
+  it('should protect admin routes', async () => {
+    // Test implementation
+  })
+})
+```
+
+## Step 10: Maintenance & Updates
+
+### 10.1 Regular Checks
+- Monitor authentication logs
+- Check navigation functionality
+- Verify image loading
+- Test mobile responsiveness
+- Review error logs
+- Update dependencies
+
+### 10.2 Update Procedures
+1. Test in development
+2. Review changes
+3. Update documentation
+4. Deploy to staging
+5. Verify functionality
+6. Deploy to production
+7. Monitor metrics
+
+## Next Steps
+Moving to Phase 2, we will focus on:
+1. Product management system
+2. Menu display components
+3. Category management
+4. Image handling
+5. Admin dashboard features

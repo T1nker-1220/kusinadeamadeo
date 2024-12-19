@@ -2,6 +2,8 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
+export const runtime = 'edge'
+
 export async function GET(request: Request) {
   try {
     const requestUrl = new URL(request.url)
@@ -9,9 +11,20 @@ export async function GET(request: Request) {
 
     if (code) {
       try {
-        // Create a new supabase client with the correct cookie store
+        // Create Supabase client with proper cookie handling
+        const cookieStore = cookies()
         const supabase = createRouteHandlerClient({ 
-          cookies
+          cookies: () => cookieStore
+        }, {
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          options: {
+            auth: {
+              persistSession: true,
+              storageKey: 'sb-blglkqttwesxmtbczvxd-auth-token',
+              flowType: 'pkce',
+            }
+          }
         })
         
         // Exchange the code for a session
@@ -41,6 +54,14 @@ export async function GET(request: Request) {
           }
 
           try {
+            // Enable RLS policy for customers table
+            const { error: policyError } = await supabase.rpc('enable_customer_access')
+            
+            if (policyError) {
+              console.error('Policy error:', policyError)
+              throw policyError
+            }
+
             // Check if user exists in customers table
             const { data: existingCustomer, error: customerError } = await supabase
               .from('customers')
@@ -55,12 +76,15 @@ export async function GET(request: Request) {
 
             if (!existingCustomer) {
               // Create new customer record
-              const { error: insertError } = await supabase.from('customers').insert({
-                google_id: session.user.id,
-                email: session.user.email,
-                full_name: session.user.user_metadata?.full_name || session.user.email,
-                avatar_url: session.user.user_metadata?.avatar_url || null,
-              })
+              const { error: insertError } = await supabase
+                .from('customers')
+                .insert({
+                  google_id: session.user.id,
+                  email: session.user.email,
+                  full_name: session.user.user_metadata?.full_name || session.user.email,
+                  avatar_url: session.user.user_metadata?.avatar_url || null,
+                  last_login: new Date().toISOString(),
+                })
               
               if (insertError) {
                 console.error('Customer insert error:', insertError)
@@ -68,15 +92,13 @@ export async function GET(request: Request) {
               }
             } else {
               // Update last login and avatar if needed
-              const updateData = {
-                last_login: new Date().toISOString(),
-                avatar_url: session.user.user_metadata?.avatar_url || existingCustomer.avatar_url,
-                full_name: session.user.user_metadata?.full_name || existingCustomer.full_name,
-              }
-
               const { error: updateError } = await supabase
                 .from('customers')
-                .update(updateData)
+                .update({
+                  last_login: new Date().toISOString(),
+                  avatar_url: session.user.user_metadata?.avatar_url || existingCustomer.avatar_url,
+                  full_name: session.user.user_metadata?.full_name || existingCustomer.full_name,
+                })
                 .eq('google_id', session.user.id)
                 
               if (updateError) {
@@ -84,6 +106,9 @@ export async function GET(request: Request) {
                 throw updateError
               }
             }
+
+            // Disable RLS policy after operations
+            await supabase.rpc('disable_customer_access')
           } catch (dbError) {
             console.error('Database operation failed:', dbError)
             // Continue to home page even if DB operations fail
@@ -92,6 +117,9 @@ export async function GET(request: Request) {
           console.error('No session found after exchange')
           throw new Error('No session found after exchange')
         }
+
+        // Return successful response
+        return NextResponse.redirect(new URL('/', requestUrl.origin))
       } catch (authError) {
         console.error('Authentication failed:', authError)
         return NextResponse.redirect(new URL('/auth/error', requestUrl.origin))
@@ -100,9 +128,6 @@ export async function GET(request: Request) {
       console.error('No code provided in callback')
       return NextResponse.redirect(new URL('/auth/error', requestUrl.origin))
     }
-
-    // Default redirect to home page
-    return NextResponse.redirect(new URL('/', requestUrl.origin))
   } catch (error) {
     console.error('Auth callback error:', error)
     return NextResponse.redirect(new URL('/auth/error', request.url))

@@ -1,6 +1,17 @@
 # Phase 2: UI Components & Product Management
 
-## Step 1: Design System Implementation
+## Overview
+This phase focuses on implementing the product management system, menu display components, and admin features according to the business requirements.
+
+## Table of Contents
+1. [Design System](#1-design-system)
+2. [Product Management](#2-product-management)
+3. [Menu System](#3-menu-system)
+4. [Category Management](#4-category-management)
+5. [Admin Features](#5-admin-features)
+6. [Testing Strategy](#6-testing-strategy)
+
+## 1. Design System
 
 ### 1.1 Theme Setup
 ```typescript
@@ -23,42 +34,12 @@ export const theme = {
       secondary: 'rgba(255, 255, 255, 0.87)',
       tertiary: 'rgba(255, 255, 255, 0.6)',
     },
-    semantic: {
-      success: '#4CAF50',
-      warning: '#FFC107',
-      error: '#FF5252',
-    },
-    overlay: {
-      hover: 'rgba(255, 255, 255, 0.1)',
-      active: 'rgba(255, 255, 255, 0.15)',
-      disabled: 'rgba(255, 255, 255, 0.05)',
-    },
   },
   typography: {
     fonts: {
       display: "'Playfair Display', Georgia, serif",
       body: "'Inter', system-ui, -apple-system, sans-serif",
       accent: "'Montserrat', var(--font-body)",
-    },
-    sizes: {
-      xs: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)',
-      sm: 'clamp(0.875rem, 0.8rem + 0.375vw, 1rem)',
-      base: 'clamp(1rem, 0.9rem + 0.5vw, 1.125rem)',
-      lg: 'clamp(1.125rem, 1rem + 0.625vw, 1.25rem)',
-      xl: 'clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem)',
-      '2xl': 'clamp(1.5rem, 1.3rem + 1vw, 2rem)',
-      '3xl': 'clamp(2rem, 1.8rem + 1.25vw, 2.5rem)',
-      '4xl': 'clamp(2.5rem, 2.3rem + 1.5vw, 3rem)',
-    },
-    lineHeight: {
-      tight: '1.2',
-      normal: '1.5',
-      relaxed: '1.75',
-    },
-    tracking: {
-      tight: '-0.015em',
-      normal: '0',
-      wide: '0.015em',
     },
   },
 }
@@ -90,53 +71,249 @@ export const buttonVariants = cva(
     },
   }
 )
-
-export const cardVariants = cva(
-  'rounded-lg overflow-hidden',
-  {
-    variants: {
-      variant: {
-        default: 'bg-surface-secondary',
-        elevated: 'bg-surface-elevated',
-        interactive: 'bg-surface-secondary hover:bg-surface-elevated transition-colors',
-      },
-      padding: {
-        none: '',
-        sm: 'p-4',
-        md: 'p-6',
-        lg: 'p-8',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      padding: 'md',
-    },
-  }
-)
 ```
 
-## Step 2: Product Components
+## 2. Product Management
 
-### 2.1 Product Card
+### 2.1 Database Schema
+```sql
+-- migrations/20240112000000_products_schema.sql
+
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Product Categories Enum
+CREATE TYPE product_category AS ENUM (
+  'Budget Meals',
+  'Silog Meals',
+  'Ala Carte',
+  'Beverages',
+  'Special Orders'
+);
+
+-- Product Size Options Enum
+CREATE TYPE size_option AS ENUM (
+  '16oz',
+  '22oz'
+);
+
+-- Create products table with accurate structure
+CREATE TABLE products (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  base_price DECIMAL(10,2),
+  category product_category NOT NULL,
+  image_url TEXT NOT NULL,
+  available BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  has_variants BOOLEAN DEFAULT false,
+  has_addons BOOLEAN DEFAULT false
+);
+
+-- Create variants table for products with variants
+CREATE TABLE product_variants (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  size size_option,
+  flavor TEXT,
+  available BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create add-ons table
+CREATE TABLE product_addons (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  available BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create junction table for products and their available add-ons
+CREATE TABLE product_available_addons (
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  addon_id UUID REFERENCES product_addons(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (product_id, addon_id)
+);
+
+-- Create audit log for product changes
+CREATE TABLE products_audit (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id UUID REFERENCES products(id),
+  action TEXT NOT NULL,
+  old_data JSONB,
+  new_data JSONB,
+  changed_by TEXT NOT NULL,
+  changed_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insert standard add-ons
+INSERT INTO product_addons (name, price) VALUES
+  ('Siomai', 5.00),
+  ('Shanghai', 5.00),
+  ('Skinless', 10.00),
+  ('Egg', 15.00),
+  ('Hotdog', 15.00),
+  ('Extra Sauce', 5.00);
+
+-- Create RLS policies
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_addons ENABLE ROW LEVEL SECURITY;
+
+-- Public read access
+CREATE POLICY "Public read access for products"
+  ON products FOR SELECT
+  USING (true);
+
+CREATE POLICY "Public read access for variants"
+  ON product_variants FOR SELECT
+  USING (true);
+
+CREATE POLICY "Public read access for addons"
+  ON product_addons FOR SELECT
+  USING (true);
+
+-- Admin only write access
+CREATE POLICY "Admin write access for products"
+  ON products FOR ALL
+  USING (auth.jwt() ->> 'email' = 'kusinadeamadeo@gmail.com');
+
+CREATE POLICY "Admin write access for variants"
+  ON product_variants FOR ALL
+  USING (auth.jwt() ->> 'email' = 'kusinadeamadeo@gmail.com');
+
+CREATE POLICY "Admin write access for addons"
+  ON product_addons FOR ALL
+  USING (auth.jwt() ->> 'email' = 'kusinadeamadeo@gmail.com');
+```
+
+### 2.2 Product Types
 ```typescript
-// src/components/products/ProductCard.tsx
-interface ProductProps {
-  id: string
-  name: string
-  description: string
-  basePrice: number
-  imageUrl: string
-  category: string
-  variants?: {
-    size?: string[]
-    addOns?: Array<{
-      name: string
-      price: number
-    }>
-  }
+// src/types/product.ts
+
+export type ProductCategory = 
+  | 'Budget Meals'
+  | 'Silog Meals'
+  | 'Ala Carte'
+  | 'Beverages'
+  | 'Special Orders';
+
+export type SizeOption = '16oz' | '22oz';
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  basePrice: number | null;
+  category: ProductCategory;
+  imageUrl: string;
+  available: boolean;
+  hasVariants: boolean;
+  hasAddons: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export const ProductCard = ({ product }: { product: ProductProps }) => {
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  size?: SizeOption;
+  flavor?: string;
+  available: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductAddon {
+  id: string;
+  name: string;
+  price: number;
+  available: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductWithDetails extends Product {
+  variants?: ProductVariant[];
+  availableAddons?: ProductAddon[];
+}
+```
+
+## 3. Menu System
+
+### 3.1 Menu Categories
+```typescript
+// src/config/menu.ts
+
+export const MENU_CATEGORIES = [
+  {
+    id: 'budget-meals',
+    name: 'Budget Meals',
+    description: 'Affordable meal options from ₱35-₱60',
+    image: '/images/categories/budget-meals.jpg',
+    priceRange: '₱35-₱60'
+  },
+  {
+    id: 'silog-meals',
+    name: 'Silog Meals',
+    description: 'Filipino breakfast favorites',
+    image: '/images/categories/silog-meals.jpg',
+    priceRange: '₱85-₱100'
+  },
+  {
+    id: 'ala-carte',
+    name: 'Ala Carte',
+    description: 'Individual dishes',
+    image: '/images/categories/ala-carte.jpg',
+    priceRange: '₱20-₱60'
+  },
+  {
+    id: 'beverages',
+    name: 'Beverages',
+    description: 'Drinks and refreshments',
+    image: '/images/categories/beverages.jpg',
+    priceRange: '₱29-₱39'
+  },
+  {
+    id: 'special-orders',
+    name: 'Special Orders',
+    description: 'Custom and bulk orders',
+    image: '/images/categories/special-orders.jpg',
+    priceRange: 'Varies'
+  }
+] as const;
+```
+
+### 3.2 Product Card Component
+```typescript
+// src/components/products/ProductCard.tsx
+
+interface ProductCardProps {
+  product: ProductWithDetails;
+}
+
+export const ProductCard = ({ product }: ProductCardProps) => {
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedAddons, setSelectedAddons] = useState<ProductAddon[]>([]);
+
+  const calculateTotalPrice = () => {
+    let total = selectedVariant ? selectedVariant.price : (product.basePrice || 0);
+    selectedAddons.forEach(addon => {
+      total += addon.price;
+    });
+    return total;
+  };
+
   return (
     <div className={cn(cardVariants({ variant: 'interactive' }))}>
       <div className="relative aspect-square">
@@ -144,78 +321,284 @@ export const ProductCard = ({ product }: { product: ProductProps }) => {
           src={product.imageUrl}
           alt={product.name}
           fill
-          className="object-cover"
+          className="object-cover rounded-t-lg"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority
+          priority={false}
+          loading="lazy"
         />
+        {!product.available && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white font-semibold">Currently Unavailable</span>
+          </div>
+        )}
       </div>
+
       <div className="p-4">
         <h3 className="text-lg font-semibold text-text-primary">{product.name}</h3>
         <p className="text-sm text-text-secondary mt-1">{product.description}</p>
-        <div className="mt-2">
-          <span className="text-brand-orange font-bold">
-            ₱{product.basePrice.toFixed(2)}
-          </span>
-        </div>
-        {product.variants && (
-          <div className="mt-2 text-sm text-text-tertiary">
-            {product.variants.size && (
-              <span>Available sizes • </span>
-            )}
-            {product.variants.addOns && (
-              <span>Add-ons available</span>
-            )}
+
+        {product.hasVariants && product.variants && (
+          <div className="mt-3">
+            <label className="text-sm font-medium">Select Variant:</label>
+            <Select
+              value={selectedVariant?.id}
+              onValueChange={(value) => {
+                setSelectedVariant(
+                  product.variants?.find(v => v.id === value) || null
+                );
+              }}
+            >
+              {product.variants.map(variant => (
+                <SelectItem key={variant.id} value={variant.id}>
+                  {variant.size ? `${variant.size} - ` : ''}
+                  {variant.flavor ? `${variant.flavor} - ` : ''}
+                  ₱{variant.price.toFixed(2)}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
         )}
+
+        {product.hasAddons && product.availableAddons && (
+          <div className="mt-3">
+            <label className="text-sm font-medium">Add-ons:</label>
+            <div className="space-y-2">
+              {product.availableAddons.map(addon => (
+                <Checkbox
+                  key={addon.id}
+                  checked={selectedAddons.some(a => a.id === addon.id)}
+                  onCheckedChange={(checked) => {
+                    setSelectedAddons(
+                      checked
+                        ? [...selectedAddons, addon]
+                        : selectedAddons.filter(a => a.id !== addon.id)
+                    );
+                  }}
+                  label={`${addon.name} (+₱${addon.price.toFixed(2)})`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3">
+          <span className="text-brand-orange font-bold text-lg">
+            ₱{calculateTotalPrice().toFixed(2)}
+          </span>
+        </div>
+
         <Button
           variant="primary"
           size="sm"
           className="w-full mt-4"
-          onClick={() => {}}
+          disabled={!product.available || (product.hasVariants && !selectedVariant)}
+          onClick={() => {
+            // Add to cart logic
+          }}
         >
-          Add to Cart
+          {product.available ? 'Add to Cart' : 'Unavailable'}
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 ```
 
-### 2.2 Product Grid
+### 3.3 Product Service
 ```typescript
-// src/components/products/ProductGrid.tsx
-export const ProductGrid = ({ 
-  products,
-  category
-}: { 
-  products: ProductProps[]
-  category?: string 
-}) => {
-  const filteredProducts = category 
-    ? products.filter(p => p.category === category)
-    : products
+// src/lib/services/product.service.ts
+
+export const productService = {
+  async getProducts(category?: ProductCategory) {
+    const query = supabase
+      .from('products')
+      .select(`
+        *,
+        variants:product_variants(*),
+        availableAddons:product_available_addons(
+          addon:product_addons(*)
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (category) {
+      query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return data as ProductWithDetails[];
+  },
+
+  async getProductById(id: string) {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        variants:product_variants(*),
+        availableAddons:product_available_addons(
+          addon:product_addons(*)
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data as ProductWithDetails;
+  }
+};
+```
+
+## 4. Admin Features
+
+### 4.1 Product Form
+```typescript
+// src/components/admin/ProductForm.tsx
+
+interface ProductFormProps {
+  initialData?: ProductWithDetails;
+  onSubmit: (data: CreateProductInput) => Promise<void>;
+}
+
+export const ProductForm = ({ initialData, onSubmit }: ProductFormProps) => {
+  const form = useForm<CreateProductInput>({
+    defaultValues: initialData || {
+      name: '',
+      description: '',
+      basePrice: null,
+      category: undefined,
+      imageUrl: '',
+      hasVariants: false,
+      hasAddons: false,
+      variants: [],
+      addonIds: []
+    }
+  });
+
+  const hasVariants = form.watch('hasVariants');
+  const hasAddons = form.watch('hasAddons');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
-  )
-}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label htmlFor="name">Product Name</Label>
+          <Input
+            id="name"
+            {...form.register('name', { required: 'Name is required' })}
+          />
+          {form.formState.errors.name && (
+            <span className="text-red-500 text-sm">
+              {form.formState.errors.name.message}
+            </span>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="category">Category</Label>
+          <Select
+            id="category"
+            {...form.register('category', { required: 'Category is required' })}
+          >
+            {MENU_CATEGORIES.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            {...form.register('description', { required: 'Description is required' })}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="basePrice">Base Price (leave empty for variant-only products)</Label>
+          <Input
+            id="basePrice"
+            type="number"
+            step="0.01"
+            {...form.register('basePrice', {
+              setValueAs: (v) => v === '' ? null : parseFloat(v),
+              min: { value: 0, message: 'Price must be positive' }
+            })}
+          />
+        </div>
+
+        <div>
+          <Label>Product Options</Label>
+          <div className="space-y-2">
+            <Checkbox
+              checked={hasVariants}
+              onCheckedChange={(checked) => {
+                form.setValue('hasVariants', !!checked);
+                if (!checked) {
+                  form.setValue('variants', []);
+                }
+              }}
+              label="Has Variants (Size/Flavor)"
+            />
+            <Checkbox
+              checked={hasAddons}
+              onCheckedChange={(checked) => {
+                form.setValue('hasAddons', !!checked);
+                if (!checked) {
+                  form.setValue('addonIds', []);
+                }
+              }}
+              label="Allows Add-ons"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label>Product Image</Label>
+          <ImageUpload
+            onUpload={(url) => form.setValue('imageUrl', url)}
+            existingUrl={form.watch('imageUrl')}
+            category={form.watch('category')}
+          />
+        </div>
+      </div>
+
+      {hasVariants && (
+        <VariantsField
+          control={form.control}
+          register={form.register}
+          errors={form.formState.errors}
+        />
+      )}
+
+      {hasAddons && (
+        <AddonsField
+          control={form.control}
+          register={form.register}
+          errors={form.formState.errors}
+        />
+      )}
+
+      <Button
+        type="submit"
+        disabled={form.formState.isSubmitting}
+        className="w-full"
+      >
+        {form.formState.isSubmitting ? 'Saving...' : 'Save Product'}
+      </Button>
+    </form>
+  );
+};
 ```
 
-### 2.3 Category Navigation
+## 5. Category Management
+
+### 5.1 Category Navigation
 ```typescript
 // src/components/products/CategoryNav.tsx
-const categories = [
-  { id: 'budget-meals', name: 'Budget Meals' },
-  { id: 'silog-meals', name: 'Silog Meals' },
-  { id: 'ala-carte', name: 'Ala Carte' },
-  { id: 'beverages', name: 'Beverages' },
-  { id: 'special-orders', name: 'Special Orders' },
-]
-
 export const CategoryNav = ({
   activeCategory,
   onSelect,
@@ -225,7 +608,7 @@ export const CategoryNav = ({
 }) => {
   return (
     <nav className="flex overflow-x-auto py-4 gap-4">
-      {categories.map((category) => (
+      {MENU_CATEGORIES.map((category) => (
         <button
           key={category.id}
           onClick={() => onSelect(category.id)}
@@ -244,189 +627,9 @@ export const CategoryNav = ({
 }
 ```
 
-## Step 3: Product Management
+## 6. Testing Strategy
 
-### 3.1 Product Types
-```typescript
-// src/types/product.ts
-export interface Product {
-  id: string
-  name: string
-  description: string
-  basePrice: number
-  category: string
-  imageUrl: string
-  available: boolean
-  variants?: {
-    size?: Array<{
-      name: string
-      priceAdjustment: number
-    }>
-    addOns?: Array<{
-      name: string
-      price: number
-    }>
-    flavorOptions?: string[]
-  }
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface CreateProductInput {
-  name: string
-  description: string
-  basePrice: number
-  category: string
-  imageUrl: string
-  variants?: Product['variants']
-}
-```
-
-### 3.2 Product Database Schema
-```sql
--- Create products table
-CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  description TEXT,
-  base_price DECIMAL(10,2) NOT NULL,
-  category TEXT NOT NULL,
-  image_url TEXT,
-  available BOOLEAN DEFAULT true,
-  variants JSONB DEFAULT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT valid_category CHECK (
-    category IN ('Budget Meals', 'Silog Meals', 'Ala Carte', 'Beverages', 'Special Orders')
-  )
-);
-
--- Create products_audit table for tracking changes
-CREATE TABLE products_audit (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  product_id UUID REFERENCES products(id),
-  action TEXT NOT NULL,
-  old_data JSONB,
-  new_data JSONB,
-  changed_by TEXT NOT NULL,
-  changed_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 3.3 Product API Routes
-```typescript
-// src/app/api/products/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies })
-  
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-  
-  return NextResponse.json(data)
-}
-
-export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies })
-  
-  // Verify admin access
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  
-  if (session?.user.email !== process.env.NEXT_PUBLIC_BUSINESS_EMAIL) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
-  
-  const input = await req.json()
-  
-  const { data, error } = await supabase
-    .from('products')
-    .insert([input])
-    .select()
-    .single()
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-  
-  return NextResponse.json(data)
-}
-```
-
-## Step 4: Admin Product Management
-
-### 4.1 Product Form
-```typescript
-// src/app/admin/products/components/ProductForm.tsx
-export const ProductForm = ({
-  initialData,
-  onSubmit,
-}: {
-  initialData?: Product
-  onSubmit: (data: CreateProductInput) => Promise<void>
-}) => {
-  const form = useForm<CreateProductInput>({
-    defaultValues: initialData || {
-      name: '',
-      description: '',
-      basePrice: 0,
-      category: '',
-      imageUrl: '',
-    },
-  })
-  
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      {/* Form fields */}
-    </form>
-  )
-}
-```
-
-### 4.2 Image Upload
-```typescript
-// src/lib/upload.ts
-export const uploadProductImage = async (
-  file: File
-): Promise<string> => {
-  const supabase = createClientComponentClient()
-  
-  const fileExt = file.name.split('.').pop()
-  const fileName = `${Math.random()}.${fileExt}`
-  const filePath = `${fileName}`
-  
-  const { error: uploadError } = await supabase.storage
-    .from('product-images')
-    .upload(filePath, file)
-  
-  if (uploadError) {
-    throw new Error('Error uploading image')
-  }
-  
-  const { data } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(filePath)
-  
-  return data.publicUrl
-}
-```
-
-## Step 5: Testing
-
-### 5.1 Component Tests
+### 6.1 Component Tests
 ```typescript
 // src/components/products/__tests__/ProductCard.test.tsx
 import { render, screen } from '@testing-library/react'
@@ -452,14 +655,9 @@ describe('ProductCard', () => {
 })
 ```
 
-### 5.2 API Tests
+### 6.2 API Tests
 ```typescript
 // src/app/api/products/__tests__/route.test.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { GET, POST } from '../route'
-
-jest.mock('@supabase/auth-helpers-nextjs')
-
 describe('Products API', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -486,71 +684,71 @@ describe('Products API', () => {
     })
   })
 })
-
-## 1. Product Schema Setup
-
-### 1.1 Update Database Schema
-```bash
-# Create new migration for product updates
-npx supabase migration new add_product_features
-
-# Add the following to the new migration file:
 ```
 
-```sql
--- Update products table with new fields
-ALTER TABLE products
-ADD COLUMN IF NOT EXISTS base_price DECIMAL(10,2),
-ADD COLUMN IF NOT EXISTS has_variants BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS is_available BOOLEAN DEFAULT true;
+## Best Practices
 
--- Create variants table if not exists
-CREATE TABLE IF NOT EXISTS variants (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  product_id UUID REFERENCES products(id),
-  name VARCHAR(255) NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  type VARCHAR(50) NOT NULL, -- 'size', 'flavor', 'add-on'
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+### Code Organization
+- Keep components small and focused
+- Use TypeScript for type safety
+- Follow the Single Responsibility Principle
+- Implement proper error boundaries
+- Use meaningful component and file names
 
--- Add triggers for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER products_updated_at
-  BEFORE UPDATE ON products
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
-
-CREATE TRIGGER variants_updated_at
-  BEFORE UPDATE ON variants
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
-```
-
-```bash
-# Apply the migration
-npm run db:push
-
-# Generate updated TypeScript types
-npm run db:types
-```
-
-### 1.2 Type Definitions
+### Error Handling
 ```typescript
-// src/types/products.ts
-import { Database } from './supabase'
-
-export type Product = Database['public']['Tables']['products']['Row']
-export type Variant = Database['public']['Tables']['variants']['Row']
-
-export interface ProductWithVariants extends Product {
-  variants: Variant[]
+try {
+  const { error } = await operation()
+  if (error) throw error
+} catch (error) {
+  console.error('Context:', error)
+  handleError(error)
 }
+```
+
+### State Management
+```typescript
+// Good
+const [isLoading, setIsLoading] = useState(false)
+const [error, setError] = useState<Error | null>(null)
+const [data, setData] = useState<Data | null>(null)
+
+// Bad
+const [state, setState] = useState({
+  isLoading: false,
+  error: null,
+  data: null,
+})
+```
+
+## Things to Avoid
+
+### Code Practices
+❌ Don't write duplicate code
+❌ Don't skip error handling
+❌ Don't use any type
+❌ Don't hardcode values
+❌ Don't mix concerns
+
+### Security
+❌ Don't expose API keys
+❌ Don't store sensitive data in localStorage
+❌ Don't trust user input
+❌ Don't skip input validation
+❌ Don't ignore security warnings
+
+### Performance
+❌ Don't skip image optimization
+❌ Don't ignore bundle size
+❌ Don't skip lazy loading
+❌ Don't block the main thread
+❌ Don't ignore memory leaks
+
+## Next Steps
+Moving to Phase 3, we will focus on:
+1. Cart system implementation
+2. Order processing
+3. Payment integration
+4. Email notifications
+5. Order tracking system
+```
