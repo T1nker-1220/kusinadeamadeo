@@ -1,20 +1,29 @@
-# KDA Food Store Project Rules and Guidelines
+{{ ... }}
 
-## Core Project Structure
+# Cursor IDE Master Rules need to follow.
+
+# KDA Food Store Project Structure
+
+## Core Directories
+
 ```plaintext
 kusinadeamadeo/
-├── app/                      # Next.js 13+ App Directory
-│   ├── (auth)/              # Authentication Routes
-│   │   ├── login/          # Google OAuth Login
-│   │   └── register/       # New User Registration
+├── app/                   # Next.js 15.1.1 App Directory
+│   ├── (auth)/            # Authentication Routes
+│   │   ├── login/         # Google OAuth Login
+│   │   └── register/      # New User Registration
 │   │
-│   ├── (dashboard)/         # Protected Admin Routes
+│   ├── admin/             # Protected Admin Routes
+│   │   ├── dashboard/     # Admin Dashboard
+│   │   ├── categories/    # Category Management
 │   │   ├── orders/        # Order Management
 │   │   ├── products/      # Product Management
 │   │   └── settings/      # Admin Settings
 │   │
-│   ├── (store)/            # Public Store Routes
-│   │   ├── menu/         # Menu Display
+│   ├── (store)/           # Public Store Routes
+│   │   ├── menu/          # Menu Display
+│   │   ├── about/         # About Us
+│   │   ├── contact/       # Contact Informations
 │   │   ├── cart/         # Shopping Cart
 │   │   ├── checkout/     # Order Processing
 │   │   └── orders/       # Order Tracking
@@ -23,289 +32,695 @@ kusinadeamadeo/
 
 ├── components/              # Reusable Components
 │   ├── auth/               # Authentication Components
+│   │   ├── GoogleButton.tsx    # Google Sign-in
+│   │   └── AuthGuard.tsx       # Route Protection
+│   │
 │   ├── cart/               # Cart Components
+│   │   ├── CartItem.tsx        # Cart Item Display
+│   │   ├── CartSummary.tsx     # Order Summary
+│   │   └── CartActions.tsx     # Cart Operations
+│   │
 │   ├── checkout/           # Checkout Components
+│   │   ├── AddressForm.tsx     # Delivery Info
+│   │   ├── PaymentMethod.tsx   # Payment Selection
+│   │   └── OrderSummary.tsx    # Final Review
+│   │
 │   ├── menu/               # Menu Components
+│   │   ├── ProductCard.tsx     # Product Display
+│   │   ├── CategoryNav.tsx     # Category Navigation
+│   │   └── ProductDetails.tsx  # Detailed View
+│   │
 │   ├── orders/             # Order Components
+│   │   ├── OrderList.tsx       # Order History
+│   │   ├── OrderItem.tsx       # Order Details
+│   │   └── OrderStatus.tsx     # Status Display
+│   │
 │   └── ui/                 # UI Components
-
+│       ├── Button.tsx          # Custom Buttons
+│       ├── Input.tsx           # Form Inputs
+│       ├── Modal.tsx           # Modal Windows
+│       └── Loading.tsx         # Loading States
+│       
 ├── lib/                    # Core Libraries
 │   ├── supabase/          # Supabase Integration
+│   │   ├── client.ts      # Supabase Client
+│   │   ├── auth.ts        # Auth Functions
+│   │   └── db.ts          # Database Functions
+│   │
 │   ├── utils/             # Utility Functions
+│   │   ├── formatting.ts  # Data Formatting
+│   │   ├── validation.ts  # Input Validation
+│   │   └── helpers.ts     # Helper Functions
+│   │
 │   └── hooks/             # Custom Hooks
+       ├── useAuth.ts      # Auth State
+       ├── useCart.ts      # Cart Operations
+       └── useOrders.ts    # Order Management
 
 ├── public/                 # Static Assets
-│   └── images/            # Image Assets
+│   ├── images/            # Image Assets
+│   │   ├── products/     # Product Images
+│   │   ├── logo.png      # Site Logo
+│   │   └── icons/        # UI Icons
+│   │
+│   └── locales/          # Translations
+       ├── en.json        # English
+       └── fil.json       # Filipino
 
 ├── styles/                # Styling
+│   ├── globals.css       # Global Styles
+│   └── components/       # Component Styles
+
 └── config/               # Configuration
+    ├── site.ts          # Site Config
+    ├── menu.ts          # Menu Config
+    └── constants.ts     # Constants
 ```
 
-## 1. Core Development Principles
+## Key Configuration Files
 
-### Code Quality Standards
-1. TypeScript Usage:
-   - Strict type checking enabled
-   - No 'any' types unless absolutely necessary
-   - Proper interface and type definitions
-   - Generics for reusable components
-   - Type guards where needed
+```plaintext
+├── .env.local            # Environment Variables
+├── next.config.js        # Next.js Config
+├── tailwind.config.js    # Tailwind CSS Config
+├── tsconfig.json         # TypeScript Config
+└── package.json         # Dependencies
+```
 
-2. Component Architecture:
-   - Single Responsibility Principle
-   - Proper component composition
-   - Clear prop interfaces
-   - Memoization when beneficial
-   - Pure functional components preferred
+## Tech Stack
 
-3. State Management:
-   - Server state with React Query
-   - UI state with React Context/Zustand
-   - Form state with React Hook Form
-   - Proper loading/error states
-   - Optimistic updates
+## Frontend Technologies
 
-### Performance Standards
-1. Core Web Vitals:
-   - LCP < 2.5s
-   - FID < 100ms
-   - CLS < 0.1
-   - TTI < 3.8s
-   - FCP < 1.8s
+- Framework: Next.js 13+
+- Language: TypeScript
+- UI Framework: React
+- Styling:
+  - Tailwind CSS
+  - CSS Modules
+- State Management:
+  - React Context API
+  - Custom Hooks
+- Form Handling:
+  - React Hook Form
+  - Zod validation
 
-2. Resource Optimization:
-   - Image optimization with next/image
-   - Code splitting and lazy loading
-   - Bundle size monitoring
-   - Tree shaking enabled
-   - Proper caching strategies
+## Backend Technologies
 
-## 2. Product Management System
+- Database: Supabase (PostgreSQL)
+- Authentication:
+  - Supabase Auth
+  - Google OAuth
+  - Admin email: kusinadeamadeo@gmail.com
+- Storage:
+  - Supabase Storage
+  - Bucket: product-images
+- Email Service:
+  - Resend API
+  - Email templates
+  - Order notifications
 
-### Database Architecture
-1. Core Tables:
-   ```sql
-   products
-   product_variants
-   product_addons
-   product_available_addons
-   products_audit
-   ```
+## Payment Integration
 
-2. Data Integrity:
-   - UUID for all primary keys
-   - TIMESTAMPTZ for all timestamps
-   - Proper foreign key constraints
-   - Check constraints for enums
-   - RLS policies for security
+- GCash Express Send
+  - Account: 09605088715
+  - Name: John Nathaniel Marquez
+- Cash on Pickup
+  - Store location verification
+  - Manual confirmation
+
+## APIs and Services
+
+- Supabase:
+  - REST API
+  - Real-time subscriptions
+  - Row Level Security (RLS)
+- Google OAuth API
+- Resend Email API
+- Facebook Messenger Integration
+
+## Development Tools
+
+- Version Control: Git
+- Package Manager: npm/yarn
+- Code Quality:
+  - ESLint
+  - Prettier
+  - TypeScript strict mode
+- Testing:
+  - Jest
+  - React Testing Library
+
+## Build & Deployment
+
+- Platform: Vercel
+- Environment:
+  - Development
+  - Production
+- CI/CD: Vercel Pipeline
+- Analytics: Vercel Analytics
+
+## Security Measures
+
+- Google OAuth authentication
+- Email-based role verification
+- Input sanitization
+- XSS protection
+- CSRF prevention
+- Secure environment variables
+
+## Performance Optimization
+
+- Image optimization
+- Code splitting
+- Lazy loading
+- API caching
+- CDN delivery
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- ES6+ JavaScript
+- Responsive design
+- Mobile-first approach
+
+## Monitoring & Logging
+
+- Error tracking
+- Performance monitoring
+- User analytics
+- Order tracking system
+
+## Additional Features
+
+- Receipt ID generation system
+- Real-time order updates
+- Manual delivery coordination
+- Bilingual support (English/Filipino)
+- Timezone handling (Asia/Manila)
+
+> **IMPORTANT: Development Guidelines**
+>
+> 1. Do not duplicate features that are already implemented (files, folders, components, or other features) to avoid conflicting functionalities.
+> 2. Always check existing implementations before creating new ones.
+> 3. Follow the established patterns and conventions throughout the project.
+> 4. Maintain consistency with the existing codebase.
+> 5. When in doubt, refer to existing implementations as examples.
+> 6. Write clean, self-documenting code.
+> 7. Optimize code for performance where possible.
+> 8. Use descriptive variable names.
+> 9. Break up long functions into smaller, more manageable pieces.
+> 10. Document code with JSDoc if necessary.
+> 11. Document components with Storybook if necessary.
+> 12. Use existing functions and utilities before writing custom code.
+> 13. Do not hard-code values; use constants and environment variables instead.
+> 14. Include comments explaining the purpose of functions, components, and utilities.
+> 15. Use the same naming conventions throughout the codebase.
+> 16. Use the same coding style throughout the codebase.
+> 17. Avoid using global state and singletons.
+> 18. Use the smallest possible scope for variables and functions.
+> 19. Document any workarounds or hacks used in the code.
+> 20. Test code thoroughly before committing.
+> 21. Tell me if the generated chat is required to use the claude 3.5 sonnet model.
+> 22. Everytime creating a sql for supabase migrations you need to migrate it using terminal only, you need remote cli all of the supabase.
+> 23. Everytime we proceed to the next part in current phase you need to update the phase (current) documentation.
+> 24. Make sure if you are testing the implemented feature you need to update the others and avoid the possible problems and errors.
+> 25. You can run the test now but make sure to maintain the functionality of the existing features I don't want you to ruin it okay so be careful.
+> 26. You will not duplicate the same file functionality by creating a different types of file, example of
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+
+> **Terminal Usage**
+>
+> Whenever running the terminal, make sure to use the Windows user powershell as the default shell. To do this, run the following command:
+
+## 1. Business Information
+
+- Location: 107 i Purok 4 Dagatan, Amadeo, Cavite
+- Contact Details:
+  - Mobile: +63 960 508 8715
+  - Landline: (046) 890-9060
+  - Email: kusinadeamadeo@gmail.com
+- Operating Hours (Asia/Manila):
+  - Store: 5:00 AM to 11:00 PM (daily)
+  - Order Processing: 8:00 AM to 10:00 PM
+  - Pickup: 5:00 AM to 10:00 PM
+
+## 2. Authentication System Rules
+
+- Implement single Google OAuth sign-in
+- Admin email: `kusinadeamadeo@gmail.com`
+- Simple routing:
+  - Admin → `/admin/dashboard`
+  - Customers → `/store`
+- Use Supabase's built-in session management
+- No complex custom implementations
+
+## 3. Order System Rules
+
+- Receipt ID Format:
+  - Pattern: `[A-Z]{2}[0-9]{2}`
+  - Examples: AE20, BF15, XY99
+  - Must be unique and auto-generated
+- Required Customer Information:
+  - Valid Philippine phone number (09XX or +639XX)
+  - Complete delivery address
+  - Google account email
+  - Full name
+- Pre-order Rules:
+  - Minimum lead time: 2h
+  - Maximum advance booking: 7d
+  - Operating window: 8 AM - 10 PM (Manila Time)
+
+## 4. Payment System Rules
+
+- GCash Express Flow:
+  - Account: 09605088715
+  - Name: John Nathaniel Marquez
+  - Requirements:
+    - Screenshot of payment confirmation
+    - Valid GCash reference number (13 characters)
+    - Payment proof via Messenger
+- Cash Payment:
+  - In-store only
+  - Manual admin confirmation
+
+## 5. Menu System Rules
 
 ### Product Categories
-1. Budget Meals (₱35-₱60):
-   - Base items with optional add-ons
-   - Fixed price combinations
-   - Add-on limitations
-   - Combo meal options
 
-2. Silog Meals (₱85-₱100):
-   - Standard components
-   - Rice and egg included
-   - Protein options
-   - Add-on compatibility
+1. Main Dishes
+2. Side Dishes
+3. Beverages
+4. Desserts
+5. Special Orders
 
-3. Ala Carte (₱20-₱60):
-   - Individual items
-   - Optional components
-   - Customization options
-   - Portion sizes
+### Product Information Requirements
 
-4. Beverages (₱29-₱39):
-   - Size options (16oz/22oz)
-   - Flavor variations
-   - Add-on compatibility
-   - Temperature options
+- Name
+- Description
+- Base Price
+- Available Variants
+- Category
+- Availability Status
+- Image
 
-5. Special Orders:
-   - Bulk ordering rules
-   - Custom combinations
-   - Advance notice required
-   - Special pricing rules
+### Display Rules
 
-### Add-on System
-1. Standard Add-ons:
-   ```typescript
-   const STANDARD_ADDONS = {
-     siomai: { price: 5, limit: 3 },
-     shanghai: { price: 5, limit: 3 },
-     skinless: { price: 10, limit: 2 },
-     egg: { price: 15, limit: 2 },
-     hotdog: { price: 15, limit: 2 },
-     extraSauce: { price: 5, limit: 3 }
-   }
+- Clear images
+- Name and price
+- Variant options
+- Add to cart functionality
+- Navigation:
+  - Horizontal menu
+  - Category filters
+  - Search function
+
+## 6. Cart System Rules
+
+- Features:
+  - Item list
+  - Quantity adjusters
+  - Remove options
+  - Total calculation
+- Management:
+  - Edit quantities
+  - Remove items
+  - Update add-ons
+  - View details
+
+## 7. Email Notification Rules
+
+- Use Resend API
+- Customer notifications:
+  - Order confirmation
+  - Status updates
+  - Delivery confirmation
+  - Receipt ID
+- Admin notifications:
+  - New orders
+  - Delivery info
+  - Payment alerts
+  - Tracking info
+
+## 8. Design System Rules
+
+### Path for Images
+
+- Logo: `/public/images/logo.png`
+- Product Images: `/public/images/products`
+- Category Images: `/public/images/categories`
+- Variant Images: `/public/images/variants`
+- About Images: `/public/images/about`
+- Images for other components: `/public/images/`
+
+### Brand Identity
+
+- Logo Requirements:
+  - Minimum size: 32px height
+  - Clear space: 1x logo height on all sides
+  - Path: `/public/images/logo.png`
+
+### Color System
+
+```css
+:root {
+  /* Core Theme Colors */
+  --brand-orange: #ff6b00;
+  --brand-orange-light: #ff8534;
+  --brand-orange-dark: #e65000;
+
+  /* Surface Colors */
+  --surface-primary: #121212;
+  --surface-secondary: #1e1e1e;
+  --surface-elevated: #2d2d2d;
+
+  /* Text Colors */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.87);
+  --text-tertiary: rgba(255, 255, 255, 0.6);
+}
+```
+
+### Typography System
+
+- Font Families:
+  - Display: 'Playfair Display'
+  - Body: 'Inter'
+  - Accent: 'Montserrat'
+- Type Scale: Fluid typography with clamp()
+- Line Heights:
+  - Tight: 1.2
+  - Normal: 1.5
+  - Relaxed: 1.75
+
+## 9. Development Guidelines
+
+### Code Style
+
+- TypeScript with Prettier and ESLint
+- Max line length: 80 characters
+- Indentation: 2 spaces
+- Use single quotes
+- Semicolons required
+
+### Naming Conventions
+
+- Components: PascalCase
+- Functions: camelCase
+- Constants: UPPER_SNAKE_CASE
+- Files: kebab-case
+- CSS Classes: kebab-case
+
+### Git Workflow
+
+- Branch Prefixes:
+  - feature/
+  - bugfix/
+  - hotfix/
+- Use conventional commits
+- Required checks before merge
+
+## 10. Testing Requirements
+
+- Framework: Jest
+- Coverage threshold: 80%
+- Required test types:
+  - Unit tests
+  - Integration tests
+  - E2E tests
+
+## 11. Documentation Rules
+
+- JSDoc required
+- Type definitions required
+- Code examples required
+- Changelog maintenance
+- Must-read files and Paths:
+  - [./INSTRUCTION.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/INSTRUCTION.md)
+  - [./PLAN.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PLAN.md)
+  - [./Informations(KDA).md](<../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/Informations(KDA).md>)
+  - [./design-system.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/design-system.md)
+  - [./PHASE-1-COMPLETION.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-1-SETUP.md)
+  - [./PHASE-2-UI-PRODUCTS.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-3-CART-ORDERS.md)
+  - [./PHASE-3-ORDERING.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-3-CART-ORDERS.md)
+  - [./PHASE-4-PAYMENT.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-4-ANALYTICS-OPTIMIZATION.md)
+  - [./PHASE-5-MAINTENANCE-SCALING.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-1-SETUP.md)
+  - [PHASE-6-DEPLOYMENT-PRODUCTION.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-6-DEPLOYMENT-PRODUCTION.md)
+  - [./docs/PHASE-1-COMPLETION.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/PHASE-1-SETUP.md)
+  - [./docs/PHASE-2-DOCUMENTATION.md](../../../OneDrive/Documents/1ACode-WEBSITE/kusinadeamadeo/docs/PHASE-2-DOCUMENTATION.md)
+
+### Design-System guidelines and best practices.
+
+- The [./design-system.md](./design-system.md) is a comprehensive visual and interaction design guide for Kusina De Amadeo, defining brand identity, color system, typography, and UI component standards, with a focus on creating a cohesive, accessible, and performant design language that ensures consistent user experience across all application interfaces.
+- Whenever you are creating a new components or other files or features you need to follow the design system.
+
+### Instructions guidelines and best practices.
+
+- The [./INSTRUCTION.md](./INSTRUCTION.md) serves as a comprehensive technical blueprint for implementing authentication, product management, and system architecture, providing detailed guidelines for Google OAuth integration, Supabase configuration, protected routing, performance optimization, and error handling strategies, with a focus on maintaining a simple, secure, and scalable web application architecture.
+
+### Informations(KDA) guidelines and best practices.
+
+- This [./Informations(KDA).md](<./Informations(KDA).md>) file contains all the informations related to Kusina de Amadeo (KDA) that is needed for the development of the website.
+- If you need any informations from KDA, please check this file first before asking or searching anywhere else.
+
+## 12. Security Measures
+
+- Auth provider: Google OAuth
+- Session duration: 24h
+- API rules:
+  - Rate limit: 100/minute
+  - Timeout: 30s
+  - Required headers:
+    - Authorization
+    - Content-Type
+- Data protection:
+  - Input sanitization
+  - XSS prevention
+  - CSRF protection
+  - Encrypted customer data
+  - Secure payment information
+  - Protected admin access
+
+## 13. Performance Standards
+
+- Core Web Vitals targets:
+  - LCP: 2.5s
+  - FID: 100ms
+  - CLS: 0.1
+- Bundle size limits:
+  - Initial load: 200kb
+  - Image max size: 200kb
+- Database rules:
+  - Connection pool: 20-50
+  - Daily backups
+  - Point-in-time recovery enabled
+- API response time target: < 500ms
+- Page load time target: < 3s
+
+## 14. Analytics Implementation
+
+### Order Analytics
+
+- Daily, weekly, and monthly tracking
+- Popular items analysis
+- Peak ordering time analysis
+- Customer retention metrics
+- Special order frequency tracking
+
+### Customer Analytics
+
+- User journey tracking
+- Product popularity analysis
+- Customer feedback system
+- Return customer behavior analysis
+
+## 15. Environment Variables
+
+Required variables:
+
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- DATABASE_URL
+- NEXT_PUBLIC_GOOGLE_CLIENT_ID
+- NEXT_PUBLIC_GOOGLE_CLIENT_SECRET
+- NEXT_PUBLIC_APP_URL
+- NEXT_PUBLIC_APP_NAME
+- NEXT_PUBLIC_BUSINESS_EMAIL
+- NEXT_PUBLIC_CONTACT_EMAIL
+- NEXT_PUBLIC_BUSINESS_PHONE
+- NEXT_PUBLIC_BUSINESS_ADDRESS
+- NEXT_PUBLIC_BUSINESS_MAPS_URL
+- RESEND_API_KEY
+
+## 16. Supabase Setup and Migration Rules
+
+### Prerequisites
+
+- PostgreSQL 17 installed locally
+- Environment variables properly configured in `.env.local`
+- Migration files in `supabase/migrations/` directory
+- Seed files in `supabase/seed.sql`
+
+### Database Credentials
+
+Required credentials in `.env.local`:
+
+```env
+DATABASE_URL="postgresql://postgres.blglkqttwesxmtbczvxd:Angelicadino1220!?@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+NEXT_PUBLIC_SUPABASE_URL=https://blglkqttwesxmtbczvxd.supabase.co
+SUPABASE_DATABASE_PASSWORD=Angelicadino1220!?
+```
+
+### Migration Process
+
+1. Set Up Environment:
+
+   ```bash
+   cd your-project-directory
    ```
 
-2. Add-on Rules:
-   - Maximum combinations
-   - Category compatibility
-   - Price calculations
-   - Availability checks
+2. Run Migrations:
 
-## 3. UI/UX Standards
+   ```bash
+   $env:PGPASSWORD='Angelicadino1220!?'
+   & 'C:\Program Files\PostgreSQL\17\bin\psql.exe' `
+     -h aws-0-ap-southeast-1.pooler.supabase.com `
+     -p 6543 `
+     -U postgres.blglkqttwesxmtbczvxd `
+     -d postgres `
+     -f supabase/migrations/20241212143540_add_products_schema.sql
+   ```
 
-### Component Guidelines
-1. Product Display:
-   - Clear hierarchy
-   - Consistent spacing
-   - Proper image loading
-   - Price visibility
-   - Action accessibility
+3. Run Seed Data:
+   ```bash
+   & 'C:\Program Files\PostgreSQL\17\bin\psql.exe' `
+     -h aws-0-ap-southeast-1.pooler.supabase.com `
+     -p 6543 `
+     -U postgres.blglkqttwesxmtbczvxd `
+     -d postgres `
+     -f supabase/seed.sql
+   ```
 
-2. Form Components:
-   - Clear validation
-   - Instant feedback
-   - Mobile-friendly inputs
-   - Error recovery
-   - Success confirmation
+### Troubleshooting Guidelines
 
-### Mobile Optimization
-1. Touch Interactions:
-   - Minimum touch target: 44x44px
-   - Proper touch feedback
-   - Gesture support
-   - Bottom navigation
-   - Pull-to-refresh
+1. Access Denied Error:
 
-2. Responsive Design:
-   - Mobile-first approach
-   - Fluid typography
-   - Breakpoint system
-   - Layout shifts prevention
-   - Touch-friendly controls
+   - Ensure using full username with project reference
+   - Verify credentials in `.env.local`
 
-## 4. Security Implementation
+2. Connection Issues:
 
-### Authentication
-1. Google OAuth:
-   - Single sign-in flow
-   - Role-based access
-   - Session management
-   - Secure token handling
-   - Automatic refresh
+   - Turn off VPN
+   - Check internet connectivity
+   - Verify port 6543 is accessible
 
-2. Admin Access:
-   - Email verification
-   - Role verification
-   - Action logging
-   - Session timeouts
-   - Security headers
+3. Permission Issues:
+   - Use service_role key
+   - Check RLS policies
+   - Verify user permissions
 
-### Data Protection
-1. Database Security:
-   - RLS policies
-   - Input sanitization
-   - Query optimization
-   - Backup strategy
-   - Audit logging
+### Troubleshooting Best Practices
 
-2. API Security:
-   - Rate limiting
-   - CORS policies
-   - Request validation
-   - Error handling
-   - Logging strategy
+1. **Explain the Error**:
+   - Provide clear and concise error messages
+   - Avoid vague or generic error messages
+   - Include relevant error codes and references
+2. **No Error Creation**:
+   - Follow instructions and requirements
+   - Avoid creating potential errors
+   - Verify implementation before committing
 
-## 5. Testing Requirements
+### Verification Steps
 
-### Test Coverage
-1. Unit Tests:
-   - Component rendering
-   - Business logic
-   - Utility functions
-   - Hooks behavior
-   - State management
+1. Check Supabase Dashboard Tables
+2. Verify RLS Policies
+3. Confirm data population
+4. Test Storage Bucket permissions
 
-2. Integration Tests:
-   - User flows
-   - API integration
-   - State persistence
-   - Error scenarios
-   - Edge cases
+### Security Rules
 
-### Quality Assurance
-1. Code Quality:
-   - Linting rules
-   - Type checking
-   - Code formatting
-   - Documentation
-   - Performance metrics
+1. Environment Variables:
 
-2. Manual Testing:
-   - Cross-browser testing
-   - Mobile device testing
-   - Performance testing
-   - Security testing
-   - Accessibility testing
+   - Never commit `.env.local` to version control
+   - Keep credentials secure
+   - Use environment variables for sensitive data
 
-## 6. Documentation Standards
+2. Database Access:
 
-### Code Documentation
-1. Component Documentation:
-   - Purpose and usage
-   - Props interface
-   - Example usage
-   - Edge cases
-   - Performance considerations
+   - Use principle of least privilege
+   - Implement proper RLS policies
+   - Never expose service_role key
+   - Regular security audits
 
-2. API Documentation:
-   - Endpoint descriptions
-   - Request/response formats
-   - Error handling
-   - Authentication requirements
-   - Rate limits
+3. Connection Requirements:
+   - Use port 6543 for Supabase PostgreSQL
+   - Include project ref in username
+   - Secure password handling
 
-### Project Documentation
-1. Setup Instructions:
-   - Environment setup
-   - Dependencies
-   - Configuration
-   - Development workflow
-   - Deployment process
+### Maintenance Rules
 
-2. Maintenance Guides:
-   - Database migrations
-   - Backup procedures
-   - Monitoring setup
-   - Error handling
-   - Performance optimization
+1. Backup Requirements:
+
+   - Regular database backups
+   - Backup before migrations
+   - Document backup procedures
+
+2. Monitoring Requirements:
+   - Check table creation success
+   - Monitor RLS policy effectiveness
+   - Track performance metrics
+   - Log migration results
 
 ## What We Avoid
 
-### Code Quality
-❌ Duplicate code or functionality
-❌ Unclear type definitions
-❌ Prop drilling beyond 2 levels
-❌ Complex state management
-❌ Unnecessary re-renders
+### 1. Code Practices
+❌ Don't write duplicate code
+❌ Don't skip error handling
+❌ Don't use any type
+❌ Don't hardcode values
+❌ Don't mix concerns
+❌ Don't ignore TypeScript errors
+❌ Don't skip prop validation
+❌ Don't use inline styles
 
-### Security
-❌ Exposed credentials
-❌ Insecure data storage
-❌ Missing input validation
-❌ Weak authentication
-❌ Unhandled errors
+### 2. Security
+❌ Don't expose API keys
+❌ Don't store sensitive data in localStorage
+❌ Don't trust user input
+❌ Don't skip input validation
+❌ Don't use eval()
+❌ Don't ignore security warnings
+❌ Don't skip authentication
+❌ Don't use weak passwords
 
-### Performance
-❌ Unoptimized images
-❌ Large bundle sizes
-❌ Blocking operations
-❌ Memory leaks
-❌ Poor error boundaries
+### 3. Performance
+❌ Don't skip image optimization
+❌ Don't ignore bundle size
+❌ Don't skip lazy loading
+❌ Don't block the main thread
+❌ Don't ignore memory leaks
+❌ Don't skip error boundaries
+❌ Don't ignore performance metrics
+❌ Don't skip caching
 
-### User Experience
-❌ Confusing navigation
-❌ Poor accessibility
-❌ Inconsistent UI
-❌ Missing feedback
-❌ Unresponsive design
+### 4. User Experience
+❌ Don't skip loading states
+❌ Don't ignore mobile users
+❌ Don't skip error messages
+❌ Don't use confusing UI
+❌ Don't ignore accessibility
+❌ Don't skip form validation
+❌ Don't use small touch targets
+❌ Don't ignore user feedback
 
 
 # Authentication Implementation Instructions
@@ -1488,3 +1903,5 @@ export class ErrorBoundary extends React.Component {
 - Include receipt ID in all emails
 - Professional templates
 - Mobile-responsive design
+
+{{ ... }}

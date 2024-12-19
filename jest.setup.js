@@ -10,13 +10,16 @@ jest.mock('next/navigation', () => ({
       back: jest.fn(),
     }
   },
-  usePathname() {
-    return ''
-  },
   useSearchParams() {
-    return new URLSearchParams()
+    return {
+      get: jest.fn(),
+    }
   },
 }))
+
+// Mock environment variables
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 
 // Mock next/image
 jest.mock('next/image', () => ({

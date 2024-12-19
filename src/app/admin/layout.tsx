@@ -1,198 +1,153 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import * as React from "react"
 import Link from "next/link"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { AdminNav } from "@/components/ui/AdminNav"
-import { Loading } from "@/components/ui/Loading"
-import { LogOut, Menu, X, Home, ShoppingBag, Package, Settings } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { signOut } from "@/lib/supabase/auth"
-import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/utils/cn"
-
-const bottomNavItems = [
-  {
-    title: "Dashboard",
-    href: "/admin/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Orders",
-    href: "/admin/orders",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Products",
-    href: "/admin/products",
-    icon: Package,
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-]
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [loading, setLoading] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = createClientComponentClient()
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (!session || session.user.email !== process.env.NEXT_PUBLIC_BUSINESS_EMAIL) {
-          router.replace('/')
-          return
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error('Error checking admin status:', error)
-        router.replace('/')
-      }
-    }
-
-    checkAdmin()
-  }, [supabase, router])
-
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      router.replace('/')
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }
-
-  if (loading) {
-    return <Loading />
-  }
-
   return (
-    <div className="flex min-h-screen bg-surface-primary">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:z-50 md:flex md:w-64 md:flex-col border-r border-white/10 bg-surface-elevated">
-        <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="heading-display text-xl text-brand-orange">KDA</span>
-          </Link>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-text-primary hover:text-brand-orange"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="sr-only">Sign out</span>
-          </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          <AdminNav />
+    <div className="min-h-screen bg-surface-primary">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/10 bg-surface-secondary">
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className="flex h-16 items-center border-b border-white/10 px-6">
+            <h1 className="font-display text-xl font-bold text-brand-orange">
+              KDA Admin
+            </h1>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1 px-4 py-4">
+            <Link href="/admin/dashboard" className="block">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
+                </svg>
+                Dashboard
+              </Button>
+            </Link>
+
+            <Link href="/admin/orders" className="block">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                Orders
+              </Button>
+            </Link>
+
+            <Link href="/admin/products" className="block">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
+                Products
+              </Button>
+            </Link>
+
+            <Link href="/admin/categories" className="block">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                Categories
+              </Button>
+            </Link>
+
+            <Link href="/admin/settings" className="block">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Settings
+              </Button>
+            </Link>
+          </nav>
         </div>
       </aside>
 
-      {/* Mobile Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-surface-elevated md:hidden">
-        <div className="flex h-16 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-text-primary hover:text-brand-orange md:hidden"
-            onClick={toggleMobileMenu}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-          <Link href="/" className="flex items-center gap-2">
-            <span className="heading-display text-xl text-brand-orange">KDA</span>
-          </Link>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-text-primary hover:text-brand-orange"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="sr-only">Sign out</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed top-16 left-0 bottom-0 z-50 w-64 overflow-y-auto bg-surface-elevated p-4 md:hidden"
-            >
-              <AdminNav />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       {/* Main Content */}
-      <main className="flex-1 md:ml-64">
-        <div className="container max-w-7xl pt-24 pb-24 md:pt-8 md:pb-12 px-4">
+      <main className="pl-64">
+        <div className="min-h-screen bg-surface-primary">
           {children}
         </div>
       </main>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-surface-elevated md:hidden">
-        <div className="flex h-16 items-center justify-around px-4">
-          {bottomNavItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center gap-1 p-2 min-w-[64px]",
-                  "transition-colors duration-200",
-                  isActive
-                    ? "text-brand-orange"
-                    : "text-text-secondary hover:text-brand-orange"
-                )}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.title}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
     </div>
   )
 } 

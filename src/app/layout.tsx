@@ -6,6 +6,7 @@ import { errorMonitor } from '@/lib/utils/error-monitoring'
 import { NavigationWrapper } from "@/components/ui/NavigationWrapper"
 import { MapPin, Clock, Phone, Facebook, Mail } from 'lucide-react'
 import './globals.css'
+import { ConnectionStatus } from '@/components/ui/ConnectionStatus'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -119,6 +120,7 @@ export default function RootLayout({
           </div>
           <ToastProvider />
           <Analytics />
+          <ConnectionStatus />
         </ErrorBoundary>
       </body>
     </html>

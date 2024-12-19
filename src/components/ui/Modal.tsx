@@ -1,118 +1,165 @@
 "use client"
 
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
-import { Button } from "./Button"
-import { cn } from "@/lib/utils/cn"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
-interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  children: React.ReactNode
-  className?: string
-  showCloseButton?: boolean
+const modalVariants = cva(
+  [
+    "fixed inset-0 z-50 flex items-center justify-center p-4",
+    "animate-in fade-in duration-200",
+  ].join(" "),
+  {
+    variants: {
+      position: {
+        center: "",
+        bottom: "items-end sm:items-center",
+      },
+    },
+    defaultVariants: {
+      position: "center",
+    },
+  }
+)
+
+const modalContentVariants = cva(
+  [
+    "relative w-full max-h-[90vh] overflow-auto",
+    "bg-surface-elevated rounded-xl shadow-lg",
+    "animate-in zoom-in-95 duration-200",
+  ].join(" "),
+  {
+    variants: {
+      position: {
+        center: "sm:max-w-lg mx-auto",
+        bottom: [
+          "sm:max-w-lg mx-auto",
+          "rounded-b-none sm:rounded-xl",
+          "slide-in-from-bottom duration-300",
+        ].join(" "),
+      },
+      size: {
+        default: "sm:max-w-lg",
+        sm: "sm:max-w-md",
+        lg: "sm:max-w-xl",
+        full: "sm:max-w-none",
+      },
+    },
+    defaultVariants: {
+      position: "center",
+      size: "default",
+    },
+  }
+)
+
+export interface ModalProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof modalVariants> {
+  open?: boolean
+  onClose?: () => void
+  size?: VariantProps<typeof modalContentVariants>["size"]
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  children,
-  className,
-  showCloseButton = true,
-}: ModalProps) {
-  // Close on escape key
-  React.useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose()
+const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
+  ({ className, children, open, onClose, position, size, ...props }, ref) => {
+    // Close on escape key
+    React.useEffect(() => {
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") onClose?.()
       }
-    }
-
-    if (isOpen) {
       document.addEventListener("keydown", handleEscape)
-      document.body.style.overflow = "hidden"
-    }
+      return () => document.removeEventListener("keydown", handleEscape)
+    }, [onClose])
 
-    return () => {
-      document.removeEventListener("keydown", handleEscape)
-      document.body.style.overflow = "unset"
-    }
-  }, [isOpen, onClose])
+    if (!open) return null
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className={cn(
-                "relative w-full max-w-lg rounded-lg bg-surface-elevated p-6 shadow-xl",
-                className
-              )}
-            >
-              {showCloseButton && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-4"
-                  onClick={onClose}
-                >
-                  <X className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </Button>
-              )}
-              {children}
-            </motion.div>
+    return (
+      <>
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={onClose}
+        />
+
+        {/* Modal */}
+        <div className={cn(modalVariants({ position, className }))} {...props}>
+          <div
+            ref={ref}
+            className={cn(modalContentVariants({ position, size }))}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {children}
           </div>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
+        </div>
+      </>
+    )
+  }
+)
+Modal.displayName = "Modal"
 
-interface ModalHeaderProps {
-  children: React.ReactNode
-  className?: string
-}
+const ModalHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+ModalHeader.displayName = "ModalHeader"
 
-export function ModalHeader({ children, className }: ModalHeaderProps) {
-  return (
-    <div className={cn("mb-4", className)}>
-      <h2 className="heading-accent text-lg">{children}</h2>
-    </div>
-  )
-}
+const ModalTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h2
+    ref={ref}
+    className={cn("text-lg font-semibold text-text-primary", className)}
+    {...props}
+  />
+))
+ModalTitle.displayName = "ModalTitle"
 
-interface ModalContentProps {
-  children: React.ReactNode
-  className?: string
-}
+const ModalDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-text-secondary", className)}
+    {...props}
+  />
+))
+ModalDescription.displayName = "ModalDescription"
 
-export function ModalContent({ children, className }: ModalContentProps) {
-  return <div className={cn("space-y-4", className)}>{children}</div>
-}
+const ModalContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+ModalContent.displayName = "ModalContent"
 
-interface ModalFooterProps {
-  children: React.ReactNode
-  className?: string
-}
+const ModalFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "border-t border-white/10 bg-surface-secondary/50 p-6",
+      className
+    )}
+    {...props}
+  />
+))
+ModalFooter.displayName = "ModalFooter"
 
-export function ModalFooter({ children, className }: ModalFooterProps) {
-  return (
-    <div className={cn("mt-6 flex justify-end gap-4", className)}>
-      {children}
-    </div>
-  )
+export {
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalContent,
+  ModalFooter,
 } 
