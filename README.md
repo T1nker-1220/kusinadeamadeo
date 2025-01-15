@@ -1,74 +1,40 @@
 # Kusina de Amadeo
 
-A modern food ordering system for an authentic Filipino restaurant in Amadeo, Cavite.
+## Project Status
+- ✅ Phase 0: Project Setup & Infrastructure
+- ✅ Phase 1: Database & Authentication
+- 🚧 Phase 2: Product Management System (In Progress)
+- 📅 Phase 3: Order System Implementation (Planned)
+- 📅 Phase 4: Admin Dashboard (Planned)
+- 📅 Phase 5: Customer Interface (Planned)
+- 📅 Phase 6: Testing & Security (Planned)
+- 📅 Phase 7: Performance & Optimization (Planned)
+- 📅 Phase 8: Documentation & Deployment (Planned)
 
-## Features
-
-### Authentication System
-- Google OAuth integration
-- Role-based access control (admin/customer)
-- Protected routes
-- Session management
-- Type-safe implementation
-
-### User Management
-- Profile management
-- Role-based permissions
-- Order history tracking
-- Payment verification (admin)
-
-### Product System (Coming Soon)
-- Category management
-- Product variants
-- Add-ons system
-- Stock tracking
-
-### Order System (Coming Soon)
-- Shopping cart
-- Order processing
-- Payment integration (GCash/Cash)
-- Receipt generation
+## Overview
+Kusina de Amadeo is a modern food ordering system built with Next.js 14, Supabase, and Prisma.
 
 ## Tech Stack
-
-### Frontend
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- Shadcn/UI
-- Zustand
-
-### Backend
-- Supabase (PostgreSQL)
-- Prisma ORM
-- Row Level Security
-- Type-safe APIs
-
-### Authentication
-- Google OAuth 2.0
-- Supabase Auth
-- Protected routes
-- Role-based access
-
-### Development
-- PNPM
-- ESLint
-- Prettier
-- TypeScript
-- Git
+- **Frontend**: Next.js 14, TailwindCSS, shadcn/ui
+- **Backend**: Supabase, PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: Supabase Auth (Google OAuth)
+- **State Management**: Zustand
+- **Form Handling**: React Hook Form + Zod
+- **API Layer**: TanStack Query
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- PNPM
-- Supabase account
-- Google OAuth credentials
+- pnpm
+- PostgreSQL
+- Supabase Account
 
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/kusinadeamadeo.git
+git clone [repository-url]
 
 # Install dependencies
 pnpm install
@@ -76,82 +42,58 @@ pnpm install
 # Setup environment variables
 cp .env.example .env.local
 
-# Update environment variables
-# Add your Supabase and Google OAuth credentials
+# Initialize database
+pnpm prisma generate
+pnpm prisma db push
 
-# Run development server
+# Start development server
 pnpm dev
 ```
 
 ### Environment Variables
 ```env
-# Supabase Configuration
-DATABASE_URL="postgresql://postgres.[PROJECT_ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
-DIRECT_URL="postgresql://postgres.[PROJECT_ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
-NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT_ID].supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-
-# Google OAuth
-NEXT_PUBLIC_GOOGLE_CLIENT_ID="your-client-id"
-NEXT_PUBLIC_GOOGLE_CLIENT_SECRET="your-client-secret"
-
-# Application
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_NAME="Kusina de Amadeo"
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 ```
 
-## Project Structure
-```
-src/
-  ├── app/                # Next.js 14 App Router
-  ├── components/         # Reusable UI components
-  ├── hooks/             # Custom React hooks
-  ├── lib/               # Utility functions
-  ├── server/            # Server-side code
-  ├── store/             # Zustand store
-  ├── styles/            # Global styles
-  └── types/             # TypeScript types
-```
+## Features Implemented
+
+### Authentication & Authorization
+- Google OAuth Integration
+- Role-based Access Control (Admin/Customer)
+- Protected Routes
+- Secure Session Management
+
+### Database & Security
+- Complete Database Schema
+- Row Level Security (RLS)
+- Optimized Indexes
+- Type-safe Database Access
 
 ## Documentation
+- [Project Roadmap](documentation/guidelines/ROADMAP.md)
+- [RLS Setup Guide](documentation/troubleshooting/RLS_SETUP_GUIDE.md)
+- [Phase 1 Completion Report](documentation/updates/PHASE1_COMPLETION.md)
 
-- [Authentication System](documentation/updates/AUTHENTICATION_2024_01.md)
-- [Database Schema](documentation/updates/DATABASE_SCHEMA_2024_01.md)
-- [API Implementation](documentation/guidelines/API_IMPLEMENTATION.md)
-- [Error Handling](documentation/guidelines/ERROR_HANDLING.md)
-
-## Development Status
-
-### Completed
-- ✅ Project setup
-- ✅ Database schema
-- ✅ Authentication system
-- ✅ User management
-
-### In Progress
-- 🔄 Database security (RLS)
-- 🔄 API protection
-- 🔄 Data validation
-
-### Upcoming
-- ⏳ Product management
-- ⏳ Order system
-- ⏳ Payment integration
+## Development Guidelines
+1. Follow the project structure in `src/`
+2. Use TypeScript strictly
+3. Follow component naming conventions
+4. Document API endpoints
+5. Write clean, maintainable code
+6. Add proper error handling
+7. Optimize for performance
 
 ## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a pull request
+1. Create a feature branch
+2. Make your changes
+3. Submit a pull request
+4. Follow code review process
 
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
 
 ## Contact
-
-- Email: kusinadeamadeo@gmail.com
-- Phone: +63 939 719 689
-- Address: 107 i Purok 4 Dagatan, Amadeo, Cavite
+[Your contact information]

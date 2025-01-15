@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,7 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Core User Model
 model User {
   id          String    @id @default(uuid())
   email       String    @unique
@@ -22,13 +18,12 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   orders      Order[]
-  payments    Payment[]
+  payments    Payment[] @relation("PaymentVerifier")
 
   @@index([email])
   @@index([role])
 }
 
-// Product Category
 model Category {
   id          String    @id @default(uuid())
   name        String    @unique
@@ -42,7 +37,6 @@ model Category {
   @@index([sortOrder])
 }
 
-// Product Model
 model Product {
   id           String           @id @default(uuid())
   categoryId   String
@@ -54,15 +48,15 @@ model Product {
   allowsAddons Boolean          @default(false)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+  orderItems   OrderItem[]
   category     Category         @relation(fields: [categoryId], references: [id])
   variants     ProductVariant[]
-  orderItems   OrderItem[]
 
   @@index([categoryId])
   @@index([isAvailable])
+  @@index([basePrice])
 }
 
-// Product Variants (Size/Flavor options)
 model ProductVariant {
   id         String      @id @default(uuid())
   productId  String
@@ -71,17 +65,17 @@ model ProductVariant {
   price      Float
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  product    Product     @relation(fields: [productId], references: [id])
   orderItems OrderItem[]
+  product    Product     @relation(fields: [productId], references: [id])
 
   @@index([productId])
   @@index([type])
+  @@index([price])
 }
 
-// Global Add-ons
 model GlobalAddon {
   id          String           @id @default(uuid())
-  name        String           @unique
+  name        String
   price       Float
   isAvailable Boolean          @default(true)
   createdAt   DateTime         @default(now())
@@ -89,13 +83,13 @@ model GlobalAddon {
   orderItems  OrderItemAddon[]
 
   @@index([isAvailable])
+  @@index([price])
 }
 
-// Order Model
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  receiptId     String        @unique // AE20 format
+  receiptId     String        @unique
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod
   paymentStatus PaymentStatus @default(PENDING)
@@ -110,27 +104,27 @@ model Order {
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
+  @@index([receiptId])
 }
 
-// Order Items
 model OrderItem {
-  id        String           @id @default(uuid())
-  orderId   String
-  productId String
-  variantId String?
-  quantity  Int
-  unitPrice Float
-  subtotal  Float
-  order     Order            @relation(fields: [orderId], references: [id])
-  product   Product          @relation(fields: [productId], references: [id])
-  variant   ProductVariant?  @relation(fields: [variantId], references: [id])
-  addons    OrderItemAddon[]
+  id               String           @id @default(uuid())
+  orderId          String
+  productId        String
+  quantity         Int
+  createdAt        DateTime         @default(now())
+  price            Float
+  productVariantId String?
+  updatedAt        DateTime         @updatedAt
+  order            Order            @relation(fields: [orderId], references: [id])
+  product          Product          @relation(fields: [productId], references: [id])
+  ProductVariant   ProductVariant?  @relation(fields: [productVariantId], references: [id])
+  OrderItemAddon   OrderItemAddon[]
 
   @@index([orderId])
   @@index([productId])
 }
 
-// Order Item Add-ons
 model OrderItemAddon {
   id          String      @id @default(uuid())
   orderItemId String
@@ -138,14 +132,13 @@ model OrderItemAddon {
   quantity    Int
   unitPrice   Float
   subtotal    Float
-  orderItem   OrderItem   @relation(fields: [orderItemId], references: [id])
   addon       GlobalAddon @relation(fields: [addonId], references: [id])
+  orderItem   OrderItem   @relation(fields: [orderItemId], references: [id])
 
   @@index([orderItemId])
   @@index([addonId])
 }
 
-// Payment Model
 model Payment {
   id                    String        @id @default(uuid())
   orderId               String        @unique
@@ -160,21 +153,18 @@ model Payment {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   order                 Order         @relation(fields: [orderId], references: [id])
-  verifier              User?         @relation(fields: [verifiedBy], references: [id])
+  verifier              User?         @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
 
   @@index([status])
+  @@index([method])
   @@index([referenceNumber])
+  @@index([verifiedBy])
+  @@index([createdAt])
 }
 
-// Enums
 enum UserRole {
   ADMIN
   CUSTOMER
-}
-
-enum VariantType {
-  SIZE
-  FLAVOR
 }
 
 enum OrderStatus {
@@ -184,13 +174,18 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum PaymentMethod {
   GCASH
   CASH
 }
 
-enum PaymentStatus {
-  PENDING
-  VERIFIED
-  REJECTED
+enum VariantType {
+  SIZE
+  FLAVOR
 }
