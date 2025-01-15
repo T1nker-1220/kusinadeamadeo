@@ -1,167 +1,221 @@
 # Supabase RLS Implementation Guide
 
 ## Overview
-This document outlines the successful implementation of Row Level Security (RLS) policies in our Supabase database, including troubleshooting steps and solutions for common type casting issues.
+This document outlines the successful implementation of Row Level Security (RLS) policies in our Supabase database, including comprehensive troubleshooting steps and solutions for common issues.
 
 ## Table of Contents
-1. [Common Issues](#common-issues)
-2. [Solutions](#solutions)
-3. [Implementation Steps](#implementation-steps)
-4. [Policy Verification](#policy-verification)
+1. [Common Issues & Solutions](#common-issues--solutions)
+2. [Implementation Steps](#implementation-steps)
+3. [Permission Management](#permission-management)
+4. [Verification Steps](#verification-steps)
 5. [Best Practices](#best-practices)
 
-## Common Issues
+## Common Issues & Solutions
 
-### Type Casting Issues
+### 1. Type Casting Issues
 ```sql
 ERROR: 42883: operator does not exist: text = uuid
-HINT: No operator matches the given name and argument types.
 ```
 
-This error occurs when comparing `auth.uid()` (text) with UUID columns without proper type casting.
+**Solution:**
+```sql
+-- ❌ Wrong
+WHERE id = auth.uid()::uuid
 
-### Case Sensitivity Issues
+-- ✅ Correct
+WHERE "id"::text = auth.uid()::text
+```
+
+### 2. Case Sensitivity Issues
 ```sql
 ERROR: 42703: column "userid" does not exist
-HINT: Perhaps you meant to reference the column "Order.userId"
 ```
 
-PostgreSQL is case-sensitive with quoted identifiers, requiring exact column name matches.
-
-## Solutions
-
-### 1. Text Casting Solution
-Convert both sides to text for comparison:
+**Solution:**
 ```sql
--- Instead of
-id = auth.uid()::uuid
+-- ❌ Wrong
+WHERE userid = auth.uid()::text
 
--- Use
-"id"::text = auth.uid()::text
+-- ✅ Correct
+WHERE "userId"::text = auth.uid()::text
 ```
 
-### 2. Column Naming Solution
-Use double quotes for column names:
+### 3. Permission Issues
 ```sql
--- Instead of
-userId = auth.uid()::text
+ERROR: P0001: Schema permissions not properly set
+```
 
--- Use
-"userId"::text = auth.uid()::text
+**Solution:**
+```sql
+-- Reset permissions first
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM authenticated;
+REVOKE ALL ON SCHEMA public FROM authenticated;
+
+-- Grant correct permissions
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 ```
 
 ## Implementation Steps
 
 ### 1. Enable RLS
 ```sql
-ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "Order" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "Payment" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "TableName" ENABLE ROW LEVEL SECURITY;
 ```
 
-### 2. Drop Existing Policies
+### 2. Create Admin Check Function
 ```sql
-DROP POLICY IF EXISTS "policy_name" ON "table_name";
+CREATE OR REPLACE FUNCTION auth.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM "User"
+    WHERE "id"::text = auth.uid()::text
+    AND "role" = 'ADMIN'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-### 3. Create Basic Policies
+### 3. Set Up Basic Policies
 ```sql
--- Public read access
-CREATE POLICY "allow_public_read_categories" ON "Category"
-    FOR SELECT TO PUBLIC
-    USING (true);
-
 -- User data protection
-CREATE POLICY "allow_user_own_data" ON "User"
-    FOR ALL TO authenticated
-    USING ("id"::text = auth.uid()::text);
-```
-
-### 4. Create Related Table Policies
-```sql
--- Order protection
-CREATE POLICY "allow_user_own_orders" ON "Order"
-    FOR ALL TO authenticated
+CREATE POLICY "Users can view own data"
+    ON "TableName"
+    FOR SELECT
+    TO authenticated
     USING ("userId"::text = auth.uid()::text);
 
--- Payment protection with relationships
-CREATE POLICY "allow_user_own_payments" ON "Payment"
-    FOR ALL TO authenticated
-    USING (
-        EXISTS (
-            SELECT 1 FROM "Order"
-            WHERE "Order"."id" = "Payment"."orderId"
-            AND "Order"."userId"::text = auth.uid()::text
-        )
-    );
+-- Public access
+CREATE POLICY "Public read access"
+    ON "TableName"
+    FOR SELECT
+    TO PUBLIC
+    USING (true);
 ```
 
-## Policy Verification
+## Permission Management
 
-### Verify Implementation
+### 1. Base Permissions
 ```sql
-SELECT tablename, policyname, qual
+-- Grant schema usage
+GRANT USAGE ON SCHEMA public TO authenticated;
+
+-- Grant table access
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+
+-- Grant sequence access
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+```
+
+### 2. Future-Proofing Permissions
+```sql
+-- Set default privileges for new tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+
+-- Set default privileges for new sequences
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT USAGE, SELECT ON SEQUENCES TO authenticated;
+```
+
+### 3. Enum Type Permissions
+```sql
+-- Grant enum type usage
+DO $$
+DECLARE
+    enum_type text;
+BEGIN
+    FOR enum_type IN
+        SELECT t.typname
+        FROM pg_type t
+        JOIN pg_namespace n ON t.typnamespace = n.oid
+        WHERE n.nspname = 'public'
+        AND t.typtype = 'e'
+    LOOP
+        EXECUTE format('GRANT USAGE ON TYPE %I TO authenticated', enum_type);
+    END LOOP;
+END
+$$;
+```
+
+## Verification Steps
+
+### 1. Check Basic Permissions
+```sql
+SELECT has_table_privilege('authenticated', 'TableName', 'SELECT');
+```
+
+### 2. Verify RLS Policies
+```sql
+SELECT tablename, policyname, permissive, roles, cmd, qual
 FROM pg_policies
 WHERE schemaname = 'public';
 ```
 
-Expected Results:
-- Public tables (Category, Product) should show `true` for qual
-- User-specific tables should show text casting comparisons
-- Related tables should show proper EXISTS clauses
+### 3. Comprehensive Permission Check
+```sql
+-- Check all granted privileges
+SELECT
+    r.rolname,
+    ARRAY_AGG(DISTINCT p.privilege_type) as privileges
+FROM pg_roles r
+LEFT JOIN information_schema.role_table_grants p
+    ON r.rolname = p.grantee
+WHERE r.rolname = 'authenticated'
+GROUP BY r.rolname;
+```
 
 ## Best Practices
 
 ### 1. Type Casting
-- Always cast both sides of the comparison to text
-- Use consistent casting throughout policies
-- Double quote all column names
+- Always cast both sides of UUID comparisons to text
+- Use proper column name quoting
+- Be consistent with casting throughout policies
 
-### 2. Policy Structure
-- Drop existing policies before creating new ones
+### 2. Permission Management
+- Reset permissions before granting new ones
+- Grant minimum required permissions
+- Use default privileges for future-proofing
+- Include sequence permissions for auto-incrementing fields
+
+### 3. Policy Structure
 - Use descriptive policy names
+- Drop existing policies before creating new ones
 - Include proper TO clause (PUBLIC or authenticated)
-
-### 3. Security Considerations
-- Enable RLS on all tables
-- Implement proper admin checks
 - Use EXISTS clauses for related table checks
 
-### 4. Maintenance
-- Keep policies simple and focused
-- Document all policy changes
-- Regularly verify policy effectiveness
+### 4. Error Handling
+- Implement proper error checking
+- Use RAISE NOTICE for debugging
+- Collect and report all missing permissions
+- Verify permissions after granting
 
-## Troubleshooting Steps
+### 5. Security Considerations
+- Enable RLS on all tables
+- Implement proper admin checks
+- Use SECURITY DEFINER functions carefully
+- Regular permission audits
 
-1. **Identify Error Type**
-   - Type mismatch errors (42883)
-   - Column not found errors (42703)
-   - Policy already exists errors (42710)
+## Maintenance
 
-2. **Apply Fixes**
-   - Add proper type casting
-   - Fix column name references
-   - Drop existing policies first
+### Regular Checks
+1. Verify policy effectiveness
+2. Audit permissions regularly
+3. Monitor performance impact
+4. Update documentation
 
-3. **Verify Changes**
-   - Check policy listing
-   - Test with sample queries
-   - Verify all access patterns
+### Performance Optimization
+1. Create proper indexes for policy conditions
+2. Monitor query performance
+3. Optimize complex policies
+4. Regular policy review
 
-## Future Considerations
+## Troubleshooting Checklist
 
-1. **Scaling**
-   - Monitor policy performance
-   - Consider index impact
-   - Plan for data growth
-
-2. **Maintenance**
-   - Regular policy audits
-   - Performance monitoring
-   - Security reviews
-
-3. **Documentation**
-   - Keep this guide updated
-   - Document new patterns
-   - Track policy changes
+- [ ] Verify RLS is enabled on all tables
+- [ ] Check type casting in policies
+- [ ] Verify permission grants
+- [ ] Test policy effectiveness
+- [ ] Monitor performance impact
+- [ ] Audit security compliance

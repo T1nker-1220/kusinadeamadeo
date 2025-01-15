@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import console from 'console';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -8,45 +8,52 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code');
 
   if (code) {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
 
     // Exchange code for session
-    const { data: { session }, error: authError } = await supabase.auth.exchangeCodeForSession(code);
+    await supabase.auth.exchangeCodeForSession(code);
 
-    if (authError) {
-      console.error('Auth error:', authError);
-      return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=auth_error`);
-    }
-
-    // Create or update user profile
     try {
-      const { user } = session;
+      // Get the user's session
+      const { data: { session } } = await supabase.auth.getSession();
 
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email! }
-      });
+      if (session?.user) {
+        // Check if user exists in our User table
+        const { data: existingUser } = await supabase
+          .from('User')
+          .select('id')
+          .eq('id', session.user.id)
+          .single();
 
-      if (!existingUser) {
-        await prisma.user.create({
-          data: {
-            id: user.id,
-            email: user.email!,
-            fullName: user.user_metadata.full_name || '',
-            phoneNumber: '',
-            address: '',
-            role: 'CUSTOMER'
+        // If user doesn't exist, create a new user record
+        if (!existingUser) {
+          const { error: insertError } = await supabase
+            .from('User')
+            .insert({
+              id: session.user.id,
+              email: session.user.email,
+              fullName: session.user.user_metadata.full_name || session.user.email?.split('@')[0],
+              phoneNumber: '',  // Will be updated later by user
+              address: '',      // Will be updated later by user
+              role: 'CUSTOMER'  // Default role
+            });
+
+          if (insertError) {
+            console.error('Error creating user:', insertError);
+            return NextResponse.redirect(
+              `${requestUrl.origin}/auth/login?error=db_error`
+            );
           }
-        });
+        }
       }
-
-      return NextResponse.redirect(`${requestUrl.origin}/profile`);
     } catch (error) {
-      console.error('Database error:', error);
-      return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=db_error`);
+      console.error('Auth callback error:', error);
+      return NextResponse.redirect(
+        `${requestUrl.origin}/auth/login?error=auth_error`
+      );
     }
   }
 
-  // No code present, redirect to login
-  return NextResponse.redirect(`${requestUrl.origin}/auth/login`);
+  // Redirect to home page
+  return NextResponse.redirect(requestUrl.origin);
 }
