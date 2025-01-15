@@ -15,42 +15,59 @@ const ADMIN_ROUTES = [
 ];
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
-  const { data: { session }, error } = await supabase.auth.getSession();
+  try {
+    const res = NextResponse.next();
+    const supabase = createMiddlewareClient({ req: request, res });
 
-  // Handle authentication errors
-  if (error) {
-    console.error('Auth error:', error);
-    return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-
-  // Allow public routes
-  if (PUBLIC_ROUTES.some(route => path.startsWith(route))) {
-    return res;
-  }
-
-  // Redirect to login if not authenticated
-  if (!session) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
-
-  // Check admin routes
-  if (ADMIN_ROUTES.some(route => path.startsWith(route))) {
-    const { data: user } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-
-    if (user?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/', request.url));
+    // Handle authentication errors
+    if (authError) {
+      console.error('Auth error:', authError);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
-  }
 
-  return res;
+    const path = request.nextUrl.pathname;
+
+    // Allow public routes
+    if (PUBLIC_ROUTES.some(route => path.startsWith(route))) {
+      return res;
+    }
+
+    // Redirect to login if not authenticated
+    if (!user) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+
+    // Check admin routes
+    if (ADMIN_ROUTES.some(route => path.startsWith(route))) {
+      try {
+        const { data: userData, error: dbError } = await supabase
+          .from('User')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (dbError) {
+          console.error('User fetch error:', dbError);
+          return NextResponse.redirect(new URL('/auth/login', request.url));
+        }
+
+        if (userData?.role !== 'ADMIN') {
+          return NextResponse.redirect(new URL('/', request.url));
+        }
+      } catch (error) {
+        console.error('Admin check error:', error);
+        return NextResponse.redirect(new URL('/auth/login', request.url));
+      }
+    }
+
+    return res;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.redirect(new URL('/auth/login', request.url));
+  }
 }
 
 export const config = {

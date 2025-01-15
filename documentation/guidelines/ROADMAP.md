@@ -5,16 +5,23 @@
 ### 0.1 Development Environment Setup
 ```bash
 # Initialize Next.js project with TypeScript
-pnpm create next-app@latest kusina-de-amadeo --typescript --tailwind --app --src-dir --import-alias "@/*"
+pnpm create next-app@14.1.0 kusina-de-amadeo --typescript --tailwind --app --src-dir --import-alias "@/*"
 
 # Install core dependencies
 pnpm add @supabase/supabase-js @prisma/client @tanstack/react-query zustand zod @hookform/resolvers/zod react-hook-form
 
 # Install UI dependencies
-pnpm add @shadcn class-variance-authority clsx tailwind-merge lucide-react
+pnpm add @shadcn/ui class-variance-authority clsx tailwind-merge lucide-react
 
 # Install development dependencies
 pnpm add -D prisma typescript @types/node @types/react @types/react-dom eslint eslint-config-next prettier prettier-plugin-tailwindcss
+
+# Version Requirements
+- Next.js: 14.1.0 (strict)
+- React: 18.2.0 (strict)
+- React DOM: 18.2.0 (strict)
+- Node.js: 18+ required
+- TypeScript: 5.x recommended
 ```
 
 ### 0.2 Project Structure Setup

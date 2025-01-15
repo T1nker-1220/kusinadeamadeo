@@ -14,6 +14,13 @@
 ## Overview
 Kusina de Amadeo is a modern food ordering system built with Next.js 14, Supabase, and Prisma.
 
+## Version Requirements
+- **Node.js**: 18+
+- **Next.js**: 14.1.0 (strict requirement)
+- **React**: 18.2.0 (strict requirement)
+- **React DOM**: 18.2.0 (strict requirement)
+- **Package Manager**: pnpm (latest version)
+
 ## Tech Stack
 - **Frontend**: Next.js 14, TailwindCSS, shadcn/ui
 - **Backend**: Supabase, PostgreSQL
@@ -87,6 +94,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 ## Documentation
 - [Project Roadmap](documentation/guidelines/ROADMAP.md)
 - [RLS Setup Guide](documentation/troubleshooting/RLS_SETUP_GUIDE.md)
+- [Version Compatibility](documentation/troubleshooting/VERSION_COMPATIBILITY.md)
 - [Phase 1 Completion Report](documentation/updates/PHASE1_COMPLETION.md)
 - [Database Schema](documentation/updates/DATABASE_SCHEMA_2024_01.md)
 - [Authentication System](documentation/updates/AUTHENTICATION_2024_01.md)
@@ -99,6 +107,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 5. Write clean, maintainable code
 6. Add proper error handling
 7. Optimize for performance
+
+## Version Control & Updates
+- Check [Version Compatibility Guide](documentation/troubleshooting/VERSION_COMPATIBILITY.md) before updates
+- Follow version-specific requirements
+- Test thoroughly after version changes
+- Monitor for deprecation warnings
+- Keep dependencies in sync
+
+## Troubleshooting
+- See [Version Compatibility Guide](documentation/troubleshooting/VERSION_COMPATIBILITY.md)
+- Clear browser cache after updates
+- Restart development server
+- Check console for errors
+- Verify environment variables
 
 ## Contributing
 1. Create a feature branch
