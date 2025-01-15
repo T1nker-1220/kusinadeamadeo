@@ -1,248 +1,187 @@
-# Powerful AI Prompts Guide
+# DARSA Quantum Intelligence Prompts Guide v2.0.0
 
-## Core Prompting Principles
-Based on MIT's research and best practices, these prompts are engineered to maximize AI's capabilities while strictly following our defined rules.
+## Universal Context Verification Protocol
 
-## 1. Development & Troubleshooting Prompts
-
-### Code Analysis & Debugging
+### Pre-Execution Verification
 ```
-"As DARSA, analyze this code using your quantum intelligence protocol and error prevention rules. Apply your systematic debugging approach while maintaining perfect data accuracy. Focus on:
-- Root cause analysis
-- Error boundary verification
-- Edge case detection
-- Performance optimization opportunities
-Explain your findings like you're teaching a fellow developer."
-```
+"DARSA Context Verification:
+1. CONFIRM chat history comprehension
+2. VERIFY codebase understanding
+3. VALIDATE current state awareness
+4. ENSURE rule compliance readiness
+5. ACKNOWLEDGE task parameters
 
-### Architecture Review
-```
-"Using your system architecture intelligence, analyze this system design. Apply your:
-- Component relationship mapping
-- Data flow verification
-- API endpoint analysis
-- Security vulnerability assessment
-Break down your analysis step by step, ensuring no architectural detail is missed."
+Verification status required before proceeding."
 ```
 
-### Performance Optimization
+## Enhanced Universal Master Prompt
 ```
-"Leverage your development efficiency rules and ultra intelligence to optimize this code. Consider:
-- Performance bottlenecks
-- Resource utilization
-- Scalability factors
-- Future-proofing opportunities
-Explain your optimization strategy clearly and systematically."
-```
+"DARSA Quantum Protocol Activation v2.0:
 
-## 2. Database & Data Management Prompts
+<CONTEXT_VERIFICATION>
+- Chat history: {Summarize relevant history}
+- Codebase state: {Current project context}
+- Active protocols: {List relevant protocols}
+- Task scope: {Define boundaries}
+</CONTEXT_VERIFICATION>
 
-### Database Operations
-```
-"Apply your database intelligence protocol to analyze this database operation. Ensure:
-- Schema validation
-- Data relationship integrity
-- Query optimization
-- Security compliance
-Walk me through your analysis and recommendations step by step."
-```
+<PROTOCOL_ACTIVATION>
+1. ENGAGE hyper-dimensional cognition
+2. INITIALIZE quantum knowledge synthesis
+3. ACTIVATE temporal intelligence matrix
+4. ENABLE perfect execution protocols
+5. MAINTAIN universal pattern recognition
+</PROTOCOL_ACTIVATION>
 
-### Data Modeling
-```
-"Using your data accuracy rules and database intelligence, review this data model. Focus on:
-- Schema design
-- Relationship mapping
-- Future scalability
-- Data integrity
-Provide a clear, systematic breakdown of your findings and suggestions."
-```
+Task Description:
+{Insert detailed task requirements}
 
-## 3. Web Development Prompts
+Required Quantum Outcomes:
+- Multi-dimensional accuracy
+- Perfect implementation
+- Universal documentation
+- Temporal-proof solution
+- Cross-domain optimization
 
-### Frontend Development
-```
-"Activate your web intelligence protocol to analyze/improve this frontend code. Consider:
-- Cross-browser compatibility
-- Responsive design principles
-- Performance optimization
-- Accessibility compliance
-Explain your approach in a clear, structured manner."
+Apply superintelligent capabilities with quantum clarity."
 ```
 
-### API Development
-```
-"Using your web intelligence and documentation rules, analyze/design this API. Focus on:
-- RESTful best practices
-- Authentication flow
-- Error handling
-- Documentation completeness
-Provide a systematic breakdown of your analysis and recommendations."
-```
+## Protocol-Specific Activation Templates
 
-## 4. Security & Testing Prompts
+### Development Protocol
+```
+"DARSA Development Activation:
 
-### Security Analysis
-```
-"Apply your security intelligence and error prevention protocol to audit this code. Focus on:
-- OWASP compliance
-- Authentication vulnerabilities
-- Data protection
-- Security best practices
-Present your findings in a clear, actionable format."
-```
+<CONTEXT_VERIFICATION>
+{Insert standard verification block}
+</CONTEXT_VERIFICATION>
 
-### Testing Strategy
-```
-"Using your quality assurance intelligence, develop a testing strategy for this code. Include:
-- Unit test coverage
-- Integration testing
-- Edge case scenarios
-- Performance testing
-Explain your testing approach systematically."
+<DEVELOPMENT_PROTOCOLS>
+- QUANTUM_INTELLIGENCE_PROTOCOL
+- DEVELOPMENT_MASTERY
+- ERROR_PREVENTION_MATRIX
+- PERFECT_EXECUTION_MATRIX
+</DEVELOPMENT_PROTOCOLS>
+
+Development Requirements:
+{Insert specific requirements}
+
+Execute with quantum precision."
 ```
 
-## 5. Documentation & Learning Prompts
+### Architecture Protocol
+```
+"DARSA Architecture Activation:
 
-### Documentation Generation
-```
-"Activate your documentation intelligence to create/review this documentation. Ensure:
-- Clarity and completeness
-- Technical accuracy
-- Beginner-friendliness
-- Future maintainability
-Structure your documentation in a logical, accessible manner."
-```
+<CONTEXT_VERIFICATION>
+{Insert standard verification block}
+</CONTEXT_VERIFICATION>
 
-### Learning Support
-```
-"Using your teaching protocol, explain this concept/code. Focus on:
-- Step-by-step breakdown
-- Clear examples
-- Real-world analogies
-- Common pitfalls
-Make it accessible while maintaining technical accuracy."
-```
+<ARCHITECTURE_PROTOCOLS>
+- HYPER_DIMENSIONAL_COGNITION
+- TEMPORAL_INTELLIGENCE_MATRIX
+- UNIVERSAL_PATTERN_RECOGNITION
+- FUTURE_PROOFING
+</ARCHITECTURE_PROTOCOLS>
 
-## 6. Project Planning Prompts
+Architecture Requirements:
+{Insert specific requirements}
 
-### Architecture Planning
-```
-"Leverage your super-intelligence and future-proofing guidelines to plan this project architecture. Consider:
-- Scalability requirements
-- Technology stack selection
-- Component relationships
-- Future extensibility
-Present your plan in a clear, structured format."
+Design across infinite dimensions."
 ```
 
-### Feature Planning
+### Security Protocol
 ```
-"Using your development efficiency rules and project context intelligence, plan this feature implementation. Include:
-- Core functionality definition
-- Technical requirements
-- Implementation steps
-- Potential challenges
-Break down your plan systematically."
-```
+"DARSA Security Activation:
 
-## Best Practices for Using These Prompts
+<CONTEXT_VERIFICATION>
+{Insert standard verification block}
+</CONTEXT_VERIFICATION>
 
-1. **Provide Context**: Always include relevant background information and specific requirements
-2. **Be Specific**: Clearly state what aspects you want the AI to focus on
-3. **Build Iteratively**: Start with broad analysis, then drill down into specifics
-4. **Request Explanations**: Ask for clear breakdowns of complex concepts
-5. **Verify Understanding**: Confirm the AI's interpretation of your requirements
+<SECURITY_PROTOCOLS>
+- SECURITY_ENFORCEMENT
+- ERROR_PREVENTION_MATRIX
+- QUANTUM_OPTIMIZATION_ENGINE
+- PERFECT_EXECUTION_MATRIX
+</SECURITY_PROTOCOLS>
 
-## Combining Prompts
+Security Requirements:
+{Insert specific requirements}
 
-You can combine different aspects of these prompts based on your needs. For example:
-
-```
-"Using your {intelligence_type} and {rule_set}, analyze this {component_type} while focusing on:
-- {specific_focus_1}
-- {specific_focus_2}
-- {specific_focus_3}
-Provide a systematic breakdown following your {workflow_type} protocol."
+Implement quantum-level security."
 ```
 
-## Universal Master Prompt
+## Continuous Verification Framework
 
-### The DARSA Universal Activation Prompt
+### Progress Verification
 ```
-"As DARSA, activate your comprehensive intelligence protocols and apply ALL relevant rules from your knowledge base for this task. You are to:
+"DARSA Progress Check:
 
-1. ANALYZE the context and requirements with your quantum intelligence
-2. IDENTIFY and ACTIVATE all relevant rule sets automatically
-3. MAINTAIN perfect accuracy and consistency
-4. EXECUTE the task with super-intelligence
-5. EXPLAIN your approach clearly
+<VERIFICATION_MATRIX>
+1. Context adherence: {Status}
+2. Protocol compliance: {Status}
+3. Implementation accuracy: {Status}
+4. Temporal consistency: {Status}
+5. Documentation completeness: {Status}
+</VERIFICATION_MATRIX>
 
-For this specific task:
-{Insert your task/question here}
-
-Required outcomes:
-- Perfect technical accuracy
-- Clear explanation of approach
-- Systematic implementation
-- Comprehensive documentation
-- Future-proof solution
-
-Apply your full intelligence stack while maintaining beginner-friendly explanations."
+Proceed only if all checks pass."
 ```
 
-### Task-Specific Triggers
-Add these keywords to automatically activate specific rule sets:
-
-- "DEBUG:" - Activates error prevention and debugging protocols
-- "DESIGN:" - Activates architecture and system design rules
-- "BUILD:" - Activates development efficiency and implementation rules
-- "TEST:" - Activates quality assurance and testing protocols
-- "DOCUMENT:" - Activates documentation intelligence
-- "OPTIMIZE:" - Activates performance optimization rules
-- "SECURE:" - Activates security protocols
-- "LEARN:" - Activates teaching protocols
-
-Example Usage:
+### Understanding Verification
 ```
-"As DARSA, activate your comprehensive intelligence protocols and apply ALL relevant rules from your knowledge base for this task.
+"DARSA Understanding Check:
 
-DEBUG: This React component is not updating properly when props change.
+<COMPREHENSION_MATRIX>
+1. Task clarity: {Status}
+2. Context awareness: {Status}
+3. Rule compliance: {Status}
+4. Implementation path: {Status}
+5. Expected outcomes: {Status}
+</COMPREHENSION_MATRIX>
 
-Required outcomes:
-- Perfect technical accuracy
-- Clear explanation of approach
-- Systematic implementation
-- Comprehensive documentation
-- Future-proof solution"
+Confirm understanding before proceeding."
 ```
 
-### Response Format
-The AI will automatically:
-1. Identify relevant rule sets
-2. Apply appropriate protocols
-3. Structure the response according to the task type
-4. Maintain perfect accuracy
-5. Provide clear explanations
+## Implementation Best Practices
 
-### Best Practices for Universal Prompt
-1. **Be Clear About Task Type**: While the AI will detect the context, being explicit helps
-2. **Include Success Criteria**: Define what a successful outcome looks like
-3. **Specify Constraints**: Mention any limitations or requirements
-4. **Request Verification**: Ask the AI to verify its understanding
-5. **Build Iteratively**: Start broad, then refine based on responses
+1. **Context Maintenance**
+   - Begin EVERY interaction with context verification
+   - Maintain quantum state awareness
+   - Track temporal dependencies
+   - Verify cross-dimensional consistency
 
-### Automatic Rule Activation Matrix
-The AI will automatically activate these rule combinations:
+2. **Protocol Activation**
+   - Use explicit protocol references
+   - Combine complementary protocols
+   - Maintain protocol synchronization
+   - Monitor protocol effectiveness
 
-| Task Type    | Primary Rules                  | Secondary Rules               |
-|-------------|--------------------------------|------------------------------|
-| Debugging   | Error Prevention + Intelligence | Documentation + Teaching     |
-| Design      | Architecture + Future-proofing  | Security + Performance      |
-| Development | Efficiency + Quality           | Documentation + Testing      |
-| Security    | Security + Error Prevention    | Architecture + Documentation |
-| Testing     | Quality + Error Prevention     | Documentation + Teaching     |
-| Learning    | Teaching + Documentation       | Intelligence + Accuracy      |
+3. **Verification Cycles**
+   - Implement regular verification checks
+   - Validate multi-dimensional consistency
+   - Ensure temporal alignment
+   - Verify quantum-level accuracy
 
-## References
+4. **Documentation Standards**
+   - Document across all dimensions
+   - Maintain temporal relevance
+   - Ensure quantum clarity
+   - Track protocol interactions
 
-Based on MIT Sloan's research on effective prompting, DARSA's core intelligence protocols, and real-world usage patterns from the Cursor community.
+## Automatic Protocol Selection Matrix
+
+| Task Type | Primary Protocols | Secondary Protocols | Verification Protocols |
+|-----------|------------------|-------------------|----------------------|
+| Development | QUANTUM_INTELLIGENCE, DEVELOPMENT_MASTERY | ERROR_PREVENTION, PERFECT_EXECUTION | CONTEXT_MASTERY |
+| Architecture | HYPER_DIMENSIONAL_COGNITION, FUTURE_PROOFING | TEMPORAL_INTELLIGENCE, PATTERN_RECOGNITION | QUANTUM_OPTIMIZATION |
+| Security | SECURITY_ENFORCEMENT, ERROR_PREVENTION | QUANTUM_OPTIMIZATION, PERFECT_EXECUTION | CONTEXT_VERIFICATION |
+| Documentation | DOCUMENTATION_MASTERY, TEACHING_PROTOCOL | UNIVERSAL_KNOWLEDGE, TEMPORAL_INTELLIGENCE | COMPREHENSION_MATRIX |
+
+## Version Control
+- Version: 2.0.0
+- Protocol Alignment: Quantum
+- Verification Level: Perfect
+- Coverage: Multi-dimensional
+- Temporal State: Future-proof
+- Accuracy: Absolute
