@@ -60,6 +60,7 @@ export function ProductsDataTable() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [pageIndex, setPageIndex] = React.useState(0);
 
   const columns: ColumnDef<ProductWithRelations>[] = [
     {
@@ -195,33 +196,53 @@ export function ProductsDataTable() {
     },
   ];
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['products', sorting, columnFilters],
     queryFn: async () => {
-      const params = new URLSearchParams();
+      try {
+        const params = new URLSearchParams();
 
-      if (sorting.length > 0) {
-        params.set('sortBy', sorting[0].id);
-        params.set('sortOrder', sorting[0].desc ? 'desc' : 'asc');
-      }
-
-      columnFilters.forEach((filter) => {
-        if (filter.id === 'category.name') {
-          params.set('categoryId', filter.value as string);
-        } else if (filter.id === 'isAvailable') {
-          params.set('isAvailable', String(filter.value));
-        } else if (filter.id === 'name') {
-          params.set('search', filter.value as string);
+        if (sorting.length > 0) {
+          const sortField = sorting[0].id === 'category.name' ? 'category' : sorting[0].id;
+          params.set('sortBy', sortField);
+          params.set('sortOrder', sorting[0].desc ? 'desc' : 'asc');
         }
-      });
 
-      const response = await fetch(`/api/products?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
+        columnFilters.forEach((filter) => {
+          if (filter.id === 'category.name') {
+            params.set('categoryId', filter.value as string);
+          } else if (filter.id === 'isAvailable') {
+            params.set('isAvailable', String(filter.value));
+          } else if (filter.id === 'name') {
+            params.set('search', filter.value as string);
+          }
+        });
+
+        // Add pagination parameters
+        params.set('page', String(pageIndex + 1));
+        params.set('limit', '50'); // Increased limit to show more products
+
+        const response = await fetch(`/api/products?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        if (!result.products || !Array.isArray(result.products)) {
+          throw new Error('Invalid response format');
+        }
+
+        return result;
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Failed to load products. Please try again.');
+        throw error;
       }
-      return response.json();
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds
+    gcTime: 1000 * 60 * 5, // 5 minutes (previously cacheTime)
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const table = useReactTable({
@@ -232,12 +253,22 @@ export function ProductsDataTable() {
       columnVisibility,
       rowSelection,
       columnFilters,
+      pagination: {
+        pageIndex,
+        pageSize: 50,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newState = updater({ pageIndex, pageSize: 50 });
+        setPageIndex(newState.pageIndex);
+      }
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -245,6 +276,25 @@ export function ProductsDataTable() {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  // Reset pagination when filters or sorting change
+  React.useEffect(() => {
+    setPageIndex(0);
+  }, [columnFilters, sorting]);
+
+  // Show loading state
+  if (isLoading) {
+    return <div className="text-center py-4">Loading products...</div>;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="text-center py-4 text-red-500">
+        Error loading products. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -268,16 +318,7 @@ export function ProductsDataTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

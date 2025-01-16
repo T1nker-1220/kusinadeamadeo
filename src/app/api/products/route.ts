@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const sortBy = searchParams.get('sortBy');
     const sortOrder = searchParams.get('sortOrder');
     const page = parseInt(searchParams.get('page') ?? '1');
-    const limit = parseInt(searchParams.get('limit') ?? '10');
+    const limit = parseInt(searchParams.get('limit') ?? '50');
 
     const where: any = {};
 
@@ -36,27 +36,47 @@ export async function GET(req: Request) {
 
     const orderBy: any = {};
     if (sortBy) {
-      orderBy[sortBy] = sortOrder === 'desc' ? 'desc' : 'asc';
+      if (sortBy === 'category') {
+        orderBy.category = { name: sortOrder === 'desc' ? 'desc' : 'asc' };
+      } else {
+        orderBy[sortBy] = sortOrder === 'desc' ? 'desc' : 'asc';
+      }
+    } else {
+      orderBy.updatedAt = 'desc';
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        category: true,
-        variants: true,
-      },
-    });
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          variants: true,
+        },
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-    const total = await prisma.product.count({ where });
+    if (!products) {
+      return NextResponse.json(
+        { error: 'No products found' },
+        { status: 404 }
+      );
+    }
 
-    // Serialize dates and complex objects
     const serializedProducts = products.map(product => ({
       ...JSON.parse(JSON.stringify(product)),
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
+      imageUrl: product.imageUrl || '/images/placeholder.jpg',
+      category: product.category || { name: 'Uncategorized' },
     }));
 
     return NextResponse.json({
@@ -69,7 +89,10 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      {
+        error: 'Failed to fetch products',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
