@@ -63,6 +63,7 @@ model ProductVariant {
   type       VariantType
   name       String
   price      Float
+  imageUrl   String?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   orderItems OrderItem[]

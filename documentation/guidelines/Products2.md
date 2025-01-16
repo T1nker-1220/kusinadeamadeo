@@ -6,26 +6,26 @@
 
 - Base Path: `/public/images/products/`
 - Examples:
-  - Hotsilog: `/public/images/products/hotsilog.jpg`
-  - Hamsilog: `/public/images/products/hamsilog.jpg`
-  - Silog: `/public/images/products/silog.jpg`
+  - Hotsilog: `/public/images/products/hotsilog.png`
+  - Hamsilog: `/public/images/products/hamsilog.png`
+  - Silog: `/public/images/products/silog.png`
 
 ### Variant Images
 
 - Base Path: `/public/images/variants/`
 - Examples:
-  - Siomai Add-on: `/public/images/variants/siomai.jpg`
-  - Shanghai Add-on: `/public/images/variants/shanghai.jpg`
-  - Egg Add-on: `/public/images/variants/egg.jpg`
+  - Siomai Add-on: `/public/images/variants/siomai.png`
+  - Shanghai Add-on: `/public/images/variants/shanghai.png`
+  - Egg Add-on: `/public/images/variants/egg.png`
 
 ### Category Images
 
 - Base Path: `/public/images/categories/`
 - Examples:
-  - Budget Meals: `/public/images/categories/budget-meals.jpg`
-  - Silog Meals: `/public/images/categories/silog-meals.jpg`
-  - Ala Carte: `/public/images/categories/ala-carte.jpg`
-  - Beverages: `/public/images/categories/beverages.jpg`
+  - Budget Meals: `/public/images/categories/budget-meals.png`
+  - Silog Meals: `/public/images/categories/silog-meals.png`
+  - Ala Carte: `/public/images/categories/ala-carte.png`
+  - Beverages: `/public/images/categories/beverages.png`
 
 ---
 
