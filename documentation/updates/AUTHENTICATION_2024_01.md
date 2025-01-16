@@ -1,219 +1,306 @@
 # Authentication System Implementation - January 2024
 
 ## Overview
-This document details the implementation of the authentication system for Kusina de Amadeo using Google OAuth with Supabase and Next.js 14.
+This document details the complete authentication system implementation for Kusina de Amadeo, using Google OAuth with Supabase and Next.js 14.
 
 ## Core Components
 
-### 1. Authentication Hook (use-auth.ts)
+### 1. Authentication Provider
 ```typescript
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: AuthError | null;
+// src/providers/auth-provider.tsx
+"use client";
+
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect } from "react";
+
+export const AuthContext = createContext({
+  user: null,
+  isAdmin: false,
+  signOut: async () => {},
+});
+
+export function AuthProvider({ children }) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // ... implementation details
+}
+```
+
+### 2. Middleware Protection
+```typescript
+// src/middleware.ts
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { NextResponse } from "next/server";
+
+export async function middleware(request: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req: request, res });
+  const session = await supabase.auth.getSession();
+
+  // Protect admin routes
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from("User")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+
+    if (userError || userData?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // Protect authenticated routes
+  if (
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname.startsWith("/orders")
+  ) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+  }
+
+  return res;
 }
 
-// Core functionality
-- Google OAuth sign-in
-- Session management
-- User profile fetching
-- Error handling
-- Loading states
-- Role-based access
+export const config = {
+  matcher: ["/admin/:path*", "/dashboard/:path*", "/orders/:path*"],
+};
 ```
 
-### 2. Middleware Protection (middleware.ts)
+### 3. Authentication Flow
 ```typescript
-// Route protection configuration
-const PUBLIC_ROUTES = ['/', '/auth/login', '/auth/callback', '/api/auth/google'];
-const ADMIN_ROUTES = ['/admin', '/api/admin'];
+// src/app/auth/callback/route.ts
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-// Core functionality
-- Session validation
-- Route protection
-- Role-based access control
-- Authentication error handling
-- Public route allowance
-```
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
 
-### 3. OAuth Callback Handler (auth/callback/route.ts)
-```typescript
-// Core functionality
-- OAuth code exchange
-- Session creation
-- User profile creation/update
-- Error handling
-- Redirect management
-```
+  if (code) {
+    const supabase = createRouteHandlerClient({ cookies });
+    await supabase.auth.exchangeCodeForSession(code);
+  }
 
-### 4. User Interface Components
-
-#### Login Page (auth/login/page.tsx)
-```typescript
-// Features
-- Google sign-in button
-- Loading states
-- Error display
-- Responsive design
-- User feedback
-```
-
-#### Profile Page (profile/page.tsx)
-```typescript
-// Features
-- User information display
-- Protected route
-- Sign out functionality
-- Loading states
-- Error handling
+  return NextResponse.redirect(new URL("/dashboard", request.url));
+}
 ```
 
 ## Security Implementation
 
-### 1. Route Protection
-- Middleware-based authentication checks
-- Role-based access control
-- Protected API routes
-- Public route allowance
-
-### 2. Session Management
-- Secure cookie-based sessions
-- Session persistence
-- Automatic session refresh
-- Clean session termination
-
-### 3. Error Handling
-- Authentication errors
-- Database errors
-- Network errors
-- User feedback
-
-## Type Safety
-
-### 1. Core Types
+### 1. Role-Based Access Control (RBAC)
 ```typescript
-interface AuthError {
-  message: string;
-  code?: string;
-}
+// src/lib/auth.ts
+export async function verifyAdmin(supabase: SupabaseClient) {
+  const { data: { session } } = await supabase.auth.getSession();
 
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: AuthError | null;
-}
-```
-
-### 2. Database Types
-```typescript
-type User = Prisma.UserGetPayload<{
-  include: {
-    orders: true;
-    payments: true;
+  if (!session) {
+    throw new Error("Unauthorized");
   }
-}>;
+
+  const { data: userData, error: userError } = await supabase
+    .from("User")
+    .select("role")
+    .eq("id", session.user.id)
+    .single();
+
+  if (userError || userData?.role !== "ADMIN") {
+    throw new Error("Access denied");
+  }
+
+  return true;
+}
 ```
 
-## UI Components
+### 2. Server-Side Protection
+```typescript
+// src/app/admin/page.tsx
+export default async function AdminPage() {
+  const supabase = createServerComponentClient({ cookies });
 
-### 1. Shared Components
-- Button component with variants
-- Card component for layouts
-- Icons for visual feedback
-- Loading states
+  try {
+    await verifyAdmin(supabase);
+  } catch (error) {
+    redirect("/dashboard");
+  }
 
-### 2. Error Handling
-- Error message display
-- Loading indicators
-- User feedback
-- Form validation
+  // Admin page content
+}
+```
 
-## Future Considerations
+### 3. Client-Side Protection
+```typescript
+// src/hooks/use-auth.ts
+export function useAuth() {
+  const { user, isAdmin } = useContext(AuthContext);
 
-### 1. Scalability
-- Rate limiting implementation
-- Cache implementation
-- Performance optimization
-- Session management scaling
+  const requireAuth = useCallback(() => {
+    if (!user) {
+      redirect("/auth/login");
+    }
+  }, [user]);
 
-### 2. Security Enhancements
-- RLS policy implementation
-- Input validation
-- API protection
-- Error logging
+  const requireAdmin = useCallback(() => {
+    if (!isAdmin) {
+      redirect("/dashboard");
+    }
+  }, [isAdmin]);
 
-### 3. Feature Additions
-- Profile editing
-- Additional OAuth providers
-- Enhanced session management
-- Advanced role management
+  return { user, isAdmin, requireAuth, requireAdmin };
+}
+```
 
-## Implementation Details
+## RLS Policies
 
-### 1. Authentication Flow
-1. User clicks "Continue with Google"
-2. Google OAuth process initiates
-3. Callback handles OAuth response
-4. User profile created/updated
-5. Session established
-6. Redirect to profile page
+### 1. User Data Protection
+```sql
+-- Enable RLS
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+
+-- Admin check function
+CREATE OR REPLACE FUNCTION auth.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM "User"
+    WHERE "id"::text = auth.uid()::text
+    AND "role" = 'ADMIN'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- User policies
+CREATE POLICY "Users can view own data" ON "User"
+    FOR SELECT
+    TO authenticated
+    USING (
+        id::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
+
+CREATE POLICY "Users can update own data" ON "User"
+    FOR UPDATE
+    TO authenticated
+    USING (id::text = auth.uid()::text);
+
+CREATE POLICY "Admins have full access" ON "User"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
+```
+
+### 2. Order Protection
+```sql
+CREATE POLICY "Users can view own orders" ON "Order"
+    FOR SELECT
+    TO authenticated
+    USING (
+        "userId"::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
+
+CREATE POLICY "Users can create own orders" ON "Order"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK ("userId"::text = auth.uid()::text);
+```
+
+## Error Handling
+
+### 1. Authentication Errors
+```typescript
+// src/lib/error-handlers.ts
+export async function handleAuthError(error: Error) {
+  console.error("Authentication error:", error);
+
+  if (error.message === "Unauthorized") {
+    redirect("/auth/login");
+  }
+
+  if (error.message === "Access denied") {
+    redirect("/dashboard");
+  }
+
+  // Handle other errors
+  return {
+    error: "Authentication failed. Please try again.",
+  };
+}
+```
 
 ### 2. Session Management
-1. Session creation on login
-2. Session validation on each request
-3. Session refresh handling
-4. Session termination on logout
+```typescript
+// src/hooks/use-session.ts
+export function useSession() {
+  const [session, setSession] = useState<Session | null>(null);
+  const supabase = useSupabaseClient();
 
-### 3. Error Handling
-1. OAuth errors
-2. Database errors
-3. Network errors
-4. Validation errors
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-## Testing Considerations
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-### 1. Unit Tests
-- Authentication hook
-- Middleware functions
-- UI components
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return session;
+}
+```
+
+## Security Best Practices
+
+### 1. Session Management
+- Secure cookie handling
+- Session timeout configuration
+- CSRF protection
+- XSS prevention
+
+### 2. Access Control
+- Role-based routing
+- Protected API routes
+- Middleware verification
+- Client-side guards
+
+### 3. Data Protection
+- RLS policies
+- Input validation
+- Output sanitization
 - Error handling
 
-### 2. Integration Tests
-- Authentication flow
-- Session management
-- Role-based access
-- Error scenarios
+## Monitoring & Maintenance
 
-## Maintenance
+### 1. Security Monitoring
+- Auth failure tracking
+- Session monitoring
+- Access pattern analysis
+- Error logging
 
-### 1. Regular Tasks
-- Session cleanup
-- Error log monitoring
-- Performance monitoring
+### 2. Regular Tasks
+- Policy audits
+- Permission reviews
 - Security updates
+- Performance monitoring
 
-### 2. Updates
-- Dependency updates
-- Security patches
-- Feature enhancements
-- Bug fixes
-
-## Next Steps
-
-1. **Security Enhancement**
-   - Implement RLS policies
-   - Add rate limiting
-   - Enhance error handling
-   - Add input validation
-
-2. **Feature Enhancement**
-   - Profile editing
-   - Enhanced role management
-   - Advanced session features
-   - Improved error handling
-
-3. **Performance Optimization**
-   - Add caching
-   - Optimize queries
-   - Enhance loading states
-   - Improve error recovery
+## Version Information
+- Last Updated: January 16, 2024
+- Status: Production Ready
+- Auth Version: 1.0.0
+- Next Review: Pre-Phase 2

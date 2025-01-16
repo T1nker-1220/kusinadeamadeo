@@ -1,202 +1,259 @@
-# Database Setup Guide
+# Database Setup Guide - January 2024
+
+## Overview
+This guide details the complete database setup process for Kusina de Amadeo using Supabase and Prisma.
 
 ## Prerequisites
-- Node.js 18+ installed
-- pnpm package manager
-- Supabase account and project
-- PostgreSQL database (provided by Supabase)
 
-## Environment Setup
-
-1. **Configure Environment Variables**
-```env
-# Supabase Database Configuration
-DATABASE_URL="postgresql://postgres.[PROJECT_ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.[PROJECT_ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
-
-# Supabase Project Configuration
-NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT_ID].supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+### 1. Environment Setup
+```bash
+# Required environment variables
+DATABASE_URL="postgres://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+DIRECT_URL="postgres://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+NEXT_PUBLIC_SUPABASE_URL="https://[YOUR-PROJECT-REF].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR-ANON-KEY]"
 ```
 
-2. **Install Dependencies**
-```bash
-# Install Prisma and its dependencies
-pnpm add -D prisma
-pnpm add @prisma/client
+### 2. Dependencies
+```json
+{
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/ssr": "^0.0.10",
+    "@supabase/supabase-js": "^2.39.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.1"
+  }
+}
+```
 
+## Database Setup Steps
+
+### 1. Initialize Prisma
+```bash
 # Initialize Prisma
+pnpm add -D prisma
 pnpm prisma init
+
+# After schema creation
+pnpm prisma generate
+pnpm prisma db push
 ```
 
-## Database Schema
-
-1. **Core Models**
-- User: Authentication and profile management
-- Category: Product categorization
-- Product: Core product information
-- ProductVariant: Size and flavor variations
-- GlobalAddon: Reusable add-ons
-- Order: Order management
-- Payment: Payment processing
-
-2. **Schema Location**
-- Main schema file: `prisma/schema.prisma`
-- Migration files: `prisma/migrations/`
-
-## Development Workflow
-
-1. **Making Schema Changes**
-```bash
-# After modifying schema.prisma
-pnpm prisma format  # Format the schema file
-pnpm prisma validate  # Validate changes
-pnpm prisma migrate dev --name [migration_name]  # Create migration
-```
-
-2. **Generating Types**
-```bash
-# After schema changes or migrations
-pnpm prisma generate  # Update Prisma Client
-```
-
-3. **Database Reset (Development)**
-```bash
-pnpm prisma migrate reset  # Reset database (CAUTION: Deletes all data)
-```
-
-## Using Prisma Client
-
-1. **Singleton Implementation**
-```typescript
-// src/lib/prisma.ts
-import { PrismaClient } from '@prisma/client'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+### 2. Schema Implementation
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Core models implementation...
 ```
 
-2. **Type-Safe Queries**
+### 3. Database Seeding
 ```typescript
-// Example usage
-import { prisma } from '@/lib/prisma'
+// prisma/seed.ts
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
-// Create user
-const user = await prisma.user.create({
-  data: {
-    email: 'user@example.com',
-    fullName: 'John Doe',
-    phoneNumber: '+1234567890',
-    address: '123 Main St'
-  }
-})
+async function main() {
+  // Create admin user
+  await prisma.user.upsert({
+    where: { email: 'kusinadeamadeo@gmail.com' },
+    update: { role: 'ADMIN' },
+    create: {
+      email: 'kusinadeamadeo@gmail.com',
+      fullName: 'Kusina De Amadeo',
+      role: 'ADMIN',
+      // ... other fields
+    }
+  });
+}
 
-// Find user with orders
-const userWithOrders = await prisma.user.findUnique({
-  where: { id: userId },
-  include: { orders: true }
-})
+main()
+  .catch(console.error)
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
 ```
 
-## Type Definitions
+## Security Implementation
 
-1. **Location**
-- Type definitions: `src/types/database.ts`
-- Generated types: `node_modules/.prisma/client/index.d.ts`
+### 1. RLS Setup
+```sql
+-- Enable RLS
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Order" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Product" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Category" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Payment" ENABLE ROW LEVEL SECURITY;
 
-2. **Usage**
+-- Admin function
+CREATE OR REPLACE FUNCTION auth.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM "User"
+    WHERE "id"::text = auth.uid()::text
+    AND "role" = 'ADMIN'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### 2. Core Policies
+```sql
+-- User policies
+CREATE POLICY "Users can view own data" ON "User"
+    FOR SELECT
+    TO authenticated
+    USING (
+        id::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
+
+-- Product policies
+CREATE POLICY "Public read access" ON "Product"
+    FOR SELECT
+    TO PUBLIC
+    USING (true);
+
+-- Order policies
+CREATE POLICY "Users can view own orders" ON "Order"
+    FOR SELECT
+    TO authenticated
+    USING (
+        "userId"::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
+```
+
+## Performance Optimization
+
+### 1. Index Setup
+```sql
+-- User indexes
+CREATE INDEX idx_user_email ON "User"(email);
+CREATE INDEX idx_user_role ON "User"(role);
+
+-- Order indexes
+CREATE INDEX idx_order_user ON "Order"("userId");
+CREATE INDEX idx_order_status ON "Order"(status);
+CREATE INDEX idx_order_payment ON "Order"("paymentStatus");
+
+-- Product indexes
+CREATE INDEX idx_product_category ON "Product"("categoryId");
+CREATE INDEX idx_product_availability ON "Product"("isAvailable");
+```
+
+### 2. Query Optimization
 ```typescript
-import type { User, Order, Product } from '@/types/database'
-
-async function getUserOrders(userId: string): Promise<Order[]> {
-  return prisma.order.findMany({
-    where: { userId },
+// Example of optimized queries
+const getOrderWithItems = async (orderId: string) => {
+  return prisma.order.findUnique({
+    where: { id: orderId },
     include: {
       items: {
         include: {
           product: true,
-          variant: true,
-          addons: true
+          ProductVariant: true,
+          OrderItemAddon: {
+            include: { addon: true }
+          }
         }
       }
     }
-  })
-}
+  });
+};
 ```
 
-## Performance Considerations
+## Maintenance Procedures
 
-1. **Indexes**
-- Implemented on frequently queried fields
-- Composite indexes for common query patterns
-- Consider query patterns when adding new indexes
+### 1. Database Migrations
+```bash
+# Create migration
+pnpm prisma migrate dev --name migration_name
 
-2. **Relations**
-- Use appropriate inclusion levels
-- Avoid over-fetching data
-- Consider using select to limit returned fields
+# Apply migration
+pnpm prisma migrate deploy
 
-## Security Implementation
+# Reset database (development only)
+pnpm prisma migrate reset
+```
 
-1. **Row Level Security**
+### 2. Data Backup
+```bash
+# Backup database
+pg_dump -h db.[PROJECT-REF].supabase.co -U postgres -d postgres > backup.sql
+
+# Restore database
+psql -h db.[PROJECT-REF].supabase.co -U postgres -d postgres < backup.sql
+```
+
+## Monitoring & Maintenance
+
+### 1. Performance Monitoring
 ```sql
--- Example RLS policy for orders
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+-- Check index usage
+SELECT schemaname, tablename, indexname, idx_scan
+FROM pg_stat_user_indexes
+ORDER BY idx_scan DESC;
 
--- Users can only view their own orders
-CREATE POLICY "Users can view own orders"
-  ON orders FOR SELECT
-  USING (auth.uid() = user_id);
+-- Check table statistics
+SELECT relname, n_live_tup, n_dead_tup
+FROM pg_stat_user_tables;
 ```
 
-2. **Data Validation**
-- Implement Zod schemas for input validation
-- Use Prisma's built-in validation
-- Add custom validation where needed
+### 2. Regular Maintenance
+```sql
+-- Analyze tables
+ANALYZE "User", "Order", "Product";
 
-## Maintenance
-
-1. **Regular Tasks**
-- Monitor query performance
-- Update indexes as needed
-- Review and optimize relations
-- Keep schema documentation updated
-
-2. **Backup Strategy**
-- Regular database backups
-- Migration history maintenance
-- Production deployment planning
+-- Vacuum tables
+VACUUM ANALYZE "User", "Order", "Product";
+```
 
 ## Troubleshooting
 
-1. **Common Issues**
-- Migration conflicts
-- Type generation errors
-- Connection issues
-- Query performance problems
+### 1. Common Issues
+```sql
+-- Check connection
+SELECT version();
 
-2. **Solutions**
-- Check migration history
-- Regenerate Prisma Client
-- Verify environment variables
-- Review query patterns
+-- Test RLS policies
+SELECT has_table_privilege('authenticated', 'User', 'SELECT');
 
-## Next Steps
+-- Verify indexes
+SELECT * FROM pg_indexes WHERE tablename = 'User';
+```
 
-1. **Implementation**
-- Complete authentication system
-- Set up API routes
-- Implement CRUD operations
-- Add data validation
+### 2. Error Resolution
+```typescript
+// Error handling example
+try {
+  await prisma.$transaction(async (tx) => {
+    // Database operations
+  });
+} catch (error) {
+  if (error.code === 'P2002') {
+    // Handle unique constraint violation
+  }
+  // Handle other errors
+}
+```
 
-2. **Security**
-- Configure RLS policies
-- Implement rate limiting
-- Set up error handling
-- Add request validation
+## Version Information
+- Last Updated: January 16, 2024
+- Database Version: PostgreSQL 15.1
+- Prisma Version: 5.7.1
+- Status: Production Ready

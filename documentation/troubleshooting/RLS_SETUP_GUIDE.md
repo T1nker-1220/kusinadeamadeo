@@ -1,70 +1,13 @@
-# Supabase RLS Implementation Guide
+# Row Level Security (RLS) Setup Guide - January 2024
 
 ## Overview
-This document outlines the successful implementation of Row Level Security (RLS) policies in our Supabase database, including comprehensive troubleshooting steps and solutions for common issues.
+This guide details the complete Row Level Security (RLS) implementation for Kusina de Amadeo, ensuring data protection at the database level.
 
-## Table of Contents
-1. [Common Issues & Solutions](#common-issues--solutions)
-2. [Implementation Steps](#implementation-steps)
-3. [Permission Management](#permission-management)
-4. [Verification Steps](#verification-steps)
-5. [Best Practices](#best-practices)
+## Core Security Functions
 
-## Common Issues & Solutions
-
-### 1. Type Casting Issues
+### 1. Admin Check Function
 ```sql
-ERROR: 42883: operator does not exist: text = uuid
-```
-
-**Solution:**
-```sql
--- ❌ Wrong
-WHERE id = auth.uid()::uuid
-
--- ✅ Correct
-WHERE "id"::text = auth.uid()::text
-```
-
-### 2. Case Sensitivity Issues
-```sql
-ERROR: 42703: column "userid" does not exist
-```
-
-**Solution:**
-```sql
--- ❌ Wrong
-WHERE userid = auth.uid()::text
-
--- ✅ Correct
-WHERE "userId"::text = auth.uid()::text
-```
-
-### 3. Permission Issues
-```sql
-ERROR: P0001: Schema permissions not properly set
-```
-
-**Solution:**
-```sql
--- Reset permissions first
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM authenticated;
-REVOKE ALL ON SCHEMA public FROM authenticated;
-
--- Grant correct permissions
-GRANT USAGE ON SCHEMA public TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
-```
-
-## Implementation Steps
-
-### 1. Enable RLS
-```sql
-ALTER TABLE "TableName" ENABLE ROW LEVEL SECURITY;
-```
-
-### 2. Create Admin Check Function
-```sql
+-- Function to check if current user is admin
 CREATE OR REPLACE FUNCTION auth.is_admin()
 RETURNS boolean AS $$
 BEGIN
@@ -77,145 +20,236 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-### 3. Set Up Basic Policies
+## Table-Specific RLS Policies
+
+### 1. User Table Policies
 ```sql
--- User data protection
-CREATE POLICY "Users can view own data"
-    ON "TableName"
+-- Enable RLS
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+
+-- View own data
+CREATE POLICY "Users can view own data" ON "User"
     FOR SELECT
     TO authenticated
-    USING ("userId"::text = auth.uid()::text);
+    USING (
+        id::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
 
--- Public access
-CREATE POLICY "Public read access"
-    ON "TableName"
+-- Update own data
+CREATE POLICY "Users can update own data" ON "User"
+    FOR UPDATE
+    TO authenticated
+    USING (id::text = auth.uid()::text);
+
+-- Admin full access
+CREATE POLICY "Admins have full access" ON "User"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
+```
+
+### 2. Order Table Policies
+```sql
+-- Enable RLS
+ALTER TABLE "Order" ENABLE ROW LEVEL SECURITY;
+
+-- View own orders
+CREATE POLICY "Users can view own orders" ON "Order"
+    FOR SELECT
+    TO authenticated
+    USING (
+        "userId"::text = auth.uid()::text
+        OR
+        auth.is_admin() = true
+    );
+
+-- Create own orders
+CREATE POLICY "Users can create own orders" ON "Order"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK ("userId"::text = auth.uid()::text);
+
+-- Admin order management
+CREATE POLICY "Admins can manage all orders" ON "Order"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
+```
+
+### 3. Product Table Policies
+```sql
+-- Enable RLS
+ALTER TABLE "Product" ENABLE ROW LEVEL SECURITY;
+
+-- Public read access
+CREATE POLICY "Public read access" ON "Product"
     FOR SELECT
     TO PUBLIC
     USING (true);
+
+-- Admin management
+CREATE POLICY "Admins can manage products" ON "Product"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
 ```
 
-## Permission Management
-
-### 1. Base Permissions
+### 4. Category Table Policies
 ```sql
--- Grant schema usage
-GRANT USAGE ON SCHEMA public TO authenticated;
+-- Enable RLS
+ALTER TABLE "Category" ENABLE ROW LEVEL SECURITY;
 
--- Grant table access
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+-- Public read access
+CREATE POLICY "Public read access" ON "Category"
+    FOR SELECT
+    TO PUBLIC
+    USING (true);
 
--- Grant sequence access
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+-- Admin management
+CREATE POLICY "Admins can manage categories" ON "Category"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
 ```
 
-### 2. Future-Proofing Permissions
+### 5. Payment Table Policies
 ```sql
--- Set default privileges for new tables
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+-- Enable RLS
+ALTER TABLE "Payment" ENABLE ROW LEVEL SECURITY;
 
--- Set default privileges for new sequences
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT USAGE, SELECT ON SEQUENCES TO authenticated;
+-- View own payments
+CREATE POLICY "Users can view own payments" ON "Payment"
+    FOR SELECT
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM "Order"
+            WHERE "Order"."id" = "Payment"."orderId"
+            AND "Order"."userId"::text = auth.uid()::text
+        )
+        OR
+        auth.is_admin() = true
+    );
+
+-- Create own payments
+CREATE POLICY "Users can create payments" ON "Payment"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM "Order"
+            WHERE "Order"."id" = "orderId"
+            AND "Order"."userId"::text = auth.uid()::text
+        )
+    );
+
+-- Admin payment management
+CREATE POLICY "Admins can manage all payments" ON "Payment"
+    FOR ALL
+    TO authenticated
+    USING (auth.is_admin() = true);
 ```
 
-### 3. Enum Type Permissions
+## Troubleshooting Guide
+
+### 1. Common Issues & Solutions
+
+#### Issue: Unable to Access Data
 ```sql
--- Grant enum type usage
-DO $$
-DECLARE
-    enum_type text;
-BEGIN
-    FOR enum_type IN
-        SELECT t.typname
-        FROM pg_type t
-        JOIN pg_namespace n ON t.typnamespace = n.oid
-        WHERE n.nspname = 'public'
-        AND t.typtype = 'e'
-    LOOP
-        EXECUTE format('GRANT USAGE ON TYPE %I TO authenticated', enum_type);
-    END LOOP;
-END
-$$;
+-- Check user authentication
+SELECT auth.uid();
+
+-- Verify user role
+SELECT role FROM "User" WHERE id::text = auth.uid()::text;
+
+-- Test admin function
+SELECT auth.is_admin();
 ```
 
-## Verification Steps
-
-### 1. Check Basic Permissions
+#### Issue: Policy Not Working
 ```sql
-SELECT has_table_privilege('authenticated', 'TableName', 'SELECT');
+-- List all policies for a table
+SELECT * FROM pg_policies WHERE tablename = 'your_table';
+
+-- Check policy definition
+SELECT * FROM pg_policies WHERE policyname = 'your_policy';
 ```
 
-### 2. Verify RLS Policies
+### 2. Debugging Steps
+
+1. **Authentication Check**
 ```sql
-SELECT tablename, policyname, permissive, roles, cmd, qual
-FROM pg_policies
-WHERE schemaname = 'public';
+-- Verify session
+SELECT auth.jwt();
+
+-- Check user claims
+SELECT auth.role();
 ```
 
-### 3. Comprehensive Permission Check
+2. **Policy Verification**
 ```sql
--- Check all granted privileges
-SELECT
-    r.rolname,
-    ARRAY_AGG(DISTINCT p.privilege_type) as privileges
-FROM pg_roles r
-LEFT JOIN information_schema.role_table_grants p
-    ON r.rolname = p.grantee
-WHERE r.rolname = 'authenticated'
-GROUP BY r.rolname;
+-- Test policy conditions
+SELECT EXISTS (
+    SELECT 1 FROM "User"
+    WHERE id::text = auth.uid()::text
+    AND role = 'ADMIN'
+);
 ```
 
-## Best Practices
+3. **Permission Test**
+```sql
+-- Test specific operations
+BEGIN;
+    -- Your test operation here
+ROLLBACK;
+```
 
-### 1. Type Casting
-- Always cast both sides of UUID comparisons to text
-- Use proper column name quoting
-- Be consistent with casting throughout policies
+## Security Best Practices
 
-### 2. Permission Management
-- Reset permissions before granting new ones
-- Grant minimum required permissions
-- Use default privileges for future-proofing
-- Include sequence permissions for auto-incrementing fields
+### 1. Policy Design
+- Use `SECURITY DEFINER` for critical functions
+- Implement least privilege principle
+- Validate all user inputs
+- Use proper error handling
 
-### 3. Policy Structure
-- Use descriptive policy names
-- Drop existing policies before creating new ones
-- Include proper TO clause (PUBLIC or authenticated)
-- Use EXISTS clauses for related table checks
+### 2. Performance Optimization
+- Index policy-referenced columns
+- Use efficient policy conditions
+- Avoid complex policy logic
+- Monitor policy performance
 
-### 4. Error Handling
-- Implement proper error checking
-- Use RAISE NOTICE for debugging
-- Collect and report all missing permissions
-- Verify permissions after granting
+### 3. Maintenance Tasks
+- Regular policy audits
+- Permission reviews
+- Security updates
+- Performance monitoring
 
-### 5. Security Considerations
-- Enable RLS on all tables
-- Implement proper admin checks
-- Use SECURITY DEFINER functions carefully
-- Regular permission audits
+## Implementation Checklist
 
-## Maintenance
+### 1. Initial Setup
+- [ ] Enable RLS on all tables
+- [ ] Create admin check function
+- [ ] Set up basic policies
 
-### Regular Checks
-1. Verify policy effectiveness
-2. Audit permissions regularly
-3. Monitor performance impact
-4. Update documentation
+### 2. User Management
+- [ ] User view policy
+- [ ] User update policy
+- [ ] Admin access policy
 
-### Performance Optimization
-1. Create proper indexes for policy conditions
-2. Monitor query performance
-3. Optimize complex policies
-4. Regular policy review
+### 3. Data Access
+- [ ] Order policies
+- [ ] Product policies
+- [ ] Payment policies
 
-## Troubleshooting Checklist
+### 4. Security Verification
+- [ ] Test all policies
+- [ ] Verify admin access
+- [ ] Check user isolation
 
-- [ ] Verify RLS is enabled on all tables
-- [ ] Check type casting in policies
-- [ ] Verify permission grants
-- [ ] Test policy effectiveness
-- [ ] Monitor performance impact
-- [ ] Audit security compliance
+## Version Information
+- Last Updated: January 16, 2024
+- Status: Production Ready
+- RLS Version: 1.0.0
+- Next Review: Pre-Phase 2

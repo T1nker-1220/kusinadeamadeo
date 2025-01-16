@@ -1,7 +1,7 @@
-# Database Schema Implementation - January 2024
+# Database Schema Documentation - January 2024
 
 ## Overview
-This document details the implementation of the core database schema for Kusina de Amadeo using Prisma with Supabase PostgreSQL.
+This document details the complete database schema implementation for Kusina de Amadeo, including all models, relationships, indexes, and enums.
 
 ## Core Models
 
@@ -16,15 +16,13 @@ model User {
   role        UserRole  @default(CUSTOMER)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  // Relations
   orders      Order[]
-  payments    Payment[]
+  payments    Payment[] @relation("PaymentVerifier")
+
+  @@index([email])
+  @@index([role])
 }
 ```
-- Primary user model for both customers and admins
-- Role-based access control using UserRole enum
-- Indexed fields: email, role
-- Tracks order history and payment verifications
 
 ### Category Model
 ```prisma
@@ -36,14 +34,11 @@ model Category {
   sortOrder   Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  // Relations
   products    Product[]
+
+  @@index([sortOrder])
 }
 ```
-- Product category management
-- Sortable categories using sortOrder
-- Unique category names
-- Image storage support
 
 ### Product Model
 ```prisma
@@ -58,47 +53,112 @@ model Product {
   allowsAddons Boolean          @default(false)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  // Relations
+  orderItems   OrderItem[]
   category     Category         @relation(fields: [categoryId], references: [id])
   variants     ProductVariant[]
-  orderItems   OrderItem[]
+
+  @@index([categoryId])
+  @@index([isAvailable])
+  @@index([basePrice])
 }
 ```
-- Core product information
-- Category relationship
-- Support for variants and add-ons
-- Availability tracking
 
-### Order System Models
+### ProductVariant Model
+```prisma
+model ProductVariant {
+  id         String      @id @default(uuid())
+  productId  String
+  type       VariantType
+  name       String
+  price      Float
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+  product    Product     @relation(fields: [productId], references: [id])
 
-#### Order
+  @@index([productId])
+  @@index([type])
+  @@index([price])
+}
+```
+
+### GlobalAddon Model
+```prisma
+model GlobalAddon {
+  id          String           @id @default(uuid())
+  name        String
+  price       Float
+  isAvailable Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  orderItems  OrderItemAddon[]
+
+  @@index([isAvailable])
+  @@index([price])
+}
+```
+
+### Order Model
 ```prisma
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  receiptId     String        @unique // AE20 format
+  receiptId     String        @unique
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod
   paymentStatus PaymentStatus @default(PENDING)
   totalAmount   Float
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  // Relations
   user          User          @relation(fields: [userId], references: [id])
   items         OrderItem[]
   payment       Payment?
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([receiptId])
 }
 ```
-- Comprehensive order tracking
-- Unique receipt ID system (AE20 format)
-- Multiple status tracking (order and payment)
-- Full payment integration
 
-#### OrderItem & OrderItemAddon
-- Detailed order item tracking
-- Support for variants and add-ons
-- Price and quantity tracking
-- Subtotal calculations
+### OrderItem Model
+```prisma
+model OrderItem {
+  id               String           @id @default(uuid())
+  orderId          String
+  productId        String
+  quantity         Int
+  createdAt        DateTime         @default(now())
+  price            Float
+  productVariantId String?
+  updatedAt        DateTime         @updatedAt
+  order            Order            @relation(fields: [orderId], references: [id])
+  product          Product          @relation(fields: [productId], references: [id])
+  ProductVariant   ProductVariant?  @relation(fields: [productVariantId], references: [id])
+  OrderItemAddon   OrderItemAddon[]
+
+  @@index([orderId])
+  @@index([productId])
+}
+```
+
+### OrderItemAddon Model
+```prisma
+model OrderItemAddon {
+  id          String      @id @default(uuid())
+  orderItemId String
+  addonId     String
+  quantity    Int
+  unitPrice   Float
+  subtotal    Float
+  addon       GlobalAddon @relation(fields: [addonId], references: [id])
+  orderItem   OrderItem   @relation(fields: [orderItemId], references: [id])
+
+  @@index([orderItemId])
+  @@index([addonId])
+}
+```
 
 ### Payment Model
 ```prisma
@@ -113,80 +173,129 @@ model Payment {
   verifiedBy            String?
   verificationTimestamp DateTime?
   notes                 String?
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-  // Relations
-  order                Order         @relation(fields: [orderId], references: [id])
-  verifier             User?         @relation(fields: [verifiedBy], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  order                 Order         @relation(fields: [orderId], references: [id])
+  verifier              User?         @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
+
+  @@index([status])
+  @@index([method])
+  @@index([referenceNumber])
+  @@index([verifiedBy])
+  @@index([createdAt])
 }
 ```
-- Complete payment tracking
-- Support for GCash and Cash payments
-- Payment verification system
-- Audit trail for verifications
 
 ## Enums
 
 ### UserRole
-- ADMIN: Full system access
-- CUSTOMER: Limited access to ordering features
+```prisma
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+```
 
 ### OrderStatus
-- PENDING: Initial order state
-- CONFIRMED: Order verified and processing
-- COMPLETED: Order fulfilled
-- CANCELLED: Order cancelled
+```prisma
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+```
 
 ### PaymentStatus
-- PENDING: Awaiting verification
-- VERIFIED: Payment confirmed
-- REJECTED: Payment rejected
+```prisma
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+```
 
 ### PaymentMethod
-- GCASH: Online payment via GCash
-- CASH: Cash payment on pickup
+```prisma
+enum PaymentMethod {
+  GCASH
+  CASH
+}
+```
 
 ### VariantType
-- SIZE: Size variations (e.g., for beverages)
-- FLAVOR: Flavor variations
+```prisma
+enum VariantType {
+  SIZE
+  FLAVOR
+}
+```
 
 ## Performance Optimizations
 
-### Indexes
-- User: email, role
-- Category: sortOrder
-- Product: categoryId, isAvailable
-- Order: userId, status, paymentStatus, createdAt
-- Payment: status, referenceNumber
+### Strategic Indexing
+- User lookups by email and role
+- Category sorting by order
+- Product filtering by availability and price
+- Order tracking by status and dates
+- Payment verification by status and reference
 
-### Relations
-- All relations properly defined with foreign keys
-- Cascading deletes where appropriate
-- Optional relations handled properly
+### Relationship Optimization
+- Proper foreign key constraints
+- Indexed relationship fields
+- Optimized query patterns
+- Efficient join operations
 
-## Type Safety
-- Full TypeScript integration
-- Generated types for all models
-- Type-safe query building
-- Strict enum typing
+### Query Performance
+- Composite indexes for common queries
+- Optimized field ordering
+- Strategic denormalization
+- Efficient data access patterns
+
+## Security Implementation
+
+### Data Protection
+- UUID primary keys
+- Role-based access control
+- Secure payment handling
+- Audit trail timestamps
+
+### RLS Policies
+- User data isolation
+- Order access control
+- Payment verification rules
+- Public read access for products
 
 ## Future Considerations
-1. **Scalability**
-   - Indexed fields for common queries
-   - Efficient relationship structure
-   - Support for future features
 
-2. **Maintenance**
-   - Clear model separation
-   - Comprehensive documentation
-   - Easy schema evolution
+### Scalability
+1. **Data Growth**
+   - Indexed fields for scaling
+   - Efficient query patterns
+   - Performance monitoring
+   - Backup strategies
 
-3. **Security**
-   - Role-based access
-   - Payment verification system
-   - Audit trails
+2. **Feature Expansion**
+   - Extensible schema design
+   - Flexible relationships
+   - Future-proof enums
+   - Version control
 
-4. **Performance**
-   - Strategic indexing
-   - Optimized relationships
-   - Query-friendly structure
+### Maintenance
+1. **Regular Tasks**
+   - Index optimization
+   - Query monitoring
+   - Data cleanup
+   - Performance tuning
+
+2. **Documentation**
+   - Schema updates
+   - Index changes
+   - Policy modifications
+   - Performance notes
+
+## Version Control
+- Last Updated: January 16, 2024
+- Schema Version: 1.0.0
+- Status: Production Ready
+- Next Review: Pre-Phase 2
