@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils";
-import type { Metadata, Viewport } from "next";
+import { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,18 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("antialiased", inter.variable)}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head />
-      <body className={cn(
-        "min-h-screen font-sans",
-        "bg-background text-foreground",
-        "flex flex-col"
-      )}>
-        <div className="relative flex min-h-screen flex-col">
-          <div className="flex-1">
-            {children}
-          </div>
-        </div>
+      <body className="min-h-screen bg-background font-sans text-foreground">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

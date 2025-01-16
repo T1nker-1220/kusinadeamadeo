@@ -1,38 +1,36 @@
 import { prisma } from '@/lib/prisma';
+import { ProductVariantSchema } from '@/lib/validations/product';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Category validation schema
-const categorySchema = z.object({
-  name: z.string().min(3).max(50),
-  description: z.string().min(10).max(200),
-  imageUrl: z.string().url(),
-  sortOrder: z.number().int().min(1)
-});
-
-// GET /api/categories
-export async function GET() {
+// GET /api/products/[id]/variants
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: {
-        sortOrder: 'asc'
-      }
+    const variants = await prisma.productVariant.findMany({
+      where: { productId: params.id },
+      orderBy: { createdAt: 'asc' }
     });
 
-    return NextResponse.json(categories);
+    return NextResponse.json(variants);
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Error fetching variants:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch categories' },
+      { error: 'Failed to fetch variants' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/categories
-export async function POST(req: Request) {
+// POST /api/products/[id]/variants
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     // Verify admin role
     const supabase = createRouteHandlerClient({ cookies });
@@ -55,32 +53,35 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
+      );
+    }
+
+    // Check if product exists
+    const product = await prisma.product.findUnique({
+      where: { id: params.id }
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
       );
     }
 
     const body = await req.json();
 
     // Validate request body
-    const validatedData = categorySchema.parse(body);
+    const validatedData = ProductVariantSchema.parse(body);
 
-    // Check for duplicate category name
-    const existingCategory = await prisma.category.findUnique({
-      where: { name: validatedData.name }
+    // Create variant
+    const variant = await prisma.productVariant.create({
+      data: {
+        ...validatedData,
+        productId: params.id
+      }
     });
 
-    if (existingCategory) {
-      return NextResponse.json(
-        { error: 'Category with this name already exists' },
-        { status: 400 }
-      );
-    }
-
-    // Create category
-    const category = await prisma.category.create({
-      data: validatedData
-    });
-
-    return NextResponse.json(category, { status: 201 });
+    return NextResponse.json(variant, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -89,16 +90,19 @@ export async function POST(req: Request) {
       );
     }
 
-    console.error('Error creating category:', error);
+    console.error('Error creating variant:', error);
     return NextResponse.json(
-      { error: 'Failed to create category' },
+      { error: 'Failed to create variant' },
       { status: 500 }
     );
   }
 }
 
-// PATCH /api/categories
-export async function PATCH(req: Request) {
+// PATCH /api/products/[id]/variants
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     // Verify admin role
     const supabase = createRouteHandlerClient({ cookies });
@@ -125,37 +129,40 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, ...updateData } = body;
+    const { variantId, ...updateData } = body;
 
-    if (!id) {
+    if (!variantId) {
       return NextResponse.json(
-        { error: 'Category ID is required' },
+        { error: 'Variant ID is required' },
         { status: 400 }
       );
     }
 
     // Validate update data
-    const validatedData = categorySchema.partial().parse(updateData);
+    const validatedData = ProductVariantSchema.partial().parse(updateData);
 
-    // Check if category exists
-    const existingCategory = await prisma.category.findUnique({
-      where: { id }
+    // Check if variant exists and belongs to the product
+    const existingVariant = await prisma.productVariant.findFirst({
+      where: {
+        id: variantId,
+        productId: params.id
+      }
     });
 
-    if (!existingCategory) {
+    if (!existingVariant) {
       return NextResponse.json(
-        { error: 'Category not found' },
+        { error: 'Variant not found' },
         { status: 404 }
       );
     }
 
-    // Update category
-    const category = await prisma.category.update({
-      where: { id },
+    // Update variant
+    const variant = await prisma.productVariant.update({
+      where: { id: variantId },
       data: validatedData
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json(variant);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -164,16 +171,19 @@ export async function PATCH(req: Request) {
       );
     }
 
-    console.error('Error updating category:', error);
+    console.error('Error updating variant:', error);
     return NextResponse.json(
-      { error: 'Failed to update category' },
+      { error: 'Failed to update variant' },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/categories
-export async function DELETE(req: Request) {
+// DELETE /api/products/[id]/variants
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     // Verify admin role
     const supabase = createRouteHandlerClient({ cookies });
@@ -200,56 +210,52 @@ export async function DELETE(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
+    const variantId = searchParams.get('variantId');
 
-    if (!id) {
+    if (!variantId) {
       return NextResponse.json(
-        { error: 'Category ID is required' },
+        { error: 'Variant ID is required' },
         { status: 400 }
       );
     }
 
-    // Check if category exists and has no products
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: { products: true }
+    // Check if variant exists and belongs to the product
+    const variant = await prisma.productVariant.findFirst({
+      where: {
+        id: variantId,
+        productId: params.id
+      },
+      include: { orderItems: true }
     });
 
-    if (!category) {
+    if (!variant) {
       return NextResponse.json(
-        { error: 'Category not found' },
+        { error: 'Variant not found' },
         { status: 404 }
       );
     }
 
-    if (category.products.length > 0) {
+    // Don't allow deletion if variant has order items
+    if (variant.orderItems.length > 0) {
       return NextResponse.json(
-        { error: 'Cannot delete category with existing products' },
+        { error: 'Cannot delete variant with existing orders' },
         { status: 400 }
       );
     }
 
-    // Delete category image from storage if it exists
-    if (category.imageUrl && !category.imageUrl.includes('placeholder')) {
-      const imagePath = category.imageUrl.split('/').slice(-2).join('/');
-      await supabase.storage
-        .from('images')
-        .remove([`categories/${imagePath}`]);
-    }
-
-    // Delete category
-    await prisma.category.delete({
-      where: { id }
+    // Delete variant
+    await prisma.productVariant.delete({
+      where: { id: variantId }
     });
 
     return NextResponse.json(
-      { message: 'Category deleted successfully' },
+      { message: 'Variant deleted successfully' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error deleting category:', error);
+    console.error('Error deleting variant:', error);
     return NextResponse.json(
-      { error: 'Failed to delete category' },
+      { error: 'Failed to delete variant' },
       { status: 500 }
     );
   }
