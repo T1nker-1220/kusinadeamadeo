@@ -4,11 +4,7 @@ import { redirect } from 'next/navigation';
 
 export default async function AdminDashboardPage() {
   const cookieStore = cookies();
-
-  // Create Supabase client with proper cookie handling
-  const supabase = createServerComponentClient({
-    cookies: () => cookieStore
-  });
+  const supabase = createServerComponentClient({ cookies: () => cookieStore });
 
   try {
     // Get authenticated user
@@ -22,13 +18,13 @@ export default async function AdminDashboardPage() {
     // Get user data and verify admin role
     const { data: userData, error: dbError } = await supabase
       .from('User')
-      .select('*')
+      .select('role')
       .eq('id', user.id)
       .single();
 
     if (dbError || userData?.role !== 'ADMIN') {
-      console.error('Access denied or error fetching user data:', dbError);
-      redirect('/');
+      console.error('Access denied: Not an admin user');
+      redirect('/dashboard');
     }
 
     return (
