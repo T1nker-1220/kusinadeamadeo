@@ -121,51 +121,72 @@ export const Motion = <Tag extends keyof JSX.IntrinsicElements>({
 ### Layout Components
 1. **Main Layout**
    ```typescript:src/components/layout/main-layout.tsx
-   // Using shadcn/ui + Radix for base layout
-   import { SidebarProvider } from "@/components/ui/sidebar"
+   // Using shadcn/ui components for base layout
+   import { MainNav } from "@/components/layout/main-nav"
+   import { MobileNav } from "@/components/layout/mobile-nav"
+   import { UserNav } from "@/components/layout/user-nav"
    ```
 
 2. **Navigation**
-   - Using 21st.dev's sidebar components with customization
-   - Mobile-responsive drawer navigation
+   - Responsive navigation with mobile optimization
+   - Role-based menu items
+   - Dynamic route handling
    - Integrated with shadcn/ui theme
 
 ### Core UI Components
 
 1. **Product Cards**
 ```typescript:src/components/ui/product-card.tsx
-// Enhanced card component combining shadcn + 21st.dev styling
+// Enhanced card component with image optimization
 import { Card } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { ImageUpload } from "@/components/ui/image-upload"
 ```
 
-2. **Search Input**
-```typescript:src/components/ui/search-input.tsx
-// Using 21st.dev's search input without AI integration
-// Modified for product search only
-import { Input } from "@/components/ui/input"
+2. **Data Tables**
+```typescript:src/components/ui/data-table.tsx
+// Enhanced table component with sorting and filtering
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
 ```
 
-3. **Category Navigation**
-```typescript:src/components/ui/category-nav.tsx
-// Using Radix UI's navigation menu with custom styling
-import { NavigationMenu } from "@/components/ui/navigation-menu"
-```
-
-### Form Components
-
-1. **Order Form**
-```typescript:src/components/forms/order-form.tsx
-// Enhanced form components using shadcn/ui base
+3. **Forms**
+```typescript:src/components/ui/form.tsx
+// Enhanced form components with Zod validation
 import { Form } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { zodResolver } from "@hookform/resolvers/zod"
 ```
 
-2. **Payment Form**
-```typescript:src/components/forms/payment-form.tsx
-// Custom payment form using shadcn/ui components
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+### Admin Components
+
+1. **Product Management**
+```typescript:src/components/admin/products/product-form.tsx
+// Enhanced product form with image upload
+import { ProductForm } from "@/components/admin/products/product-form"
+import { ImageUpload } from "@/components/ui/image-upload"
+```
+
+2. **Category Management**
+```typescript:src/components/admin/categories/category-form.tsx
+// Category management with sorting
+import { CategoryForm } from "@/components/admin/categories/category-form"
+import { SortableList } from "@/components/ui/sortable-list"
+```
+
+### Customer Components
+
+1. **Shopping Cart**
+```typescript:src/components/cart/cart-item.tsx
+// Enhanced cart with variants and add-ons
+import { CartItem } from "@/components/cart/cart-item"
+import { VariantSelector } from "@/components/cart/variant-selector"
+```
+
+2. **Order Management**
+```typescript:src/components/orders/order-status.tsx
+// Real-time order status updates
+import { OrderStatus } from "@/components/orders/order-status"
+import { PaymentForm } from "@/components/orders/payment-form"
 ```
 
 ### Animation Components
