@@ -1,71 +1,80 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/utils";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import {
+  ListOrdered,
+  Package,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
+import { cookies } from "next/headers";
 
-export default async function AdminDashboardPage() {
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+export default async function AdminDashboard() {
+  const supabase = createServerComponentClient({ cookies });
 
-  try {
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+  // Fetch counts
+  const [
+    categoriesCount,
+    productsCount,
+    ordersCount,
+    usersCount,
+  ] = await Promise.all([
+    prisma.category.count(),
+    prisma.product.count(),
+    prisma.order.count(),
+    prisma.user.count(),
+  ]);
 
-    if (userError || !user) {
-      console.error('Authentication error:', userError);
-      redirect('/auth/login');
-    }
+  const stats = [
+    {
+      title: "Total Categories",
+      value: categoriesCount,
+      icon: ListOrdered,
+      color: "text-blue-600",
+    },
+    {
+      title: "Total Products",
+      value: productsCount,
+      icon: Package,
+      color: "text-green-600",
+    },
+    {
+      title: "Total Orders",
+      value: ordersCount,
+      icon: ShoppingCart,
+      color: "text-orange-600",
+    },
+    {
+      title: "Total Users",
+      value: usersCount,
+      icon: Users,
+      color: "text-purple-600",
+    },
+  ];
 
-    // Get user data and verify admin role
-    const { data: userData, error: dbError } = await supabase
-      .from('User')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="mb-8 text-3xl font-bold">Admin Dashboard</h1>
 
-    if (dbError || userData?.role !== 'ADMIN') {
-      console.error('Access denied: Not an admin user');
-      redirect('/dashboard');
-    }
-
-    return (
-      <div className="min-h-screen bg-gray-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Admin Dashboard
-            </h1>
-
-            <div className="space-y-4">
-              <div className="border-t border-gray-200 pt-4">
-                <h2 className="text-lg font-medium text-gray-900">Admin Controls</h2>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-gray-900">User Management</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Manage user accounts and roles
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-gray-900">Orders</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      View and manage customer orders
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-gray-900">Products</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Manage product catalog
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+                <Icon className={cn("h-4 w-4", stat.color)} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-    );
-  } catch (error) {
-    console.error('Admin page error:', error);
-    redirect('/auth/login');
-  }
+    </div>
+  );
 }
