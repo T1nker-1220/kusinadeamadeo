@@ -2,16 +2,16 @@
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'CUSTOMER');
 
 -- CreateEnum
-CREATE TYPE "VariantType" AS ENUM ('SIZE', 'FLAVOR');
+CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
-CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED');
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('GCASH', 'CASH');
 
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
+CREATE TYPE "VariantType" AS ENUM ('SIZE', 'FLAVOR');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -63,6 +63,7 @@ CREATE TABLE "ProductVariant" (
     "type" "VariantType" NOT NULL,
     "name" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "imageUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -101,10 +102,11 @@ CREATE TABLE "OrderItem" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "variantId" TEXT,
     "quantity" INTEGER NOT NULL,
-    "unitPrice" DOUBLE PRECISION NOT NULL,
-    "subtotal" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "price" DOUBLE PRECISION NOT NULL,
+    "productVariantId" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
@@ -161,16 +163,22 @@ CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
 CREATE INDEX "Product_isAvailable_idx" ON "Product"("isAvailable");
 
 -- CreateIndex
+CREATE INDEX "Product_basePrice_idx" ON "Product"("basePrice");
+
+-- CreateIndex
 CREATE INDEX "ProductVariant_productId_idx" ON "ProductVariant"("productId");
 
 -- CreateIndex
 CREATE INDEX "ProductVariant_type_idx" ON "ProductVariant"("type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GlobalAddon_name_key" ON "GlobalAddon"("name");
+CREATE INDEX "ProductVariant_price_idx" ON "ProductVariant"("price");
 
 -- CreateIndex
 CREATE INDEX "GlobalAddon_isAvailable_idx" ON "GlobalAddon"("isAvailable");
+
+-- CreateIndex
+CREATE INDEX "GlobalAddon_price_idx" ON "GlobalAddon"("price");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Order_receiptId_key" ON "Order"("receiptId");
@@ -186,6 +194,9 @@ CREATE INDEX "Order_paymentStatus_idx" ON "Order"("paymentStatus");
 
 -- CreateIndex
 CREATE INDEX "Order_createdAt_idx" ON "Order"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "Order_receiptId_idx" ON "Order"("receiptId");
 
 -- CreateIndex
 CREATE INDEX "OrderItem_orderId_idx" ON "OrderItem"("orderId");
@@ -206,7 +217,16 @@ CREATE UNIQUE INDEX "Payment_orderId_key" ON "Payment"("orderId");
 CREATE INDEX "Payment_status_idx" ON "Payment"("status");
 
 -- CreateIndex
+CREATE INDEX "Payment_method_idx" ON "Payment"("method");
+
+-- CreateIndex
 CREATE INDEX "Payment_referenceNumber_idx" ON "Payment"("referenceNumber");
+
+-- CreateIndex
+CREATE INDEX "Payment_verifiedBy_idx" ON "Payment"("verifiedBy");
+
+-- CreateIndex
+CREATE INDEX "Payment_createdAt_idx" ON "Payment"("createdAt");
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -224,7 +244,7 @@ ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("or
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ProductVariant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrderItemAddon" ADD CONSTRAINT "OrderItemAddon_orderItemId_fkey" FOREIGN KEY ("orderItemId") REFERENCES "OrderItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -237,3 +257,48 @@ ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderI
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Enable RLS
+ALTER TABLE "Category" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Product" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ProductVariant" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "GlobalAddon" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Order" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "OrderItem" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "OrderItemAddon" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Payment" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS Policies
+
+-- Category Policies
+CREATE POLICY "Categories are viewable by everyone" ON "Category"
+    FOR SELECT
+    TO PUBLIC
+    USING (true);
+
+CREATE POLICY "Admins can manage categories" ON "Category"
+    FOR ALL
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM "User"
+            WHERE id::text = auth.uid()::text
+            AND role = 'ADMIN'
+        )
+    );
+
+-- Create admin check function
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM "User"
+        WHERE id::text = auth.uid()::text
+        AND role = 'ADMIN'
+    );
+END;
+$$;
