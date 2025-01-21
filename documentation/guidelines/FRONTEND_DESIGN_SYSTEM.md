@@ -449,3 +449,44 @@ export const CartItem = ({ item }) => (
   </Motion>
 );
 ```
+
+## Component Code Organization Standards
+
+### Import Structure
+All UI components should follow this import ordering pattern:
+```typescript
+// 1. React and Next.js imports
+import * as React from "react"
+import type { NextPage } from "next"
+
+// 2. Third-party library imports
+import * as RadixUI from "@radix-ui/react-*"
+import { motion } from "framer-motion"
+
+// 3. Internal components and utilities
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+```
+
+### Export Structure
+Component exports should be grouped and formatted consistently:
+```typescript
+export {
+  ComponentName,
+  ComponentNameAction,
+  ComponentNameTrigger,
+  // ... other related exports
+}
+```
+
+### Code Spacing
+- Maintain one empty line between import sections
+- Keep one empty line between component definition and exports
+- Use consistent spacing throughout the component file
+
+### Best Practices
+- Keep imports organized by category
+- Use consistent naming conventions
+- Maintain clear separation between sections
+- Follow established component patterns
+- Document any deviations from standards

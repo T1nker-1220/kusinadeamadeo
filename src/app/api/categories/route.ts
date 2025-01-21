@@ -6,28 +6,41 @@ import { z } from 'zod';
 
 // Category validation schema
 const categorySchema = z.object({
-  name: z.string().min(3).max(50),
-  description: z.string().min(10).max(200),
-  imageUrl: z.string().url(),
-  sortOrder: z.number().int().min(1)
+  name: z.string()
+    .min(3, "Name must be at least 3 characters")
+    .max(50, "Name must be less than 50 characters"),
+  description: z.string()
+    .min(10, "Description must be at least 10 characters")
+    .max(200, "Description must be less than 200 characters"),
+  imageUrl: z.string().url("Invalid image URL"),
+  sortOrder: z.number().int("Sort order must be an integer").min(1, "Sort order must be at least 1")
 });
+
+// Error handler utility
+const handleError = (error: unknown) => {
+  console.error('API Error:', error);
+  if (error instanceof z.ZodError) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: error.errors },
+      { status: 400 }
+    );
+  }
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
+};
 
 // GET /api/categories
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
-      orderBy: {
-        sortOrder: 'asc'
-      }
+      orderBy: { sortOrder: 'asc' }
     });
 
     return NextResponse.json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch categories' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
@@ -53,26 +66,46 @@ export async function POST(req: Request) {
 
     if (!dbUser || dbUser.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: 'Forbidden: Admin access required' },
         { status: 403 }
       );
     }
 
+    // Parse and validate request body
     const body = await req.json();
-
-    // Validate request body
     const validatedData = categorySchema.parse(body);
 
-    // Check for duplicate category name
-    const existingCategory = await prisma.category.findUnique({
+    // Check for duplicate names
+    const existingCategory = await prisma.category.findFirst({
       where: { name: validatedData.name }
     });
 
     if (existingCategory) {
       return NextResponse.json(
         { error: 'Category with this name already exists' },
-        { status: 400 }
+        { status: 409 }
       );
+    }
+
+    // Check for sort order conflicts
+    const existingOrder = await prisma.category.findFirst({
+      where: { sortOrder: validatedData.sortOrder }
+    });
+
+    if (existingOrder) {
+      // Auto-adjust sort orders to make space
+      await prisma.category.updateMany({
+        where: {
+          sortOrder: {
+            gte: validatedData.sortOrder
+          }
+        },
+        data: {
+          sortOrder: {
+            increment: 1
+          }
+        }
+      });
     }
 
     // Create category
@@ -82,18 +115,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error creating category:', error);
-    return NextResponse.json(
-      { error: 'Failed to create category' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
@@ -119,56 +141,56 @@ export async function PATCH(req: Request) {
 
     if (!dbUser || dbUser.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: 'Forbidden: Admin access required' },
         { status: 403 }
       );
     }
 
     const body = await req.json();
-    const { id, ...updateData } = body;
+    const { id, sortOrder } = body;
 
-    if (!id) {
+    if (!id || typeof sortOrder !== 'number') {
       return NextResponse.json(
-        { error: 'Category ID is required' },
+        { error: 'Invalid request body' },
         { status: 400 }
       );
     }
 
-    // Validate update data
-    const validatedData = categorySchema.partial().parse(updateData);
-
-    // Check if category exists
-    const existingCategory = await prisma.category.findUnique({
+    // Verify category exists
+    const category = await prisma.category.findUnique({
       where: { id }
     });
 
-    if (!existingCategory) {
+    if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
 
-    // Update category
-    const category = await prisma.category.update({
-      where: { id },
-      data: validatedData
+    // Update sort order with transaction to handle conflicts
+    const updatedCategory = await prisma.$transaction(async (tx) => {
+      // Move other categories if necessary
+      await tx.category.updateMany({
+        where: {
+          id: { not: id },
+          sortOrder: sortOrder
+        },
+        data: {
+          sortOrder: category.sortOrder
+        }
+      });
+
+      // Update target category
+      return tx.category.update({
+        where: { id },
+        data: { sortOrder }
+      });
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json(updatedCategory);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error updating category:', error);
-    return NextResponse.json(
-      { error: 'Failed to update category' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
@@ -194,7 +216,7 @@ export async function DELETE(req: Request) {
 
     if (!dbUser || dbUser.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: 'Forbidden: Admin access required' },
         { status: 403 }
       );
     }
@@ -209,10 +231,9 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if category exists and has no products
+    // Check if category exists
     const category = await prisma.category.findUnique({
-      where: { id },
-      include: { products: true }
+      where: { id }
     });
 
     if (!category) {
@@ -222,24 +243,26 @@ export async function DELETE(req: Request) {
       );
     }
 
-    if (category.products.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete category with existing products' },
-        { status: 400 }
-      );
-    }
+    // Delete category and reorder remaining categories
+    await prisma.$transaction(async (tx) => {
+      // Delete the category
+      await tx.category.delete({
+        where: { id }
+      });
 
-    // Delete category image from storage if it exists
-    if (category.imageUrl && !category.imageUrl.includes('placeholder')) {
-      const imagePath = category.imageUrl.split('/').slice(-2).join('/');
-      await supabase.storage
-        .from('images')
-        .remove([`categories/${imagePath}`]);
-    }
-
-    // Delete category
-    await prisma.category.delete({
-      where: { id }
+      // Update sort orders for remaining categories
+      await tx.category.updateMany({
+        where: {
+          sortOrder: {
+            gt: category.sortOrder
+          }
+        },
+        data: {
+          sortOrder: {
+            decrement: 1
+          }
+        }
+      });
     });
 
     return NextResponse.json(
@@ -247,10 +270,6 @@ export async function DELETE(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error deleting category:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete category' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }

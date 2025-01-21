@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,37 +19,25 @@ import { Category } from "@prisma/client";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import useSWR, { mutate } from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// Type for optimistic category update
+type OptimisticCategory = Omit<Category, "id" | "createdAt" | "updatedAt"> & {
+  id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories, error, isLoading } = useSWR<Category[]>("/api/categories", fetcher);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const { toast } = useToast();
-
-  // Fetch categories
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/categories");
-      if (!response.ok) throw new Error("Failed to fetch categories");
-      const data = await response.json();
-      setCategories(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch categories",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Handle image upload
   const handleImageUpload = async (file: File) => {
@@ -69,118 +67,154 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  // Create category
+  // Handle create category with optimistic update
   const handleCreateCategory = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const imageFile = (formData.get("image") as File)?.size > 0
-      ? formData.get("image") as File
-      : null;
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const imageFile = formData.get("image") as File;
 
     try {
-      setLoading(true);
+      setUploading(true);
 
-      // Upload image if provided
-      let imageUrl = null;
-      if (imageFile) {
-        imageUrl = await handleImageUpload(imageFile);
-        if (!imageUrl) return;
-      }
+      // Upload image first
+      const imageUrl = await handleImageUpload(imageFile);
 
-      // Create category
+      // Prepare new category
+      const newCategory = {
+        name,
+        description,
+        imageUrl,
+        sortOrder: (categories?.length || 0) + 1
+      };
+
+      // Optimistic update
+      mutate("/api/categories", [...(categories || []), newCategory], false);
+
       const response = await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.get("name"),
-          description: formData.get("description"),
-          imageUrl: imageUrl || "/images/placeholder.jpg",
-          sortOrder: categories.length + 1,
-        }),
+        body: JSON.stringify(newCategory),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create category");
+        throw new Error("Failed to create category");
       }
 
+      // Revalidate cache
+      mutate("/api/categories");
+
+      form.reset();
       toast({
         title: "Success",
         description: "Category created successfully",
       });
-
-      // Reset form and refresh categories
-      form.reset();
-      await fetchCategories();
     } catch (error) {
+      // Revert optimistic update on error
+      mutate("/api/categories");
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create category",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
-  // Update category sort order
-  const handleUpdateSortOrder = async (id: string, newOrder: number) => {
-    try {
-      const response = await fetch("/api/categories", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          sortOrder: newOrder,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update category");
-
-      toast({
-        title: "Success",
-        description: "Category order updated",
-      });
-
-      await fetchCategories();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update category order",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Delete category
+  // Handle delete with optimistic update
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
-
     try {
-      const response = await fetch(`/api/categories?id=${id}`, {
+      // Optimistic update
+      const categoryToDelete = categories?.find(c => c.id === id);
+      if (!categoryToDelete) return;
+
+      mutate(
+        "/api/categories",
+        categories?.filter((category: Category) => category.id !== id),
+        false
+      );
+
+      const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) throw new Error("Failed to delete category");
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      // Revalidate cache
+      mutate("/api/categories");
 
       toast({
         title: "Success",
         description: "Category deleted successfully",
       });
-
-      await fetchCategories();
     } catch (error) {
+      // Revert optimistic update on error
+      mutate("/api/categories");
       toast({
         title: "Error",
-        description: "Failed to delete category",
+        description: error instanceof Error ? error.message : "Failed to delete category",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Handle sort order update with optimistic update
+  const handleUpdateSortOrder = async (id: string, newOrder: number) => {
+    try {
+      // Optimistic update
+      const updatedCategories = categories?.map((category: Category) => {
+        if (category.id === id) {
+          return { ...category, sortOrder: newOrder };
+        }
+        return category;
+      }).sort((a: Category, b: Category) => a.sortOrder - b.sortOrder);
+
+      mutate("/api/categories", updatedCategories, false);
+
+      const response = await fetch(`/api/categories/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sortOrder: newOrder }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update sort order");
+      }
+
+      // Revalidate cache
+      mutate("/api/categories");
+
+      toast({
+        title: "Success",
+        description: "Sort order updated successfully",
+      });
+    } catch (error) {
+      // Revert optimistic update on error
+      mutate("/api/categories");
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update sort order",
         variant: "destructive",
       });
     }
   };
 
-  if (loading) {
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch categories",
+      variant: "destructive",
+    });
+  }
+
+  if (isLoading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -240,7 +274,7 @@ export default function AdminCategoriesPage() {
               />
             </div>
 
-            <Button type="submit" disabled={loading || uploading}>
+            <Button type="submit" disabled={uploading}>
               {uploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -259,7 +293,7 @@ export default function AdminCategoriesPage() {
 
       {/* Categories List */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {categories.map((category, index) => (
+        {categories?.map((category: Category, index: number) => (
           <Card key={category.id}>
             <CardContent className="p-4">
               <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-lg">
@@ -297,7 +331,7 @@ export default function AdminCategoriesPage() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDeleteCategory(category.id)}
+                  onClick={() => setDeletingId(category.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -306,6 +340,27 @@ export default function AdminCategoriesPage() {
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the category.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingId && handleDeleteCategory(deletingId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
