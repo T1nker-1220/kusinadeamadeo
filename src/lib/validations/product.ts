@@ -34,3 +34,15 @@ export const ProductQuerySchema = z.object({
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().max(100).optional()
 });
+
+export const productSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name must be less than 50 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(500, 'Description must be less than 500 characters'),
+  imageUrl: z.string().url('Invalid image URL'),
+  categoryId: z.string().min(1, 'Category is required'),
+  basePrice: z.coerce.number().min(0, 'Base price must be greater than 0'),
+  isAvailable: z.boolean().default(true),
+});
+
+export type ProductFormValues = z.infer<typeof productSchema>;

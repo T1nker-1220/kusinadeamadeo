@@ -22,27 +22,20 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useImageUpload } from '@/hooks/use-image-upload';
+import { useProductMutations } from '@/hooks/use-product-mutations';
+import { validateProductsPerCategory } from '@/lib/validations/category';
+import { productSchema, type ProductFormValues } from '@/lib/validations/product';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Product } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import * as z from 'zod';
-
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().min(1, 'Description is required'),
-  imageUrl: z.string().min(1, 'Image is required'),
-  categoryId: z.string().min(1, 'Category is required'),
-  basePrice: z.coerce.number().min(0, 'Base price must be greater than 0'),
-  isAvailable: z.boolean().default(true),
-});
-
-type ProductFormValues = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  initialData?: Product | null;
+  initialData?: ProductFormValues;
+  categoryId: string;
+  onSuccess?: () => void;
 }
 
 interface CategoryResponse {
@@ -59,7 +52,7 @@ async function getCategories() {
   return data as CategoryResponse[];
 }
 
-export function ProductForm({ initialData }: ProductFormProps) {
+export function ProductForm({ initialData, categoryId, onSuccess }: ProductFormProps) {
   const router = useRouter();
   const { uploadImage } = useImageUpload({
     type: 'product',
@@ -79,42 +72,64 @@ export function ProductForm({ initialData }: ProductFormProps) {
     value: category.id,
   })) ?? [];
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createProduct, updateProduct } = useProductMutations();
+
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: initialData?.name ?? '',
-      description: initialData?.description ?? '',
-      imageUrl: initialData?.imageUrl ?? '',
-      categoryId: initialData?.categoryId ?? '',
-      basePrice: initialData?.basePrice ?? 0,
-      isAvailable: initialData?.isAvailable ?? true,
+    resolver: zodResolver(productSchema),
+    defaultValues: initialData || {
+      name: '',
+      description: '',
+      imageUrl: '',
+      basePrice: 0,
+      isAvailable: true,
     },
   });
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
-      const response = await fetch(
-        `/api/products${initialData ? `/${initialData.id}` : ''}`,
-        {
-          method: initialData ? 'PATCH' : 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      setIsSubmitting(true);
 
-      if (!response.ok) {
-        throw new Error('Failed to save product');
+      // Check category product limit if creating new product
+      if (!initialData) {
+        const { isValid, error } = await validateProductsPerCategory(categoryId);
+        if (!isValid) {
+          toast.error(error);
+          return;
+        }
       }
 
-      router.refresh();
-      router.push('/admin/products');
+      if (initialData) {
+        await updateProduct.mutateAsync({
+          id: initialData.id,
+          data: {
+            ...data,
+            categoryId,
+          },
+        });
+      } else {
+        await createProduct.mutateAsync({
+          ...data,
+          categoryId,
+        });
+      }
+
+      onSuccess?.();
+      form.reset();
       toast.success(
-        initialData ? 'Product updated successfully' : 'Product created successfully'
+        initialData
+          ? 'Product updated successfully'
+          : 'Product created successfully'
       );
     } catch (error) {
-      toast.error('Failed to save product');
+      console.error('Product form error:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -241,7 +256,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
             )}
           />
         </div>
-        <Button type="submit" className="ml-auto">
+        <Button
+          type="submit"
+          disabled={isSubmitting || !form.formState.isDirty}
+          loading={isSubmitting}
+        >
           {initialData ? 'Update Product' : 'Create Product'}
         </Button>
       </form>

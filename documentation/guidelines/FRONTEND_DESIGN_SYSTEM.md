@@ -44,8 +44,8 @@ const typography = {
     '2xl': ['1.5rem', { lineHeight: '2rem' }],
     // ... other sizes
   },
-}
-```
+   }
+   ```
 
 ## Animation System Integration
 
@@ -60,9 +60,9 @@ export const motionConfig = {
     type: "spring",
     duration: 0.3,
     ease: "easeInOut"
-  }
-}
-```
+     }
+   }
+   ```
 
 ### Reusable Animations
 ```typescript:src/lib/animations.ts
@@ -77,7 +77,7 @@ export const slideIn = {
   initial: { x: -20, opacity: 0 },
   animate: { x: 0, opacity: 1 },
   exit: { x: 20, opacity: 0 }
-}
+  }
 
 export const scaleIn = {
   initial: { scale: 0.95, opacity: 0 },
@@ -113,7 +113,7 @@ export const Motion = <Tag extends keyof JSX.IntrinsicElements>({
       {children}
     </Component>
   );
-};
+  };
 ```
 
 ## Component Architecture

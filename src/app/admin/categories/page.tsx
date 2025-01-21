@@ -9,12 +9,13 @@ import { Category } from "@prisma/client";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -71,7 +72,8 @@ export default function AdminCategoriesPage() {
   // Create category
   const handleCreateCategory = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const imageFile = (formData.get("image") as File)?.size > 0
       ? formData.get("image") as File
       : null;
@@ -98,7 +100,11 @@ export default function AdminCategoriesPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to create category");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create category");
+      }
 
       toast({
         title: "Success",
@@ -106,12 +112,12 @@ export default function AdminCategoriesPage() {
       });
 
       // Reset form and refresh categories
-      event.currentTarget.reset();
+      form.reset();
       await fetchCategories();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create category",
+        description: error instanceof Error ? error.message : "Failed to create category",
         variant: "destructive",
       });
     } finally {
@@ -192,7 +198,7 @@ export default function AdminCategoriesPage() {
           <CardTitle>Create New Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCreateCategory} className="space-y-4">
+          <form onSubmit={handleCreateCategory} className="space-y-4" ref={formRef}>
             <div>
               <label htmlFor="name" className="mb-2 block text-sm font-medium">
                 Name
