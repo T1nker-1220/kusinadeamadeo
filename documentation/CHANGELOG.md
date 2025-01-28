@@ -1,3 +1,37 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- Database migration system for Supabase integration
+- Image storage migration to Supabase Storage
+- Schema optimization with new functions and indexes
+- Comprehensive migration documentation
+- Migration validation and rollback capabilities
+
+### Changed
+- Product and variant images now stored in Supabase Storage
+- Enhanced database schema with new columns and constraints
+- Improved error handling and validation
+- Updated storage access patterns
+
+### Fixed
+- Image storage consistency issues
+- Database schema optimization
+- Performance improvements for queries
+- Security enhancements with RLS policies
+
+## [0.1.0] - 2024-03-19
+
+### Added
+- Initial release with basic functionality
+- Product management system
+- Category management
+- Basic variant support
+- Local image storage
+
 ## [1.1.1] - 2024-01-23
 
 ### Fixed
@@ -91,3 +125,39 @@ pnpm add @radix-ui/react-alert-dialog
 - Maintain consistent spacing between imports and component code
 - Keep exports grouped and formatted consistently
 - Follow established code style guidelines for UI components
+
+## [1.1.3] - 2024-03-20
+
+### Fixed
+- Dashboard data fetching with correct PascalCase table names
+- Supabase integration issues in admin dashboard
+- Metric card data display and calculations
+- Error handling in dashboard stats hook
+
+### Added
+- Enhanced error handling for Supabase client initialization
+- Detailed logging for dashboard data fetching
+- Retry mechanism for failed queries
+- Real-time subscription error handling
+
+### Changed
+- Updated table names to match Supabase schema:
+  - `orders` → `Order`
+  - `products` → `Product`
+  - `users` → `User`
+  - `categories` → `Category`
+- Improved metric card descriptions
+- Enhanced quick action descriptions
+- Updated error messages to be more descriptive
+
+### Technical Details
+- Implemented proper error collection and aggregation
+- Added debug logging for query execution
+- Enhanced type safety for database entities
+- Improved real-time subscription management
+
+### Developer Notes
+- Table names in Supabase use PascalCase
+- Real-time subscriptions are set up for all dashboard entities
+- Error handling includes retry mechanism with exponential backoff
+- Debug logs are available in development mode

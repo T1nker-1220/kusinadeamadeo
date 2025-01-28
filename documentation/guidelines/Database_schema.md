@@ -1,155 +1,163 @@
-// Core Tables
-interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  phoneNumber: string;
-  address: string;
-  role: 'admin' | 'customer';
-  createdAt: Date;
-}
+# Kusina de Amadeo - Database Schema Documentation
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  sortOrder: number;
-}
+## Table Structure
 
-interface Product {
-  id: string;
-  categoryId: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  imageUrl: string;
-  isAvailable: boolean;
-  allowsAddons: boolean;
-}
+### Order
+- `id` (uuid, primary key)
+- `userId` (uuid, foreign key)
+- `receiptId` (text)
+- `paymentMethod` (PaymentMethod)
+- `totalAmount` (float8)
+- `updatedAt` (timestamp)
+- `status` (OrderStatus)
+- `paymentStatus` (PaymentStatus)
+- `createdAt` (timestamp)
 
-interface ProductVariant {
-  id: string;
-  productId: string;
-  type: 'size' | 'flavor';
-  name: string;
-  price: number;
-}
+### Product
+- `id` (uuid, primary key)
+- `categoryId` (uuid, foreign key)
+- `name` (text)
+- `description` (text)
+- `basePrice` (float8)
+- `imageUrl` (text)
+- `updatedAt` (timestamp)
+- `isAvailable` (bool)
+- `allowsAddons` (bool)
+- `createdAt` (timestamp)
 
-interface GlobalAddon {
-  id: string;
-  name: string;
-  price: number;
-  isAvailable: boolean;
-}
+### User
+- `id` (uuid, primary key)
+- `email` (text)
+- `fullName` (text)
+- `phoneNumber` (text)
+- `address` (text)
+- `updatedAt` (timestamp)
+- `role` (UserRole)
+- `createdAt` (timestamp)
 
-interface Order {
-  id: string;
-  userId: string;
-  receiptId: string; // e.g., AE20
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  paymentMethod: 'gcash' | 'cash';
-  paymentStatus: 'pending' | 'verified';
-  totalAmount: number;
-  createdAt: Date;
-}
+### Category
+- `id` (uuid, primary key)
+- `name` (text)
+- `description` (text)
+- `imageUrl` (text)
+- `sortOrder` (int4)
+- `createdAt` (timestamp)
+- `updatedAt` (timestamp)
 
-// Payment Related Tables
-interface Payment {
-  id: string;
-  orderId: string;
-  amount: number;
-  method: 'gcash' | 'cash';
-  status: 'pending' | 'verified' | 'rejected';
-  referenceNumber?: string;
-  screenshotUrl?: string;
-  verifiedBy?: string;
-  verificationTimestamp?: Date;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+### GlobalAddon
+- `id` (uuid, primary key)
+- `name` (text)
+- `price` (float8)
+- `updatedAt` (timestamp)
+- `isAvailable` (bool)
+- `createdAt` (timestamp)
 
-interface PaymentVerificationLog {
-  id: string;
-  paymentId: string;
-  adminId: string;
-  action: 'verify' | 'reject';
-  notes?: string;
-  timestamp: Date;
-}
+### OrderItem
+- `id` (uuid, primary key)
+- `orderId` (uuid, foreign key)
+- `productId` (uuid, foreign key)
+- `quantity` (int4)
+- `price` (float8)
+- `productVariantId` (uuid, foreign key)
+- `updatedAt` (timestamp)
+- `createdAt` (timestamp)
 
-// Rate Limiting Tables
-interface RateLimit {
-  id: string;
-  userId: string;
-  endpoint: string;
-  count: number;
-  window: string;
-  lastReset: Date;
-}
+### OrderItemAddon
+- `id` (uuid, primary key)
+- `orderItemId` (uuid, foreign key)
+- `addonId` (uuid, foreign key)
+- `quantity` (int4)
+- `unitPrice` (float8)
+- `subtotal` (float8)
 
-// Error Logging Tables
-interface ErrorLog {
-  id: string;
-  type: 'VALIDATION_ERROR' | 'AUTHENTICATION_ERROR' | 'AUTHORIZATION_ERROR' | 'PAYMENT_ERROR' | 'ORDER_ERROR' | 'SYSTEM_ERROR';
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-  userId?: string;
-  timestamp: Date;
-  stackTrace?: string;
-}
+### ProductVariant
+- `id` (uuid, primary key)
+- `productId` (uuid, foreign key)
+- `type` (VariantType)
+- `name` (text)
+- `price` (float8)
+- `imageUrl` (text)
+- `updatedAt` (timestamp)
+- `createdAt` (timestamp)
 
-// Audit Trail Tables
-interface AuditLog {
-  id: string;
-  userId: string;
-  action: string;
-  entityType: 'order' | 'payment' | 'product' | 'user';
-  entityId: string;
-  changes: Record<string, unknown>;
-  timestamp: Date;
-}
+## Enumerated Types
 
-// Database Indexes
-const indexes = {
-  users: [
-    { name: 'email_idx', columns: ['email'] },
-    { name: 'role_idx', columns: ['role'] }
-  ],
-  orders: [
-    { name: 'user_id_idx', columns: ['userId'] },
-    { name: 'status_idx', columns: ['status'] },
-    { name: 'created_at_idx', columns: ['createdAt'] }
-  ],
-  payments: [
-    { name: 'order_id_idx', columns: ['orderId'] },
-    { name: 'status_idx', columns: ['status'] },
-    { name: 'reference_number_idx', columns: ['referenceNumber'] }
-  ],
-  rateLimits: [
-    { name: 'user_endpoint_idx', columns: ['userId', 'endpoint'] },
-    { name: 'window_idx', columns: ['lastReset'] }
-  ],
-  errorLogs: [
-    { name: 'type_idx', columns: ['type'] },
-    { name: 'timestamp_idx', columns: ['timestamp'] }
-  ]
-};
+### UserRole
+- `ADMIN`
+- `CUSTOMER`
 
-// RLS Policies
-const rlsPolicies = {
-  orders: {
-    select: `auth.uid() = userId OR auth.role() = 'admin'`,
-    insert: `auth.uid() = userId`,
-    update: `auth.role() = 'admin'`,
-    delete: `auth.role() = 'admin'`
-  },
-  payments: {
-    select: `auth.uid() = orders.userId OR auth.role() = 'admin'`,
-    insert: `auth.uid() = orders.userId`,
-    update: `auth.role() = 'admin'`,
-    delete: false
-  }
-};
+### OrderStatus
+- `PENDING`
+- `CONFIRMED`
+- `COMPLETED`
+- `CANCELLED`
+
+### PaymentStatus
+- `PENDING`
+- `VERIFIED`
+- `REJECTED`
+
+### PaymentMethod
+- `GCASH`
+- `CASH`
+
+### VariantType
+- `SIZE`
+- `FLAVOR`
+
+## Relationships
+
+1. Order
+   - Belongs to one User
+   - Has many OrderItems
+   - Has one Payment
+
+2. Product
+   - Belongs to one Category
+   - Has many ProductVariants
+   - Has many OrderItems
+
+3. Category
+   - Has many Products
+   - Independent entity
+
+4. OrderItem
+   - Belongs to one Order
+   - Belongs to one Product
+   - Has many OrderItemAddons
+   - Belongs to one ProductVariant (optional)
+
+5. GlobalAddon
+   - Has many OrderItemAddons
+   - Independent entity
+
+6. User
+   - Has many Orders
+   - Independent entity
+
+## Notes for Developers
+
+1. **Table Naming**
+   - All tables use PascalCase naming
+   - Follow Supabase naming conventions
+   - Maintain consistency in column naming
+
+2. **Data Types**
+   - Use appropriate PostgreSQL types
+   - Timestamps include timezone information
+   - UUIDs for all primary keys
+
+3. **Relationships**
+   - Implement proper foreign key constraints
+   - Maintain referential integrity
+   - Use cascade delete where appropriate
+
+4. **Indexes**
+   - Primary keys are automatically indexed
+   - Foreign keys should be indexed
+   - Consider additional indexes for frequent queries
+
+5. **RLS Policies**
+   - Implement row-level security
+   - Consider user roles in policies
+   - Maintain strict access control

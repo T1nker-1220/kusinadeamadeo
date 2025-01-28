@@ -7,13 +7,15 @@ import { useDashboardStats } from "@/hooks/use-dashboard-stats";
 import { formatCurrency } from "@/lib/utils";
 import {
   Clock,
+  DollarSign,
+  LayoutGrid,
   ListOrdered,
   Package,
   Settings,
   ShoppingCart,
   Tag,
-  TrendingUp,
-  Users,
+  UserPlus,
+  Users
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -22,31 +24,44 @@ export default function AdminDashboard() {
   const metrics = [
     {
       title: "Total Orders",
-      value: stats?.orders.monthlyCount.toString() || "0",
+      value: stats?.Orders.monthlyCount.toString() || "0",
       description: "Total orders this month",
       icon: ShoppingCart,
-      trend: stats?.orders.trend,
-    },
-    {
-      title: "Active Products",
-      value: stats?.products.active.toString() || "0",
-      description: "Products in catalog",
-      icon: Package,
-      trend: stats?.products.trend,
-    },
-    {
-      title: "Total Users",
-      value: stats?.users.total.toString() || "0",
-      description: `${stats?.users.newThisMonth || 0} new this month`,
-      icon: Users,
-      trend: stats?.users.trend,
+      trend: stats?.Orders.trend,
     },
     {
       title: "Monthly Revenue",
-      value: formatCurrency(stats?.orders.monthlyRevenue || 0),
-      description: "Revenue this month",
-      icon: TrendingUp,
-      trend: stats?.orders.trend,
+      value: formatCurrency(stats?.Orders.monthlyRevenue || 0),
+      description: "Total revenue this month",
+      icon: DollarSign,
+      trend: stats?.Orders.trend,
+    },
+    {
+      title: "Active Products",
+      value: stats?.Products.active.toString() || "0",
+      description: "Products currently available",
+      icon: Package,
+      trend: stats?.Products.trend,
+    },
+    {
+      title: "Active Categories",
+      value: stats?.Categories.active.toString() || "0",
+      description: "Categories currently available",
+      icon: LayoutGrid,
+    },
+    {
+      title: "Total Users",
+      value: stats?.Users.total.toString() || "0",
+      description: "Total registered users",
+      icon: Users,
+      trend: stats?.Users.trend,
+    },
+    {
+      title: "New Users",
+      value: stats?.Users.newThisMonth.toString() || "0",
+      description: "New users this month",
+      icon: UserPlus,
+      trend: stats?.Users.trend,
     },
   ];
 
@@ -59,13 +74,19 @@ export default function AdminDashboard() {
     },
     {
       title: "Add Product",
-      description: "Create a new product listing",
-      icon: Tag,
+      description: `${stats?.Products.total || 0} products in catalog`,
+      icon: Package,
       href: "/admin/products/new",
     },
     {
+      title: "Add Category",
+      description: `${stats?.Categories.total || 0} categories available`,
+      icon: Tag,
+      href: "/admin/categories/new",
+    },
+    {
       title: "Manage Categories",
-      description: `${stats?.categories.active || 0} active categories`,
+      description: `${stats?.Categories.total || 0} total categories`,
       icon: ListOrdered,
       href: "/admin/categories",
     },

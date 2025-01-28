@@ -1,88 +1,106 @@
 # MVP Development Plan for Kusina de Amadeo
 
-## Current Project Status
+## Core MVP Features
 
-### Phase 2 Implementation Status
+### 1. Authentication System (Essential)
+- [x] Google OAuth Integration
+  - [x] Sign in with Google
+  - [x] User session management
+- [x] Basic Role System
+  - [x] Customer role
+  - [x] Admin role
+  - [x] Role-based access control
+- [ ] Required User Profile Fields
+  - [x] Email (from Google)
+  - [x] Full name
+  - [ ] Phone number
+  - [ ] Basic address info
 
-#### Category Management (90% Complete)
-✅ Core Features:
-- Category CRUD operations
-- Image upload and management
-- Sorting functionality
-- Basic validation
-- RLS policies configuration
+### 2. Product Management (Core)
 
-🚧 Known Issues:
-- Category limit enforcement (4 main categories) needs implementation
-- Image optimization could be improved
-- Some UI responsiveness issues
+#### Categories Management
+- [x] Four Main Categories Only
+  - [x] Category creation/editing
+  - [ ] Category limit enforcement
+  - [x] Category organization structure
+- [x] Image upload and management
+  - [x] Category image upload
+  - [x] Image optimization
+  - [x] Cloud storage integration
 
-#### Product Management (80% Complete)
-✅ Working Features:
-- Basic CRUD operations
-- Image upload functionality
-- Category assignment
-- Variant management (basic)
-- Stock status tracking
+#### Product Information
+- [x] Basic Product Details
+  - [x] Name
+  - [x] Description
+  - [x] Price
+  - [x] Product code
+- [x] Stock Status Management
+  - [x] In stock/Out of stock indicators
+  - [x] Stock level tracking
+- [x] Image Management
+  - [x] Single product image
+  - [x] Upload/update functionality
+  - [x] Image preview
+- [x] Category Assignment
+  - [x] Single category selection
+  - [x] Category filtering
 
-🚧 Issues to Address:
-- Cache invalidation for product updates
-- Filter state management improvements
-- Enhanced error handling needed
-- Performance optimization required
-- Data validation enhancements
+#### Variants System
+- [ ] Beverage Size Variants
+  - [ ] Regular (16oz)
+  - [ ] Large (22oz)
+  - [ ] Price adjustments per size
+- [ ] Flavor Variants
+  - [ ] Basic flavor selection
+  - [ ] Price adjustments per flavor
 
-### Remaining Phase 2 Tasks
+#### Global Add-ons System
+- [ ] Budget/Silog Meals Add-ons
+  - [ ] Basic add-on management
+  - [ ] Add-on pricing structure
+  - [ ] Add-on availability toggle
+  - [ ] Image upload and management (optional)
 
-1. **User Profile System**
-   - [ ] Phone number field implementation
-   - [ ] Basic address information
-   - [ ] Profile validation
+### 3. Order System (Essential)
+- [x] Cart Functionality
+  - [x] Add/remove items
+  - [x] Update quantities
+  - [x] Calculate totals
+  - [x] Cart persistence
+- [ ] Order Placement
+  - [x] Order confirmation
+  - [x] Order details review
+  - [ ] Delivery/pickup selection
+- [ ] Payment Processing
+  - [ ] GCash (manual verification)
+  - [ ] Cash on pickup
+  - [ ] Payment status tracking
+- [ ] Order Tracking
+  - [x] Basic status updates
+  - [x] Receipt generation (2 letters + 2 numbers)
+  - [ ] Order history
 
-2. **Order System**
-   - [ ] Delivery/pickup selection
-   - [ ] Payment processing (GCash, Cash on pickup)
-   - [ ] Complete order history
-
-3. **Product Features**
-   - [ ] Price adjustments per flavor
-   - [ ] Global add-ons system
-   - [ ] Add-on pricing structure
-   - [ ] Add-on availability toggle
-
-4. **Store Operations**
-   - [ ] Operating hours setup
-   - [ ] Holiday/special hours
+### 4. Store Operations (Basic)
+- [ ] Store Hours Management
+  - [ ] Operating hours setup
+  - [ ] Holiday/special hours
+- [x] Order Status Management
+  - [x] Basic status updates
+  - [x] Order fulfillment tracking
+  - [x] Admin order dashboard
+- [x] Inventory Management
+  - [x] Simple stock tracking
+  - [x] Low stock alerts
+  - [x] Stock update history
 
 ## Implementation Notes
-
-### Current Focus Areas
-1. Fix existing issues in Category/Product management:
-   - Cache invalidation
-   - Filter state
-   - Error handling
-   - Performance optimization
-   - Data validation
-
-2. Core Feature Implementation:
-   - User profile completion
-   - Order system essentials
-   - Payment processing integration
-
-3. Documentation & Testing:
-   - API documentation updates
-   - Component documentation
-   - Unit test implementation
-   - Integration test setup
-
-### Best Practices
-- Focus on essential features first
-- Keep interfaces simple and user-friendly
-- Implement basic functionality before adding complexity
-- Ensure mobile responsiveness
-- Maintain clear documentation
-- Implement proper error handling
-- Add loading states and feedback
+- [x] Focus on essential features first
+- [x] Keep interfaces simple and user-friendly
+- [x] Implement basic functionality before adding complexity
+- [x] Ensure mobile responsiveness
+- [x] Maintain clear documentation
+- [x] Error handling implementation
+- [x] Loading states and feedback
 
 ## Future Considerations
 - Advanced inventory management
