@@ -71,7 +71,11 @@ export async function POST(
     const body = await req.json();
 
     // Validate request body
-    const validatedData = ProductVariantSchema.parse(body);
+    const validatedData = ProductVariantSchema.parse({
+      ...body,
+      stock: body.stock || 0,
+      isAvailable: body.isAvailable ?? true,
+    });
 
     // Create variant
     const variant = await prisma.productVariant.create({
@@ -139,7 +143,11 @@ export async function PATCH(
     }
 
     // Validate update data
-    const validatedData = ProductVariantSchema.partial().parse(updateData);
+    const validatedData = ProductVariantSchema.partial().parse({
+      ...updateData,
+      stock: updateData.stock ?? undefined,
+      isAvailable: updateData.isAvailable ?? undefined,
+    });
 
     // Check if variant exists and belongs to the product
     const existingVariant = await prisma.productVariant.findFirst({

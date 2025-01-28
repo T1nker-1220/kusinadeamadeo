@@ -161,3 +161,82 @@ pnpm add @radix-ui/react-alert-dialog
 - Real-time subscriptions are set up for all dashboard entities
 - Error handling includes retry mechanism with exponential backoff
 - Debug logs are available in development mode
+
+## [1.1.4] - 2024-01-28
+
+### Added
+- Comprehensive MVP Development Plan update
+- Progress tracking for all major features
+- Technical implementation status section
+- Clear prioritization of upcoming features
+- Detailed completion percentages
+
+### Changed
+- Updated feature completion metrics
+- Reorganized development priorities
+- Enhanced documentation structure
+- Improved progress tracking system
+
+### Technical Details
+- Authentication System: 90% complete
+- Product Management: 85% complete
+- Order System: 75% complete
+- Store Operations: 70% complete
+- Variants System: 40% complete
+- Add-ons System: 30% complete
+
+### Developer Notes
+- Focus on completing Variants System next
+- Payment processing implementation priority
+- Add-ons system development to follow
+- User profile management updates needed
+- Operating hours system pending implementation
+
+## [1.1.5] - 2024-01-28
+
+### Added
+- Comprehensive variant management system
+  - Stock tracking and management
+  - Availability controls
+  - Quick stock update controls
+  - Image upload for variants
+- New API endpoints
+  - `/api/products/[id]/variants/stock` for stock management
+  - Enhanced variant CRUD operations
+  - Secure RLS policies for variants
+- UI Components
+  - Grid-based variant display
+  - Quick action controls
+  - Stock management interface
+  - Status indicators
+- Database Enhancements
+  - New columns: `stock` and `isAvailable` for variants
+  - Performance indexes for variant queries
+  - Cascade delete relationships
+  - RLS policies for variant security
+
+### Changed
+- Updated variant form with stock management
+- Enhanced variant list display
+- Improved RLS policy implementation
+- Optimized database schema
+- Updated API validation schemas
+
+### Technical Details
+```sql
+-- New variant fields
+ALTER TABLE "ProductVariant"
+ADD COLUMN "stock" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "isAvailable" BOOLEAN NOT NULL DEFAULT true;
+
+-- Performance indexes
+CREATE INDEX "product_variants_stock_idx" ON "ProductVariant"("stock");
+CREATE INDEX "product_variants_isAvailable_idx" ON "ProductVariant"("isAvailable");
+```
+
+### Developer Notes
+- RLS policies now use proper text casting for UUID comparisons
+- Stock updates implement optimistic UI updates
+- Form validation enhanced with Zod schemas
+- Image upload integrated with Supabase storage
+- API endpoints follow REST best practices

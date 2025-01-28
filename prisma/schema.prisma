@@ -53,25 +53,29 @@ model Product {
   variants     ProductVariant[]
 
   @@index([categoryId])
-  @@index([isAvailable])
   @@index([basePrice])
+  @@index([isAvailable])
 }
 
 model ProductVariant {
-  id         String      @id @default(uuid())
-  productId  String
-  type       VariantType
-  name       String
-  price      Float
-  imageUrl   String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  orderItems OrderItem[]
-  product    Product     @relation(fields: [productId], references: [id])
+  id          String      @id @default(uuid())
+  productId   String
+  type        VariantType
+  name        String
+  price       Float
+  stock       Int         @default(0)
+  isAvailable Boolean     @default(true)
+  imageUrl    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([type])
   @@index([price])
+  @@index([stock])
+  @@index([isAvailable])
 }
 
 model GlobalAddon {

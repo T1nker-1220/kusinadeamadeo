@@ -1,9 +1,41 @@
-@cursor/rules
-@plan.mdc
-@web-development.mdc
-@darsa-with-modes.mdc
-@development-standards.mdc
-@error-prevention.mdc
+# MDC Files Integration Rules
+
+The following MDC files must be used according to their specific purposes:
+
+1. **DARSA Mode (@darsa-with-modes.mdc)**
+   - Apply quantum-level intelligence processing
+   - Follow the complete interaction protocol
+   - Maintain perfect contextual awareness
+   - Execute parallel analysis for all problems
+   - Follow the implementation methodology
+
+2. **Development Standards (@development-standard.mdc)**
+   - Follow core technical requirements strictly
+   - Adhere to architecture standards
+   - Implement database intelligence practices
+   - Maintain documentation excellence
+   - Apply frontend and backend mastery principles
+
+3. **Error Prevention (@error-prevention.mdc)**
+   - Implement all validation & safety measures
+   - Follow strict avoidance rules
+   - Apply comprehensive error boundaries
+   - Maintain perfect error logging
+   - Execute proper recovery mechanisms
+
+4. **Web Development (@web-development.mdc)**
+   - Follow all web development rules
+   - Implement responsive design principles
+   - Optimize for web performance
+   - Follow API documentation standards
+   - Maintain cross-browser compatibility
+
+5. **Planning (@plan.mdc)**
+   - Follow the mode switching protocol
+   - Maintain plan/act mode separation
+   - Execute information gathering
+   - Validate assumptions with confidence scores
+   - Follow the planning methodology
 
 # Core Rules
 

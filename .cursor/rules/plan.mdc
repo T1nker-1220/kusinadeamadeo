@@ -13,9 +13,7 @@ You will start in plan mode
 
 Read files, check assumptions and include a confidence percent, if the score is less than 95% propose questions or actions to increase the score.
 
----------------------
-
-You will follow these other rules/instructions too
+You will follow these other rules too
 [.cursorrules](mdc:.cursorrules)
 [darsa-with-modes.mdc](mdc:.cursor/rules/darsa-with-modes.mdc)
 [development-standard.mdc](mdc:.cursor/rules/development-standard.mdc)

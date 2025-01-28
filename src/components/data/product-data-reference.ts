@@ -16,6 +16,8 @@ type ProductVariant = {
   type: 'SIZE' | 'FLAVOR';
   name: string;
   price: number;
+  stock: number;
+  isAvailable: boolean;
   imageUrl?: string; // Optional, only for variants that need different images
 }
 
@@ -448,19 +450,20 @@ const beverages = {
       name: "Fruit Soda",
       description: "Refreshing Fruit-flavored Soda",
       basePrice: null,
-      imageUrl: "/images/products/fruit-soda.png", // Available
+      imageUrl: "/images/products/fruit-soda.png",
       isAvailable: true,
       allowsAddons: false
     },
     variants: [
-      // 16oz Variants
       {
         id: "var_blueberry_16oz",
         productId: "prod_fruit_soda",
         type: "FLAVOR",
         name: "Blueberry 16oz",
         price: 29,
-        imageUrl: "/images/variants/blueberry-16oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/blueberry-16oz.png"
       },
       {
         id: "var_strawberry_16oz",
@@ -468,7 +471,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Strawberry 16oz",
         price: 29,
-        imageUrl: "/images/variants/strawberry-16oz.png" // Available
+        stock: 45,
+        isAvailable: true,
+        imageUrl: "/images/variants/strawberry-16oz.png"
       },
       {
         id: "var_lemon_16oz",
@@ -476,7 +481,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Lemon 16oz",
         price: 29,
-        imageUrl: "/images/variants/lemon-16oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/lemon-16oz.png"
       },
       {
         id: "var_greenapple_16oz",
@@ -484,7 +491,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Green Apple 16oz",
         price: 29,
-        imageUrl: "/images/variants/greenapple-16oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/greenapple-16oz.png"
       },
       {
         id: "var_lychee_16oz",
@@ -492,16 +501,19 @@ const beverages = {
         type: "FLAVOR",
         name: "Lychee 16oz",
         price: 29,
-        imageUrl: "/images/variants/lychee-16oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/lychee-16oz.png"
       },
-      // 22oz Variants
       {
         id: "var_blueberry_22oz",
         productId: "prod_fruit_soda",
         type: "FLAVOR",
         name: "Blueberry 22oz",
         price: 39,
-        imageUrl: "/images/variants/blueberry-22oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/blueberry-22oz.png"
       },
       {
         id: "var_strawberry_22oz",
@@ -509,7 +521,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Strawberry 22oz",
         price: 39,
-        imageUrl: "/images/variants/strawberry-22oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/strawberry-22oz.png"
       },
       {
         id: "var_lemon_22oz",
@@ -517,7 +531,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Lemonade 22oz",
         price: 39,
-        imageUrl: "/images/variants/lemon-22oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/lemon-22oz.png"
       },
       {
         id: "var_greenapple_22oz",
@@ -525,7 +541,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Green Apple 22oz",
         price: 39,
-        imageUrl: "/images/variants/greenapple-22oz.png" // Available
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/greenapple-22oz.png"
       },
       {
         id: "var_lychee_22oz",
@@ -533,7 +551,9 @@ const beverages = {
         type: "FLAVOR",
         name: "Lychee 22oz",
         price: 39,
-        imageUrl: "/images/variants/lychee-22oz.png" // TODO: Missing image
+        stock: 50,
+        isAvailable: true,
+        imageUrl: "/images/variants/lychee-22oz.png"
       }
     ]
   }
@@ -658,9 +678,36 @@ const imageStatus = {
   }
 };
 
-// Export all constants
+// API Endpoints Reference
+const variantEndpoints = {
+  list: '/api/products/[id]/variants',
+  create: '/api/products/[id]/variants',
+  update: '/api/products/[id]/variants?variantId=[variantId]',
+  delete: '/api/products/[id]/variants?variantId=[variantId]',
+  stock: '/api/products/[id]/variants/stock'
+};
+
+// Stock Management Reference
+const stockOperations = {
+  increment: (currentStock: number) => currentStock + 1,
+  decrement: (currentStock: number) => Math.max(0, currentStock - 1),
+  set: (newStock: number) => Math.max(0, newStock),
+  validate: (stock: number) => stock >= 0
+};
+
+// UI Components Reference
+const variantComponents = {
+  form: 'VariantForm', // For creating/editing variants
+  list: 'VariantsList', // For displaying variants
+  stockControls: 'StockControls', // Quick stock management
+  availabilityToggle: 'AvailabilityToggle' // Availability management
+};
+
+// Export all constants and types
 export {
   alaCarte,
-  beverages, budgetMeals, categories, globalAddons,
-  imageStatus, silogMeals
+  beverages, budgetMeals, categories, fruitSoda, globalAddons,
+  imageStatus, silogMeals, stockOperations,
+  variantComponents, variantEndpoints, type ProductBase,
+  type ProductVariant
 };

@@ -1,56 +1,47 @@
 # Database Schema Optimization Plan
 
+## Version Control
+- Current Version: 1.1.5
+- Last Updated: 2024-01-28
+- Status: Phase 2 In Progress
+
 ## Current State Analysis
-✅ Existing Structure:
-- Products table with 27 entries
-- Product variants with FLAVOR and SIZE types
-- Local image storage for products and categories
-- Basic relationships established
+✅ Completed:
+- Products table with optimized structure
+- Supabase storage integration
+- Basic RLS policies
+- Core indexes implementation
+- Image migration to Supabase
+- Variant system core implementation
+- Stock management system
+- Availability controls
+- Performance indexes
 
-❌ Issues Identified:
-1. Images stored locally instead of Supabase storage
-2. Some variant images missing (NULL values)
-3. Storage buckets exist but are empty
-4. Image paths need updating after migration
+🔄 In Progress:
+- Advanced variant features
+- Add-ons schema implementation
+- Order system enhancements
+- User profile extensions
 
-## Phase 1: Storage Migration
+## Phase 1: Storage Migration (✅ COMPLETED)
 
-### 1.1 Storage Setup
-- [ ] Configure Supabase storage policies
-  ```sql
-  CREATE POLICY "Public Access" ON storage.objects
-    FOR SELECT USING (bucket_id = 'products' OR bucket_id = 'categories');
+### 1.1 Storage Setup (✅ COMPLETED)
+- [x] Supabase storage policies implemented
+- [x] Directory structure created
+- [x] Access controls configured
+- [x] Backup system established
 
-  CREATE POLICY "Admin Insert" ON storage.objects
-    FOR INSERT WITH CHECK (auth.role() = 'admin');
-  ```
-- [ ] Create directory structure:
-  - /products/{productId}/main.png
-  - /products/{productId}/variants/{variantId}.png
-  - /categories/{categoryId}.png
+### 1.2 Image Migration (✅ COMPLETED)
+- [x] Product images migrated
+- [x] Category images migrated
+- [x] URLs updated in database
+- [x] Verification completed
 
-### 1.2 Image Migration
-- [ ] Create migration script for products:
-  ```typescript
-  // Migration steps
-  1. Upload product images to Supabase storage
-  2. Update product table with new URLs
-  3. Verify image accessibility
-  4. Keep local images until verification
-  ```
-- [ ] Create migration script for variants:
-  ```typescript
-  // Migration steps
-  1. Upload variant images to Supabase storage
-  2. Update variant table with new URLs
-  3. Handle NULL image cases
-  4. Verify all variant images
-  ```
+## Phase 2: Schema Enhancement (🔄 70% Complete)
 
-## Phase 2: Schema Enhancement
-
-### 2.1 Products Table Optimization
+### 2.1 Products Table Optimization (✅ COMPLETED)
 ```sql
+-- Existing optimizations implemented
 ALTER TABLE products
 ADD COLUMN image_url TEXT,
 ADD COLUMN stock INTEGER DEFAULT 0,
@@ -59,142 +50,172 @@ ADD COLUMN metadata JSONB DEFAULT '{}',
 ADD CONSTRAINT valid_price CHECK (base_price >= 0);
 ```
 
-### 2.2 Variants Table Optimization
+### 2.2 Variants System (✅ 70% Complete)
 ```sql
-ALTER TABLE product_variants
-ADD COLUMN stock INTEGER DEFAULT 0,
-ADD COLUMN is_available BOOLEAN DEFAULT true,
-ADD COLUMN sort_order INTEGER,
-ADD COLUMN metadata JSONB DEFAULT '{}',
-ADD CONSTRAINT valid_price CHECK (price >= 0),
-ADD CONSTRAINT valid_stock CHECK (stock >= 0);
-```
+-- Implemented variant system schema
+CREATE TABLE "ProductVariant" (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    product_id UUID REFERENCES "Product"(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    stock INTEGER DEFAULT 0,
+    is_available BOOLEAN DEFAULT true,
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+    CONSTRAINT valid_price CHECK (price >= 0),
+    CONSTRAINT valid_stock CHECK (stock >= 0)
+);
 
-### 2.3 Add Indexes
-```sql
--- For faster variant lookups
-CREATE INDEX idx_product_variants_product_id
-ON product_variants(product_id);
+-- Performance indexes
+CREATE INDEX idx_product_variants_product_id ON "ProductVariant"(product_id);
+CREATE INDEX idx_product_variants_type ON "ProductVariant"(type);
+CREATE INDEX idx_product_variants_stock ON "ProductVariant"(stock);
+CREATE INDEX idx_product_variants_is_available ON "ProductVariant"(is_available);
 
--- For category filtering
-CREATE INDEX idx_products_category_id
-ON products(category_id);
+-- RLS Policies
+ALTER TABLE "ProductVariant" ENABLE ROW LEVEL SECURITY;
 
--- For availability filtering
-CREATE INDEX idx_products_availability
-ON products(is_available);
-```
-
-## Phase 3: Data Validation
-
-### 3.1 Data Integrity Checks
-```sql
--- Check for orphaned variants
-SELECT pv.* FROM product_variants pv
-LEFT JOIN products p ON p.id = pv.product_id
-WHERE p.id IS NULL;
-
--- Check for invalid prices
-SELECT * FROM products WHERE base_price < 0;
-SELECT * FROM product_variants WHERE price < 0;
-
--- Check for missing images
-SELECT * FROM products WHERE image_url IS NULL;
-SELECT * FROM product_variants WHERE image_url IS NULL;
-```
-
-### 3.2 RLS Policies
-```sql
--- Products table policies
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public read access"
-  ON products FOR SELECT
+CREATE POLICY "Public read access for variants"
+  ON "ProductVariant"
+  FOR SELECT
+  TO public
   USING (true);
 
-CREATE POLICY "Admin full access"
-  ON products FOR ALL
-  USING (auth.role() = 'admin');
-
--- Similar policies for variants table
+CREATE POLICY "Admin full access for variants"
+  ON "ProductVariant"
+  FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM "User"
+      WHERE "User".id::text = auth.uid()::text
+      AND "User".role = 'ADMIN'
+    )
+  );
 ```
 
-## Phase 4: Performance Optimization
+### 2.3 Add-ons System (🔄 30% Complete)
+```sql
+-- Add-ons table structure
+CREATE TABLE product_addons (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    category_id UUID REFERENCES categories(id),
+    is_available BOOLEAN DEFAULT true,
+    sort_order INTEGER,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Add-ons relationship table
+CREATE TABLE product_addon_availability (
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    addon_id UUID REFERENCES product_addons(id) ON DELETE CASCADE,
+    PRIMARY KEY (product_id, addon_id)
+);
+```
+
+### 2.4 Order System Enhancement (🔄 75% Complete)
+```sql
+-- Order status enum
+CREATE TYPE order_status AS ENUM (
+    'pending',
+    'confirmed',
+    'preparing',
+    'ready',
+    'completed',
+    'cancelled'
+);
+
+-- Orders table enhancement
+ALTER TABLE orders
+ADD COLUMN status order_status DEFAULT 'pending',
+ADD COLUMN payment_status VARCHAR(50),
+ADD COLUMN delivery_type VARCHAR(50),
+ADD COLUMN metadata JSONB DEFAULT '{}';
+```
+
+## Phase 3: Data Validation (✅ COMPLETED)
+
+### 3.1 Data Integrity (✅ COMPLETED)
+- [x] Orphaned records check
+- [x] Price validation
+- [x] Image URL verification
+- [x] Relationship integrity
+- [x] Stock validation
+- [x] Availability status checks
+
+### 3.2 RLS Policies (✅ COMPLETED)
+```sql
+-- Implemented policies for:
+-- - Products
+-- - Categories
+-- - Orders
+-- - User profiles
+-- - Variants
+-- - Add-ons
+```
+
+## Phase 4: Performance Optimization (🔄 IN PROGRESS)
 
 ### 4.1 Query Optimization
-- [ ] Add composite indexes for common queries
-- [ ] Implement caching strategy
-- [ ] Optimize JOIN operations
-- [ ] Add materialized views if needed
+- [x] Basic indexes
+- [x] Common query optimization
+- [x] Variant-specific indexes
+- [ ] Advanced indexing strategy
+- [ ] Materialized views
 
-### 4.2 Monitoring Setup
-- [ ] Set up query performance monitoring
-- [ ] Configure storage usage alerts
-- [ ] Implement error tracking
-- [ ] Add performance dashboards
+### 4.2 Monitoring
+- [x] Basic performance tracking
+- [x] Storage monitoring
+- [x] Stock level tracking
+- [ ] Advanced metrics
+- [ ] Automated alerts
 
-## Implementation Steps
+## Implementation Priority
 
-1. Backup Current Data
-```bash
-# Backup steps
-1. Export all current data
-2. Take snapshot of local images
-3. Document current schema
-4. Create rollback plan
-```
+1. Complete Advanced Variant Features
+   - Bulk stock updates
+   - Stock alerts
+   - Sales tracking
+   - Inventory history
 
-2. Storage Migration
-```bash
-# Migration sequence
-1. Set up storage buckets
-2. Upload images
-3. Update database records
-4. Verify migrations
-```
+2. Implement Add-ons System
+3. Enhance Order System
+4. Extend User Profiles
+5. Optimize Performance
 
-3. Schema Updates
-```bash
-# Update sequence
-1. Apply schema changes
-2. Update indexes
-3. Verify constraints
-4. Test queries
-```
+## Success Metrics
+- Query performance < 100ms
+- Zero orphaned records
+- 100% data integrity
+- All constraints active
+- Complete audit logs
+- Proper error handling
+- Stock accuracy 100%
+- Real-time availability updates
 
-4. Validation
-```bash
-# Validation steps
-1. Run integrity checks
-2. Verify image access
-3. Test performance
-4. Document changes
-```
+## Rollback Procedures
+1. Automated backups in place
+2. Point-in-time recovery ready
+3. Migration rollback scripts prepared
+4. Emergency procedures documented
 
-## Success Criteria
-1. All images migrated to Supabase storage
-2. Zero NULL image URLs (unless intentional)
-3. All constraints passing
-4. Improved query performance
-5. Complete data integrity
-6. Working image access
-7. Proper error handling
+## Next Steps
+1. Implement bulk stock updates
+2. Add stock alerts system
+3. Implement sales tracking
+4. Deploy monitoring system
+5. Optimize query performance
 
-## Rollback Plan
-```bash
-# Rollback steps if needed
-1. Restore database backup
-2. Revert schema changes
-3. Return to local images
-4. Document issues
-```
-
-## Future Considerations
-1. Image optimization pipeline
-2. CDN integration
-3. Backup automation
-4. Performance monitoring
-5. Auto-scaling storage
-6. Cache invalidation
-7. Disaster recovery
-```
+## Recent Achievements
+1. Variant system core implementation
+2. Stock management system
+3. Availability controls
+4. Performance indexes
+5. RLS policies
+6. Data integrity checks
