@@ -1,80 +1,132 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
-import { cn } from "@/lib/utils";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+"use client";
+
+import { MetricCard } from "@/components/admin/dashboard/metric-card";
+import { QuickActionCard } from "@/components/admin/dashboard/quick-action-card";
+import { Motion } from "@/components/ui/motion";
+import { useDashboardStats } from "@/hooks/use-dashboard-stats";
+import { formatCurrency } from "@/lib/utils";
 import {
+  Clock,
   ListOrdered,
   Package,
+  Settings,
   ShoppingCart,
+  Tag,
+  TrendingUp,
   Users,
 } from "lucide-react";
-import { cookies } from "next/headers";
 
-export default async function AdminDashboard() {
-  const supabase = createServerComponentClient({ cookies });
+export default function AdminDashboard() {
+  const { stats, loading, error } = useDashboardStats();
 
-  // Fetch counts
-  const [
-    categoriesCount,
-    productsCount,
-    ordersCount,
-    usersCount,
-  ] = await Promise.all([
-    prisma.category.count(),
-    prisma.product.count(),
-    prisma.order.count(),
-    prisma.user.count(),
-  ]);
-
-  const stats = [
-    {
-      title: "Total Categories",
-      value: categoriesCount,
-      icon: ListOrdered,
-      color: "text-blue-600",
-    },
-    {
-      title: "Total Products",
-      value: productsCount,
-      icon: Package,
-      color: "text-green-600",
-    },
+  const metrics = [
     {
       title: "Total Orders",
-      value: ordersCount,
+      value: stats?.orders.monthlyCount.toString() || "0",
+      description: "Total orders this month",
       icon: ShoppingCart,
-      color: "text-orange-600",
+      trend: stats?.orders.trend,
+    },
+    {
+      title: "Active Products",
+      value: stats?.products.active.toString() || "0",
+      description: "Products in catalog",
+      icon: Package,
+      trend: stats?.products.trend,
     },
     {
       title: "Total Users",
-      value: usersCount,
+      value: stats?.users.total.toString() || "0",
+      description: `${stats?.users.newThisMonth || 0} new this month`,
       icon: Users,
-      color: "text-purple-600",
+      trend: stats?.users.trend,
+    },
+    {
+      title: "Monthly Revenue",
+      value: formatCurrency(stats?.orders.monthlyRevenue || 0),
+      description: "Revenue this month",
+      icon: TrendingUp,
+      trend: stats?.orders.trend,
     },
   ];
 
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="mb-8 text-3xl font-bold">Admin Dashboard</h1>
+  const quickActions = [
+    {
+      title: "Process Orders",
+      description: "View and manage pending orders",
+      icon: Clock,
+      href: "/admin/orders",
+    },
+    {
+      title: "Add Product",
+      description: "Create a new product listing",
+      icon: Tag,
+      href: "/admin/products/new",
+    },
+    {
+      title: "Manage Categories",
+      description: `${stats?.categories.active || 0} active categories`,
+      icon: ListOrdered,
+      href: "/admin/categories",
+    },
+    {
+      title: "Store Settings",
+      description: "Configure store preferences",
+      icon: Settings,
+      href: "/admin/settings",
+    },
+  ];
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <Icon className={cn("h-4 w-4", stat.color)} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
+  if (error) {
+    return (
+      <div className="flex h-[200px] items-center justify-center rounded-md border border-destructive bg-destructive/5 p-4 text-destructive">
+        <p className="text-sm">
+          Error loading dashboard data. Please try again later.
+          {process.env.NODE_ENV === "development" && (
+            <span className="block text-xs">{error.message}</span>
+          )}
+        </p>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <Motion
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Overview of your store's performance
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <MetricCard
+              key={metric.title}
+              {...metric}
+              isLoading={loading}
+            />
+          ))}
+        </div>
+
+        <div>
+          <h3 className="mb-4 text-lg font-medium">Quick Actions</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <QuickActionCard
+                key={action.title}
+                {...action}
+                className={loading ? "opacity-50 pointer-events-none" : ""}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </Motion>
   );
 }

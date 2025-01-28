@@ -16,7 +16,10 @@
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "migrate:setup": "tsx src/scripts/setup-migration.ts",
+    "migrate:products": "tsx src/scripts/migrate-products.ts",
+    "migrate:products:dry-run": "tsx src/scripts/migrate-products.ts --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -41,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
+    "framer-motion": "^12.0.6",
     "lucide-react": "^0.471.1",
     "next": "14.1.0",
     "react": "18.2.0",
@@ -65,6 +69,7 @@
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.17",
     "cssnano": "^7.0.6",
+    "dotenv": "^16.4.7",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "jest": "^29.7.0",
@@ -75,6 +80,7 @@
     "prisma": "^6.2.1",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "prisma": {

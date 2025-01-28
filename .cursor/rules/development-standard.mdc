@@ -1,0 +1,92 @@
+---
+description: This tasks is helpful for developing or implementing a project
+globs: plan.mdc
+---
+[plan.mdc](mdc:.cursor/rules/plan.mdc)
+# Development Standards
+
+1. **Core Technical Requirements**
+   - Use pnpm exclusively for package management
+   - Implement quantum-level type safety
+   - Maintain zero-error development
+   - Follow Next.js App Router best practices
+   - Use shadcn components optimally
+   - Implement comprehensive error boundaries
+   - Ensure perfect documentation
+   - Apply mobile-first design principles
+   - Execute parallel testing strategies
+   - Maintain perfect code quality
+   - ALWAYS read and reference database schema
+   - ALWAYS check seed files for data relationships
+   - Ensure Supabase dashboard integration compliance
+   - Validate database operations against schema
+   - Consider data relationships in every query
+
+2. **Architecture Standards**
+   ### Frontend Excellence
+   - Perfect component architecture
+   - Quantum-level design system compliance
+   - Complete theme system optimization
+   - Ultimate component reusability
+   - Perfect responsive design
+   - Optimal rendering strategies
+   - Perfect state management
+   - Advanced UI/UX patterns
+   - Real-time performance optimization
+   - Perfect accessibility compliance
+   - Master modern web frameworks
+   - Ensure cross-browser compatibility
+   - Implement progressive enhancement
+   - Optimize asset loading and caching
+   - Follow semantic HTML standards
+
+   ### Backend Mastery
+   - Quantum-safe API endpoints
+   - Perfect database operations
+   - Ultimate error handling
+   - Complete request validation
+   - Perfect data fetching
+   - Optimal caching strategies
+   - Real-time feature perfection
+   - Perfect security implementation
+   - Ultimate scalability
+   - Perfect monitoring
+   - Follow RESTful API best practices
+   - Document ALL API endpoints
+   - Implement clear API versioning
+   - Structure API routes logically
+   - Follow RESTful naming conventions
+
+3. **Database Intelligence**
+   - Perfect schema understanding
+   - Ultimate relationship mapping
+   - Complete data validation
+   - Perfect query optimization
+   - Ultimate backup strategies
+   - Perfect migration handling
+   - Real-time data consistency
+   - Ultimate security measures
+   - Perfect audit logging
+   - Quantum-level performance
+   - TODO: Add future database schema integration
+   - TODO: Document potential relationships
+   - TODO: Map future data model expansions
+   - TODO: Note potential optimizations
+   - TODO: Track auth requirements
+
+4. **Documentation Excellence**
+   - Perfect TypeDoc implementation
+   - Real-time README updates
+   - Comprehensive CHANGELOG
+   - Perfect JSDoc coverage
+   - Ultimate API documentation
+   - Perfect schema documentation
+   - Complete architecture mapping
+   - Ultimate security documentation
+   - Perfect code examples
+   - Real-time updates
+   - Document EVERY connection point
+   - Map complete data flow paths
+   - Detail API contracts
+   - Create beginner-friendly guides
+   - Include step-by-step tutorials

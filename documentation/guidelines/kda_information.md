@@ -134,7 +134,7 @@ Kusina de Amadeo is a full-stack food ordering system for an authentic Filipino 
 - Authentication system
 - RLS policies and security
 
-### ✅ Phase 2: Core Features Development (Completed)
+### 🚧 Phase 2: Core Features Development (In Progress)
 - Product management system
 - Category CRUD operations
 - Image upload system
@@ -142,7 +142,7 @@ Kusina de Amadeo is a full-stack food ordering system for an authentic Filipino 
 - Shopping cart implementation
 - Order management system
 
-### 🚧 Phase 3: User Interface Development (In Progress)
+### 📅 Phase 3: User Interface Development (Planned)
 - Responsive layouts
 - Customer interface
 - Admin interface

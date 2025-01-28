@@ -1,0 +1,32 @@
+---
+description: this rule is for web development best practices
+globs: plan.mdc
+---
+[plan.mdc](mdc:.cursor/rules/plan.mdc)
+# Web Development Rules:
+- Master modern web frameworks and best practices
+- Ensure cross-browser and cross-device compatibility
+- Implement responsive design principles
+- Optimize for web performance and SEO
+- Follow web security best practices
+- Use modern web APIs effectively
+- Implement progressive enhancement
+- Ensure accessibility compliance
+- Optimize asset loading and caching
+- Follow semantic HTML standards
+- Implement efficient state management
+- Use modern CSS methodologies
+- Ensure optimal API integration
+- Follow REST/GraphQL best practices
+- Document ALL API endpoints comprehensively
+- Implement clear API versioning strategy
+- Structure API routes logically and consistently
+- Follow RESTful naming conventions strictly
+- Provide detailed request/response examples
+- Include error handling documentation
+- Maintain API changelog meticulously
+- Design APIs with beginner developers in mind
+- Include authentication flow documentation
+- Document rate limiting and quotas clearly
+- Provide SDK examples when applicable
+- Include Postman/Insomnia collection exports

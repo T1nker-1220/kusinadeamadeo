@@ -1,4 +1,6 @@
 import { AdminNav } from "@/components/admin/admin-nav";
+import { SidebarProvider } from "@/components/providers/sidebar-provider";
+import { Motion } from "@/components/ui/motion";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -27,9 +29,22 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <AdminNav />
-      <main className="flex-1 bg-background">{children}</main>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen bg-background">
+        <AdminNav />
+        <Motion
+          className="transition-all duration-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            paddingLeft: "var(--sidebar-width, 240px)",
+          }}
+        >
+          <main className="container min-h-screen py-8">
+            <div className="mx-auto max-w-5xl">{children}</div>
+          </main>
+        </Motion>
+      </div>
+    </SidebarProvider>
   );
 }

@@ -33,6 +33,45 @@ const handleCreateCategory = async (event: React.FormEvent<HTMLFormElement>) => 
 
 ## [1.1.2] - 2024-01-24
 
+### Fixed
+- Fixed alert dialog component import issue with Radix UI
+- Corrected package name from `@radix-ui/alert-dialog` to `@radix-ui/react-alert-dialog`
+- Resolved category deletion functionality with proper confirmation dialog
+- Enhanced error handling in category management
+
+### Technical Details
+```typescript
+// Updated import statement
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+
+// Proper package installation
+pnpm add @radix-ui/react-alert-dialog
+
+// Implementation example
+<AlertDialog>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Confirmation</AlertDialogTitle>
+      <AlertDialogDescription>
+        Are you sure you want to proceed?
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+### Implementation Notes
+- Always use `react-` prefix for Radix UI component packages
+- Ensure proper package installation before importing components
+- Clean project cache if component resolution issues persist
+- Follow Radix UI's component naming conventions
+
+### Developer Notes
+- Package naming convention is crucial for Radix UI components
+- Cache cleaning may be necessary after package updates
+- Component imports should match exact package names
+- Alert dialog requires proper Portal setup for rendering
+
 ### Changed
 - Optimized import ordering in alert-dialog component for better code organization
 - Enhanced code formatting in UI components for improved readability
