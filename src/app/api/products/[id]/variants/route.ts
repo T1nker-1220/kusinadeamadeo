@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { ProductImageService } from '@/lib/services/product-image';
 import { ProductVariantSchema } from '@/lib/validations/product';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
@@ -132,8 +133,9 @@ export async function PATCH(
       );
     }
 
+    const { searchParams } = new URL(req.url);
+    const variantId = searchParams.get('variantId');
     const body = await req.json();
-    const { variantId, ...updateData } = body;
 
     if (!variantId) {
       return NextResponse.json(
@@ -143,11 +145,7 @@ export async function PATCH(
     }
 
     // Validate update data
-    const validatedData = ProductVariantSchema.partial().parse({
-      ...updateData,
-      stock: updateData.stock ?? undefined,
-      isAvailable: updateData.isAvailable ?? undefined,
-    });
+    const validatedData = ProductVariantSchema.partial().parse(body);
 
     // Check if variant exists and belongs to the product
     const existingVariant = await prisma.productVariant.findFirst({
@@ -164,13 +162,29 @@ export async function PATCH(
       );
     }
 
+    // If imageUrl is being updated and old image exists, prepare for cleanup
+    if ('imageUrl' in validatedData && existingVariant.imageUrl && existingVariant.imageUrl !== validatedData.imageUrl) {
+      const imagePath = ProductImageService.getImagePath(existingVariant.imageUrl);
+      if (imagePath) {
+        try {
+          await ProductImageService.deleteVariantImage(imagePath);
+        } catch (error) {
+          console.error('Error deleting old variant image:', error);
+          // Continue with the update even if image deletion fails
+        }
+      }
+    }
+
     // Update variant
     const variant = await prisma.productVariant.update({
       where: { id: variantId },
       data: validatedData
     });
 
-    return NextResponse.json(variant);
+    return NextResponse.json({
+      message: 'Variant updated successfully',
+      variant
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -251,15 +265,46 @@ export async function DELETE(
       );
     }
 
-    // Delete variant
-    await prisma.productVariant.delete({
-      where: { id: variantId }
-    });
+    // Start a transaction to handle both database and storage operations
+    try {
+      // Delete variant from database first
+      await prisma.productVariant.delete({
+        where: { id: variantId }
+      });
 
-    return NextResponse.json(
-      { message: 'Variant deleted successfully' },
-      { status: 200 }
-    );
+      // If variant has an image, delete it from storage
+      if (variant.imageUrl) {
+        try {
+          // Extract image path from URL
+          const urlObj = new URL(variant.imageUrl);
+          const pathMatch = urlObj.pathname.match(/\/images\/(.+)$/);
+          const imagePath = pathMatch ? pathMatch[1] : null;
+
+          if (imagePath) {
+            // Delete from Supabase storage
+            const { error: storageError } = await supabase.storage
+              .from('images')
+              .remove([imagePath]);
+
+            if (storageError) {
+              console.error('Error deleting image from storage:', storageError);
+              // Log the error but don't throw since the variant is already deleted
+              // We can handle orphaned images with a cleanup job later
+            }
+          }
+        } catch (imageError) {
+          console.error('Error processing image deletion:', imageError);
+          // Log the error but continue since the variant is already deleted
+        }
+      }
+
+      return NextResponse.json({
+        message: 'Variant deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error during variant deletion transaction:', error);
+      throw error; // Re-throw to be caught by outer try-catch
+    }
   } catch (error) {
     console.error('Error deleting variant:', error);
     return NextResponse.json(

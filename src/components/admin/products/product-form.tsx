@@ -150,12 +150,14 @@ export function ProductForm({ initialData, categoryId, onSuccess }: ProductFormP
               <FormItem>
                 <FormLabel>Product Image</FormLabel>
                 <FormControl>
-                  <ImageUpload
-                    value={field.value}
-                    onChange={field.onChange}
-                    onRemove={() => field.onChange('')}
-                    onUpload={uploadImage}
-                  />
+                  <div className="max-w-[200px]">
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      onRemove={() => field.onChange('')}
+                      onUpload={uploadImage}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

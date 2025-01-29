@@ -26,6 +26,24 @@ const nextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/auth/callback',
+        destination: '/auth/callback'
+      }
+    ]
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' }
+        ]
+      }
+    ]
+  }
 };
 
 module.exports = nextConfig;

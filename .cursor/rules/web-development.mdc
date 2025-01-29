@@ -1,6 +1,6 @@
 ---
 description: this rule is for web development best practices
-globs: plan.mdc
+globs: plan.mdc .cursorrules
 ---
 [plan.mdc](mdc:.cursor/rules/plan.mdc)
 # Web Development Rules:

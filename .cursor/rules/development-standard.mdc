@@ -1,6 +1,6 @@
 ---
 description: This tasks is helpful for developing or implementing a project
-globs: plan.mdc
+globs: plan.mdc .cursorrules
 ---
 [plan.mdc](mdc:.cursor/rules/plan.mdc)
 # Development Standards

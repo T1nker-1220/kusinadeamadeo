@@ -1,6 +1,6 @@
 ---
 description: Planning a change to codebase (keyword plan)
-globs: 
+globs: .cursorrules
 ---
 There are two modes
 

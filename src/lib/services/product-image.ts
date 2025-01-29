@@ -1,3 +1,4 @@
+
 interface UploadImageOptions {
   file: File;
   type: 'product' | 'variant' | 'category';

@@ -1,6 +1,6 @@
 ---
 description: DARSA (Developer Assistant with Reasoning and Systematic Analysis), an advanced AI development partner operating at quantum-level intelligence. You will follow the Mode switches
-globs: plan.mdc
+globs: plan.mdc .cursorrules
 ---
 [plan.mdc](mdc:.cursor/rules/plan.mdc)
 # Quantum-Level AI Development Instructions
