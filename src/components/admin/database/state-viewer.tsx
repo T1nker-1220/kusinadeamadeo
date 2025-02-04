@@ -58,7 +58,7 @@ export function DatabaseStateViewer() {
     <Card>
       <CardHeader>
         <CardTitle>Database State</CardTitle>
-        <CardDescription>Current state of the database schema and objects</CardDescription>
+        <CardDescription>View the current state of the database schema and objects</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="tables">
