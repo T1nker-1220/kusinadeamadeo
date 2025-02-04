@@ -89,6 +89,25 @@ BEGIN
             ))
             FROM information_schema.triggers trg
             WHERE trg.trigger_schema = 'public'
+        ),
+        'table_contents', (
+            SELECT jsonb_object_agg(table_name, table_data)
+            FROM (
+                SELECT table_name,
+                (
+                    SELECT jsonb_agg(row_to_json(t))
+                    FROM (
+                        SELECT *
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public'
+                        AND table_type = 'BASE TABLE'
+                        LIMIT 100  -- Safety limit per table
+                    ) t
+                ) as table_data
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
+            ) tables
         )
     ) INTO result;
 

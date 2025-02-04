@@ -72,7 +72,13 @@ export interface SchemaInfo {
 }
 
 export interface DatabaseState {
-  schemas: SchemaInfo[];
+  tables: TableInfo[];
+  enums: EnumType[];
+  functions: FunctionInfo[];
+  triggers: TriggerInfo[];
+  table_contents: {
+    [tableName: string]: Array<Record<string, unknown>>;
+  };
   timestamp: string;
   version: string;
 }
