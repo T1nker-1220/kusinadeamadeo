@@ -1,10 +1,25 @@
 ---
-description: this will help to prevent the errors on early development and best practices
-globs: plan.mdc .cursorrules
+description: You will use this when on developers mode there's an errors will help to prevent the errors on early development and best practices
+globs: *.tsx, *.ts, *.js, *.json, *.prisma, *.sql, *.css, *.mjs, *.cursorrules
 ---
-[plan.mdc](mdc:.cursor/rules/plan.mdc)
-# Error Prevention Protocol
+# Error Prevention and Code Quality Guidelines
+/* Usage: Apply these rules to prevent common errors and maintain code quality
+   When to Use:
+   - During active development
+   - Code review processes
+   - Debugging sessions
+   - System architecture design
+   - Performance optimization */
 
+## Error Prevention Protocol
+
+/* Validation & Safety Section */
+// Apply these rules when:
+// - Implementing new features
+// - Handling user input
+// - Managing system boundaries
+// - Working with external services
+// - Dealing with async operations
 1. **Validation & Safety**
    - Implement comprehensive error boundaries
    - Validate all inputs at system boundaries
@@ -22,6 +37,13 @@ globs: plan.mdc .cursorrules
    - Handle browser compatibility issues
    - Implement proper security measures
 
+/* Code Quality Section */
+// Follow these rules when:
+// - Writing new code
+// - Refactoring existing code
+// - Reviewing pull requests
+// - Optimizing performance
+// - Managing technical debt
 2. **Avoidance Rules**
    - AVOID premature optimization
    - AVOID inconsistent naming

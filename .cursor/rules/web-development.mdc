@@ -1,9 +1,19 @@
 ---
-description: this rule is for web development best practices
-globs: plan.mdc .cursorrules
+description: Apply these rules when developing any web application or API, Web Development Best Practices Guide
+globs: *.tsx, *.ts, *.js, *.json, *.prisma, *.sql, *.css, *.mjs, *.cursorrules
 ---
-[plan.mdc](mdc:.cursor/rules/plan.mdc)
-# Web Development Rules:
+# Web Development Best Practices Guide
+/* Usage: Apply these rules when developing any web application or API
+   When to Use:
+   - Starting a new web project
+   - Updating existing web applications
+   - Implementing APIs
+   - Making architectural decisions
+   - Reviewing code for web standards compliance */
+
+Web Development Rules:
+/* Frontend Development Section */
+// Use these rules when building user interfaces and client-side features
 - Master modern web frameworks and best practices
 - Ensure cross-browser and cross-device compatibility
 - Implement responsive design principles
@@ -16,6 +26,9 @@ globs: plan.mdc .cursorrules
 - Follow semantic HTML standards
 - Implement efficient state management
 - Use modern CSS methodologies
+
+/* API Development Section */
+// Apply these guidelines when designing and implementing APIs
 - Ensure optimal API integration
 - Follow REST/GraphQL best practices
 - Document ALL API endpoints comprehensively

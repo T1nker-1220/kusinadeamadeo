@@ -1,0 +1,214 @@
+# Current Project Structure
+
+## Root Directory
+- `.cursor/` - Cursor IDE configuration
+- `.git/` - Git version control
+- `.next/` - Next.js build output
+- `documentation/` - Project documentation
+  - `/project-requirements` - Project requirements docs
+  - `/development` - Development documentation
+  - `/technical` - Technical specifications
+  - `/components` - Component documentation
+  - `/api` - API documentation
+  - `/migrations` - Migration guides
+  - `/guidelines` - Development guidelines
+  - `/database` - Database documentation
+  - `/updates` - Update logs
+  - `/troubleshooting` - Troubleshooting guides
+  - `/quickstart` - Quick start guides
+  - `/setup` - Setup instructions
+  - `CHANGELOG.md` - Change log
+  - `PRODUCT_MANAGEMENT_PLAN.md` - Product management plan
+- `logs/` - Application logs
+- `node_modules/` - Dependencies
+- `prisma/` - Database schema and migrations
+  - `schema.prisma` - Database schema
+  - `seed.ts` - Database seeder
+  - `/migrations` - Database migrations
+- `public/` - Static assets
+  - `/images` - Image assets
+    - `/variants` - Product variant images
+    - `/categories` - Category images
+    - `/products` - Product images
+    - `/payment` - Payment-related images
+    - `/features` - Feature images
+    - `/about` - About page images
+    - `menu-hero.jpg` - Menu hero image
+    - `login.jpg` - Login page image
+    - `chaofans.png` - Chaofans image
+    - `placeholder.svg` - Placeholder image
+    - `google.svg` - Google icon
+    - `pattern.svg` - Pattern image
+    - `about-hero.jpg` - About page hero
+    - `location-qr.png` - Location QR code
+    - `hero.jpg` - Homepage hero
+    - `logo.png` - Site logo
+    - `placeholder.jpg` - Placeholder image
+- `scripts/` - Utility scripts
+  - `test-auth.js` - Authentication test script
+  - `setup-migration.ts` - Migration setup script
+  - `migrate-products.ts` - Products migration script
+- `src/` - Source code
+- `.cursorignore` - Cursor ignore rules
+- `.env` - Environment variables
+- `.env.example` - Environment template
+- `.gitignore` - Git ignore rules
+- `eslint.config.mjs` - ESLint configuration
+- `globalrulesforAIcursor.md` - AI assistant rules
+- `jest.config.js` - Jest configuration
+- `jest.setup.js` - Jest setup
+- `next-env.d.ts` - Next.js TypeScript declarations
+- `next.config.js` - Next.js configuration
+- `package.json` - Project dependencies
+- `pnpm-lock.yaml` - PNPM lock file
+- `postcss.config.js` - PostCSS configuration
+- `postcss.config.mjs` - PostCSS module configuration
+- `README.md` - Project documentation
+- `tailwind.config.js` - Tailwind configuration
+- `TODO.md` - Development tasks
+- `tsconfig.json` - TypeScript configuration
+
+## Source Code Structure (/src)
+### Core Directories
+- `/app` - Next.js App Router pages
+- `/components` - React components
+- `/hooks` - Custom React hooks
+  - `use-image-upload.ts` - Image upload hook
+  - `use-dashboard-stats.ts` - Dashboard statistics hook
+  - `use-product-mutations.ts` - Product mutations hook
+  - `use-auth.ts` - Authentication hook
+- `/lib` - Core utilities and services
+  - `/services` - Business logic services
+    - `storage-cleanup.ts` - Storage cleanup service
+    - `product-image.ts` - Product image service
+  - `/migrations` - Database migrations
+    - `setup-migration.sql` - Database setup SQL
+    - `initial-setup.sql` - Initial schema SQL
+    - `execute-migration.ts` - Migration executor
+    - `schema-optimization.sql` - Schema optimizations
+    - `storage-migration.ts` - Storage migration script
+  - `/validations` - Data validation schemas
+    - `product.ts` - Product validation schemas
+    - `category.ts` - Category validation schemas
+  - `db.ts` - Database configuration
+  - `prisma.ts` - Prisma client setup
+  - `utils.ts` - Utility functions
+- `/scripts` - Utility scripts
+- `/server` - Server-side logic
+  - `/api` - API handlers
+- `/store` - State management
+  - `cart.ts` - Cart state management
+  - `README.md` - Store documentation
+- `/styles` - Global styles
+  - `globals.css` - Global styles
+- `/types` - TypeScript definitions
+  - `database.ts` - Database types
+  - `index.ts` - Common types
+- `/utils` - Helper functions [Empty directory]
+- `middleware.ts` - Next.js middleware
+
+### App Router Structure (/src/app)
+- `/admin` - Admin panel routes
+  - `/products` - Product management
+    - `/[id]` - Edit product
+      - `page.tsx` - Edit product page
+    - `/new` - New product
+      - `page.tsx` - New product page
+  - `/categories` - Category management
+    - `page.tsx` - Categories page
+    - `/__tests__` - Category tests
+      - `categories.test.ts` - Categories test suite
+  - `page.tsx` - Admin dashboard
+  - `layout.tsx` - Admin layout
+- `/api` - API endpoints
+  - `/storage` - Storage related endpoints
+    - `/cleanup` - Storage cleanup
+      - `route.ts` - Cleanup handler
+  - `/auth` - Authentication endpoints
+    - `/test` - Auth test endpoints
+  - `/categories` - Category management endpoints
+    - `route.ts` - Categories CRUD
+    - `/[categoryId]` - Single category operations
+      - `route.ts` - Category detail handler
+      - `/products` - Category products
+        - `/count` - Products count
+    - `/count` - Categories count
+      - `route.ts` - Count handler
+  - `/upload` - File upload endpoints
+    - `route.ts` - Upload handler
+  - `/products` - Product management endpoints
+    - `route.ts` - Products CRUD operations
+    - `/[id]` - Single product operations
+      - `route.ts` - Product detail operations
+      - `/variants` - Product variants
+        - `route.ts` - Variants CRUD
+        - `/image` - Variant images
+          - `route.ts` - Image handler
+        - `/stock` - Variant stock management
+          - `route.ts` - Stock handler
+  - `README.md` - API documentation
+- `/auth` - Authentication routes
+  - `/login` - Login page
+    - `page.tsx` - Login page component
+  - `/callback` - OAuth callback
+    - `route.ts` - OAuth callback handler
+- `/dashboard` - User dashboard
+  - `page.tsx` - Dashboard page
+- `/profile` - User profile management
+  - `page.tsx` - Profile page
+- `globals.css` - Global styles
+- `layout.tsx` - Root layout
+- `page.tsx` - Home page
+- `providers.tsx` - App providers
+- `favicon.ico` - Site favicon
+
+### Components Organization (/src/components)
+- `/ui` - Reusable UI components (shadcn/ui)
+  - `image-upload.tsx` - Image upload component
+  - `button.tsx` - Button component
+  - `card.tsx` - Card component
+  - `motion.tsx` - Animation components
+  - `alert-dialog.tsx` - Alert dialog component
+  - `use-toast.ts` - Toast hook
+  - `input.tsx` - Input component
+  - `toaster.tsx` - Toast container
+  - `toast.tsx` - Toast component
+  - `checkbox.tsx` - Checkbox component
+  - `popover.tsx` - Popover component
+  - `dialog.tsx` - Dialog component
+  - `separator.tsx` - Separator component
+  - `command.tsx` - Command component
+  - `badge.tsx` - Badge component
+  - `data-table-faceted-filter.tsx` - Table filter
+  - `data-table-column-header.tsx` - Table header
+  - `data-table-pagination.tsx` - Table pagination
+  - `dropdown-menu.tsx` - Dropdown menu
+  - `data-table-view-options.tsx` - Table view options
+  - `data-table-toolbar.tsx` - Table toolbar
+  - `table.tsx` - Table component
+  - `data-table.tsx` - Data table component
+  - `label.tsx` - Label component
+  - `textarea.tsx` - Textarea component
+  - `form.tsx` - Form component
+  - `switch.tsx` - Switch component
+  - `select.tsx` - Select component
+  - `README.md` - UI components documentation
+- `/admin` - Admin-specific components
+  - `/products` - Product management components
+    - `variant-form.tsx` - Variant form component
+    - `variants-list.tsx` - Variants list component
+    - `product-form.tsx` - Product form component
+    - `products-data-table.tsx` - Products table component
+  - `/dashboard` - Dashboard components
+    - `metric-card.tsx` - Metric display card
+    - `quick-action-card.tsx` - Quick action card
+  - `/categories` - Category management components
+  - `admin-nav.tsx` - Admin navigation
+  - `README.md` - Admin components documentation
+- `/providers` - Context providers
+  - `sidebar-provider.tsx` - Sidebar state provider
+  - `README.md` - Providers documentation
+- `/data` - Data display components
+  - `product-data-reference.ts` - Product data types and references
+  - `README.md` - Data components documentation
+- `icons.tsx` - Icon components

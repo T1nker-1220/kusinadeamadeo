@@ -1,10 +1,23 @@
 ---
 description: This tasks is helpful for developing or implementing a project
-globs: plan.mdc .cursorrules
+globs: *.tsx, *.ts, *.js, *.json, *.prisma, *.sql, *.css, *.mjs, *.cursorrules
 ---
-[plan.mdc](mdc:.cursor/rules/plan.mdc)
-# Development Standards
+# Development Standards and Best Practices
+/* Usage: This document defines core development standards and requirements
+   When to Use:
+   - Starting new projects
+   - Setting up development environment
+   - Implementing features
+   - Making architectural decisions
+   - Reviewing code quality */
 
+/* Core Technical Section */
+// Apply these standards when:
+// - Setting up new projects
+// - Managing dependencies
+// - Implementing features
+// - Working with Next.js
+// - Handling database operations
 1. **Core Technical Requirements**
    - Use pnpm exclusively for package management
    - Implement quantum-level type safety
@@ -23,6 +36,13 @@ globs: plan.mdc .cursorrules
    - Consider data relationships in every query
 
 2. **Architecture Standards**
+   /* Frontend Architecture */
+   // Use these guidelines when:
+   // - Building UI components
+   // - Implementing design systems
+   // - Managing state
+   // - Optimizing performance
+   // - Ensuring accessibility
    ### Frontend Excellence
    - Perfect component architecture
    - Quantum-level design system compliance
@@ -40,6 +60,13 @@ globs: plan.mdc .cursorrules
    - Optimize asset loading and caching
    - Follow semantic HTML standards
 
+   /* Backend Architecture */
+   // Apply these standards when:
+   // - Building APIs
+   // - Managing data
+   // - Implementing security
+   // - Optimizing performance
+   // - Scaling services
    ### Backend Mastery
    - Quantum-safe API endpoints
    - Perfect database operations
@@ -57,6 +84,13 @@ globs: plan.mdc .cursorrules
    - Structure API routes logically
    - Follow RESTful naming conventions
 
+/* Database Management */
+// Follow these guidelines when:
+// - Working with databases
+// - Managing schemas
+// - Optimizing queries
+// - Handling migrations
+// - Implementing security
 3. **Database Intelligence**
    - Perfect schema understanding
    - Ultimate relationship mapping
@@ -68,12 +102,20 @@ globs: plan.mdc .cursorrules
    - Ultimate security measures
    - Perfect audit logging
    - Quantum-level performance
+   // You will use this when
    - TODO: Add future database schema integration
    - TODO: Document potential relationships
    - TODO: Map future data model expansions
    - TODO: Note potential optimizations
    - TODO: Track auth requirements
 
+/* Documentation Requirements */
+// Apply these standards when:
+// - Writing documentation
+// - Updating APIs
+// - Creating guides
+// - Maintaining changelogs
+// - Supporting developers
 4. **Documentation Excellence**
    - Perfect TypeDoc implementation
    - Real-time README updates
