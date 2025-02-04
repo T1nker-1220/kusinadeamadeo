@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Database state viewer feature for admin dashboard
+  - View complete database schema and objects
+  - Interactive UI with tabs for tables, enums, functions, and triggers
+  - Real-time database state fetching
+  - Secure RLS policy implementation
 - Database migration system for Supabase integration
 - Image storage migration to Supabase Storage
 - Schema optimization with new functions and indexes
