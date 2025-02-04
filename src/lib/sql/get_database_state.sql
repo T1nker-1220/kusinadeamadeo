@@ -6,32 +6,81 @@ CREATE OR REPLACE FUNCTION get_database_state()
 RETURNS jsonb AS $$
 DECLARE
     result jsonb;
+    table_record record;
+    table_contents jsonb;
+    dynamic_sql text;
 BEGIN
+    -- Initialize table_contents as an empty object
+    table_contents := '{}'::jsonb;
+
+    -- For each table in public schema, get its contents
+    FOR table_record IN
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+    LOOP
+        -- Build dynamic SQL to get all rows from the table
+        dynamic_sql := format(
+            'SELECT jsonb_agg(to_jsonb(t)) FROM (SELECT * FROM %I) t',
+            table_record.table_name
+        );
+
+        -- Execute dynamic SQL and merge results into table_contents
+        EXECUTE dynamic_sql INTO result;
+        IF result IS NOT NULL THEN
+            table_contents := table_contents || jsonb_build_object(table_record.table_name, result);
+        ELSE
+            table_contents := table_contents || jsonb_build_object(table_record.table_name, '[]'::jsonb);
+        END IF;
+    END LOOP;
+
+    -- Build complete result with all database information
     SELECT jsonb_build_object(
         'tables', (
             SELECT jsonb_agg(jsonb_build_object(
                 'name', tables.table_name,
+                'schema', tables.table_schema,
                 'columns', (
                     SELECT jsonb_agg(jsonb_build_object(
                         'name', columns.column_name,
                         'type', columns.data_type,
-                        'nullable', columns.is_nullable,
-                        'default', columns.column_default
+                        'isNullable', columns.is_nullable = 'YES',
+                        'defaultValue', columns.column_default,
+                        'isPrimaryKey', (
+                            SELECT EXISTS (
+                                SELECT 1 FROM information_schema.key_column_usage kcu
+                                WHERE kcu.table_schema = tables.table_schema
+                                AND kcu.table_name = tables.table_name
+                                AND kcu.column_name = columns.column_name
+                            )
+                        ),
+                        'isForeignKey', (
+                            SELECT EXISTS (
+                                SELECT 1 FROM information_schema.key_column_usage kcu
+                                JOIN information_schema.referential_constraints rc
+                                ON kcu.constraint_name = rc.constraint_name
+                                WHERE kcu.table_schema = tables.table_schema
+                                AND kcu.table_name = tables.table_name
+                                AND kcu.column_name = columns.column_name
+                            )
+                        )
                     ))
                     FROM information_schema.columns
-                    WHERE columns.table_schema = 'public'
+                    WHERE columns.table_schema = tables.table_schema
                     AND columns.table_name = tables.table_name
                 ),
                 'policies', (
                     SELECT jsonb_agg(jsonb_build_object(
                         'name', pol.policyname,
-                        'command', pol.cmd,
+                        'schema', pol.schemaname,
+                        'table', pol.tablename,
+                        'action', pol.cmd,
                         'roles', pol.roles,
-                        'using', pol.qual,
-                        'with_check', pol.with_check
+                        'definition', pol.qual
                     ))
                     FROM pg_policies pol
-                    WHERE pol.schemaname = 'public'
+                    WHERE pol.schemaname = tables.table_schema
                     AND pol.tablename = tables.table_name
                 ),
                 'indexes', (
@@ -40,38 +89,36 @@ BEGIN
                         'definition', idx.indexdef
                     ))
                     FROM pg_indexes idx
-                    WHERE idx.schemaname = 'public'
+                    WHERE idx.schemaname = tables.table_schema
                     AND idx.tablename = tables.table_name
                 )
             ))
-            FROM information_schema.tables tables
+            FROM information_schema.tables
             WHERE tables.table_schema = 'public'
             AND tables.table_type = 'BASE TABLE'
         ),
         'enums', (
-            SELECT jsonb_agg(enum_info)
-            FROM (
-                SELECT jsonb_build_object(
-                    'name', t.typname,
-                    'values', (
-                        SELECT jsonb_agg(e.enumlabel ORDER BY e.enumsortorder)
-                        FROM pg_enum e
-                        WHERE e.enumtypid = t.oid
-                    )
-                ) AS enum_info
-                FROM pg_type t
-                JOIN pg_namespace n ON t.typnamespace = n.oid
-                WHERE t.typtype = 'e'
-                AND n.nspname = 'public'
-            ) subq
+            SELECT jsonb_agg(jsonb_build_object(
+                'name', t.typname,
+                'schema', n.nspname,
+                'values', (
+                    SELECT jsonb_agg(e.enumlabel ORDER BY e.enumsortorder)
+                    FROM pg_enum e
+                    WHERE e.enumtypid = t.oid
+                )
+            ))
+            FROM pg_type t
+            JOIN pg_namespace n ON t.typnamespace = n.oid
+            WHERE t.typtype = 'e'
+            AND n.nspname = 'public'
         ),
         'functions', (
             SELECT jsonb_agg(jsonb_build_object(
                 'name', p.proname,
+                'schema', n.nspname,
                 'language', l.lanname,
-                'return_type', t.typname,
-                'arguments', pg_get_function_arguments(p.oid),
-                'security_definer', p.prosecdef
+                'returnType', t.typname,
+                'arguments', pg_get_function_arguments(p.oid)
             ))
             FROM pg_proc p
             JOIN pg_namespace n ON p.pronamespace = n.oid
@@ -83,32 +130,12 @@ BEGIN
             SELECT jsonb_agg(jsonb_build_object(
                 'name', trg.trigger_name,
                 'table', trg.event_object_table,
-                'timing', trg.action_timing,
-                'event', trg.event_manipulation,
-                'definition', trg.action_statement
+                'events', ARRAY[trg.event_manipulation]
             ))
             FROM information_schema.triggers trg
             WHERE trg.trigger_schema = 'public'
         ),
-        'table_contents', (
-            SELECT jsonb_object_agg(table_name, table_data)
-            FROM (
-                SELECT table_name,
-                (
-                    SELECT jsonb_agg(row_to_json(t))
-                    FROM (
-                        SELECT *
-                        FROM information_schema.tables
-                        WHERE table_schema = 'public'
-                        AND table_type = 'BASE TABLE'
-                        LIMIT 100  -- Safety limit per table
-                    ) t
-                ) as table_data
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_type = 'BASE TABLE'
-            ) tables
-        )
+        'table_contents', table_contents
     ) INTO result;
 
     RETURN result;
@@ -119,4 +146,4 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION get_database_state() TO authenticated;
 
 -- Add comment to the function
-COMMENT ON FUNCTION get_database_state() IS 'Returns a complete snapshot of the database state including tables, columns, policies, indexes, enums, functions, and triggers';
+COMMENT ON FUNCTION get_database_state() IS 'Returns a complete snapshot of the database state including tables, columns, policies, indexes, enums, functions, triggers, and actual table contents';
