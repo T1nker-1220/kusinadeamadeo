@@ -1,123 +1,67 @@
+'use client';
+
 import { cn } from '@/lib/utils';
-import { Loader2, UploadCloud, X } from 'lucide-react';
+import { ImageIcon, Trash, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { toast } from 'sonner';
 import { Button } from './button';
 
 interface ImageUploadProps {
-  className?: string;
   value?: string;
-  onChange?: (value: string) => void;
-  onRemove?: () => Promise<void>;
-  onUpload?: (file: File) => Promise<{ url: string; path: string }>;
   disabled?: boolean;
-  maxSize?: number; // in bytes
-  aspectRatio?: 'square' | 'video' | 'banner';
-  width?: number;
-  height?: number;
+  onChange: (value: string) => void;
+  onUpload: (file: File) => Promise<void>;
+  isUploading?: boolean;
+  className?: string;
 }
 
 export function ImageUpload({
-  className,
   value,
+  disabled,
   onChange,
-  onRemove,
   onUpload,
-  disabled = false,
-  maxSize = 5 * 1024 * 1024, // 5MB default
-  aspectRatio = 'square',
-  width = 800,
-  height = 800
+  isUploading,
+  className,
 }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isRemoving, setIsRemoving] = useState(false);
 
-  const handleRemove = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (disabled || isRemoving || isUploading || !onRemove) return;
-
-    setError(null);
-    setIsRemoving(true);
-
-    try {
-      await onRemove();
-      onChange?.('');
-      toast.success('Image removed successfully');
-    } catch (error) {
-      console.error('Error removing image:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove image';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      // Reset the form state if removal fails
-      onChange?.(value || '');
-    } finally {
-      setIsRemoving(false);
-    }
-  };
-
-  const aspectRatioClass = {
-    square: 'aspect-square',
-    video: 'aspect-video',
-    banner: 'aspect-[21/9]'
-  }[aspectRatio];
-
-  const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
-    if (rejectedFiles.length > 0) {
-      const firstError = rejectedFiles[0].errors[0];
-      if (firstError.code === 'file-too-large') {
-        setError(`File is too large. Max size is ${maxSize / (1024 * 1024)}MB`);
-      } else if (firstError.code === 'file-invalid-type') {
-        setError('Only image files are allowed');
-      } else {
-        setError(firstError.message);
-      }
-      toast.error(firstError.message);
-      return;
-    }
-
-    setError(null);
-    const file = acceptedFiles[0];
-
-    if (onUpload) {
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
       try {
-        setIsUploading(true);
+        setError(null);
+        const file = acceptedFiles[0];
+
+        if (!file) {
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          setError('Please upload an image file');
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          setError('Image must be less than 5MB');
+          return;
+        }
+
         await onUpload(file);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to upload image';
-        setError(errorMessage);
-        toast.error(errorMessage);
-        // Reset the form state if upload fails
-        onChange?.(value || '');
-      } finally {
-        setIsUploading(false);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setError('Failed to upload image');
       }
-    } else if (onChange) {
-      // Fallback to base64 if no upload handler
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange(reader.result as string);
-      };
-      reader.onerror = () => {
-        setError('Failed to read file');
-        toast.error('Failed to read file');
-      };
-      reader.readAsDataURL(file);
-    }
-  }, [maxSize, onChange, onUpload, value]);
+    },
+    [onUpload]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.webp']
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
-    maxSize,
     maxFiles: 1,
-    disabled: disabled || isUploading || isRemoving,
-    multiple: false
+    disabled: disabled || isUploading,
   });
 
   return (
@@ -125,73 +69,60 @@ export function ImageUpload({
       <div
         {...getRootProps()}
         className={cn(
-          'relative border-2 border-dashed rounded-lg p-4 transition-colors',
-          isDragActive ? 'border-primary bg-primary/5' : 'border-muted',
-          (disabled || isUploading || isRemoving) && 'opacity-50 cursor-not-allowed',
-          'hover:border-primary/50'
+          'relative border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors',
+          isDragActive && 'border-primary bg-primary/5',
+          disabled && 'opacity-50 cursor-not-allowed',
+          isUploading && 'opacity-50 cursor-wait'
         )}
       >
         <input {...getInputProps()} />
-
         {value ? (
-          <div className={cn('relative w-full overflow-hidden rounded-lg', aspectRatioClass)}>
+          <div className="relative aspect-square w-full max-w-[200px] overflow-hidden rounded-lg">
             <Image
               src={value}
-              alt="Upload preview"
-              className="object-cover"
+              alt="Uploaded image"
               fill
-              sizes={`(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${width}px`}
-              priority
+              className="object-cover"
             />
-            {!disabled && onRemove && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 z-10"
-                onClick={handleRemove}
-                disabled={isRemoving || isUploading}
-                aria-label="Remove image"
-              >
-                {isRemoving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <X className="h-4 w-4" />
-                )}
-              </Button>
-            )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-4 text-sm">
-            {isUploading || isRemoving ? (
+          <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+            {isUploading ? (
               <>
-                <Loader2 className="h-10 w-10 text-muted-foreground animate-spin mb-2" />
-                <p className="text-muted-foreground">
-                  {isUploading ? 'Uploading...' : 'Removing...'}
-                </p>
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-sm">Uploading...</p>
               </>
             ) : (
               <>
-                <UploadCloud className="h-10 w-10 text-muted-foreground mb-2" />
-                <div className="text-muted-foreground">
-                  {isDragActive ? (
-                    <p>Drop the image here</p>
-                  ) : (
-                    <p>Drag & drop an image here, or click to select</p>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  PNG, JPG or WebP (max. {maxSize / (1024 * 1024)}MB)
-                </div>
+                {isDragActive ? (
+                  <UploadCloud className="h-12 w-12" />
+                ) : (
+                  <ImageIcon className="h-12 w-12" />
+                )}
+                <p className="text-sm">
+                  {isDragActive
+                    ? 'Drop the image here'
+                    : 'Drag & drop or click to upload'}
+                </p>
               </>
             )}
           </div>
         )}
       </div>
-      {error && (
-        <div className="text-sm text-destructive" role="alert">
-          {error}
-        </div>
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {value && !disabled && !isUploading && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => onChange('')}
+        >
+          <Trash className="h-4 w-4 mr-2" />
+          Remove Image
+        </Button>
       )}
     </div>
   );

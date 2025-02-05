@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Enhanced variant management system
+  - Comprehensive stock tracking and management
+  - Real-time availability controls
+  - Quick stock update controls
+  - Integrated image upload with Supabase Storage
+  - Optimistic UI updates with error recovery
+  - Enhanced validation using Zod schema
+  - Improved type safety throughout
+  - Real-time form state management
+  - Success/error notifications
+  - Form validation enhancements
 - Database state viewer feature for admin dashboard
   - View complete database schema and objects
   - Interactive UI with tabs for tables, enums, functions, and triggers
@@ -23,6 +34,21 @@ All notable changes to this project will be documented in this file.
   - Table contents view with dynamic column display
 
 ### Changed
+- Updated variant form interactions
+  - Enhanced image removal workflow
+  - Improved form state management
+  - Better loading state indicators
+  - Clearer success/error feedback
+- Optimized image handling
+  - Improved deletion process
+  - Better error recovery
+  - Enhanced storage management
+  - Orphaned image cleanup
+- Enhanced API endpoints
+  - Better error responses
+  - Improved validation
+  - Enhanced security checks
+  - Proper status codes
 - Product and variant images now stored in Supabase Storage
 - Enhanced database schema with new columns and constraints
 - Improved error handling and validation

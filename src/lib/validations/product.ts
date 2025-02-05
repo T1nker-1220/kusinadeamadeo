@@ -3,11 +3,29 @@ import { z } from 'zod';
 
 // Variant validation schema
 export const ProductVariantSchema = z.object({
-  type: z.nativeEnum(VariantType),
-  name: z.string().min(1).max(50),
-  price: z.number().positive(),
-  imageUrl: z.string().url().optional()
+  type: z.nativeEnum(VariantType, {
+    required_error: "Variant type is required",
+    invalid_type_error: "Invalid variant type",
+  }),
+  name: z.string()
+    .min(1, "Name is required")
+    .max(50, "Name must be less than 50 characters")
+    .trim(),
+  price: z.number()
+    .positive("Price must be greater than 0")
+    .finite("Price must be a finite number"),
+  stock: z.number()
+    .int("Stock must be a whole number")
+    .nonnegative("Stock cannot be negative")
+    .default(0),
+  isAvailable: z.boolean().default(true),
+  imageUrl: z.string()
+    .url("Invalid image URL")
+    .optional()
+    .nullable(),
 });
+
+export type VariantFormValues = z.infer<typeof ProductVariantSchema>;
 
 // Product validation schema
 export const ProductSchema = z.object({

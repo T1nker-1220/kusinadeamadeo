@@ -23,91 +23,96 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useVariantManagement } from '@/hooks/use-variant-management';
 import { formatCurrency } from '@/lib/utils';
 import { ProductVariant } from '@prisma/client';
-import { useQuery } from '@tanstack/react-query';
 import { Edit, Minus, MoreHorizontal, Plus, Trash } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { VariantForm } from './variant-form';
 
 interface VariantsListProps {
   productId: string;
 }
 
-async function getVariants(productId: string) {
-  const response = await fetch(`/api/products/${productId}/variants`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch variants');
-  }
-  return response.json();
-}
-
 export function VariantsList({ productId }: VariantsListProps) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const { data: variants = [], refetch, isLoading } = useQuery({
-    queryKey: ['variants', productId],
-    queryFn: () => getVariants(productId),
-    staleTime: 0, // Always refetch on mount
-    gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
+  const {
+    variants,
+    isLoading,
+    deleteVariant,
+    updateStock,
+    toggleAvailability,
+  } = useVariantManagement({ productId });
+
+  // Sort variants based on current sort settings
+  const sortedVariants = [...variants].sort((a, b) => {
+    const modifier = sortOrder === 'asc' ? 1 : -1;
+
+    switch (sortBy) {
+      case 'name':
+        return modifier * a.name.localeCompare(b.name);
+      case 'price':
+        return modifier * (a.price - b.price);
+      case 'stock':
+        return modifier * (a.stock - b.stock);
+      default:
+        return 0;
+    }
   });
-
-  const handleSuccess = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   const handleDelete = async (variantId: string) => {
     try {
-      const response = await fetch(
-        `/api/products/${productId}/variants?variantId=${variantId}`,
-        { method: 'DELETE' }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete variant');
-      }
-
-      toast.success('Variant deleted successfully');
-      handleSuccess();
+      await deleteVariant(variantId);
     } catch (error) {
       console.error('Error deleting variant:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete variant');
     }
   };
 
   const handleStockUpdate = async (variantId: string, newStock: number) => {
     try {
-      const response = await fetch(
-        `/api/products/${productId}/variants/stock`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ variantId, stock: newStock }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update stock');
-      }
-
-      toast.success('Stock updated successfully');
-      handleSuccess();
+      await updateStock(variantId, newStock);
     } catch (error) {
       console.error('Error updating stock:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update stock');
+    }
+  };
+
+  const handleAvailabilityToggle = async (variantId: string) => {
+    try {
+      await toggleAvailability(variantId);
+    } catch (error) {
+      console.error('Error toggling availability:', error);
     }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Variants</h3>
+        <div className="space-y-1">
+          <h3 className="text-lg font-medium">Variants</h3>
+          <div className="flex items-center space-x-4">
+            <select
+              className="text-sm"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'stock')}
+            >
+              <option value="name">Sort by Name</option>
+              <option value="price">Sort by Price</option>
+              <option value="stock">Sort by Stock</option>
+            </select>
+            <button
+              className="text-sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? '↑' : '↓'}
+            </button>
+          </div>
+        </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
@@ -124,10 +129,7 @@ export function VariantsList({ productId }: VariantsListProps) {
             </DialogHeader>
             <VariantForm
               productId={productId}
-              onSuccess={() => {
-                setIsAddDialogOpen(false);
-                handleSuccess();
-              }}
+              onSuccess={() => setIsAddDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
@@ -143,15 +145,15 @@ export function VariantsList({ productId }: VariantsListProps) {
             </div>
           ))}
         </div>
-      ) : variants.length === 0 ? (
+      ) : sortedVariants.length === 0 ? (
         <div className="text-center py-6 text-muted-foreground">
           No variants found. Add your first variant to get started.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {variants.map((variant: ProductVariant) => (
+          {sortedVariants.map((variant) => (
             <Card key={variant.id}>
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base">{variant.name}</CardTitle>
@@ -225,7 +227,11 @@ export function VariantsList({ productId }: VariantsListProps) {
                           </Button>
                         </div>
                       </div>
-                      <Badge variant={variant.isAvailable ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={variant.isAvailable ? 'default' : 'secondary'}
+                        className="cursor-pointer"
+                        onClick={() => handleAvailabilityToggle(variant.id)}
+                      >
                         {variant.isAvailable ? 'Available' : 'Unavailable'}
                       </Badge>
                     </div>
@@ -252,19 +258,10 @@ export function VariantsList({ productId }: VariantsListProps) {
           {selectedVariant && (
             <VariantForm
               productId={productId}
-              initialData={{
-                id: selectedVariant.id,
-                type: selectedVariant.type,
-                name: selectedVariant.name,
-                price: selectedVariant.price,
-                stock: selectedVariant.stock,
-                isAvailable: selectedVariant.isAvailable,
-                imageUrl: selectedVariant.imageUrl || undefined,
-              }}
+              initialData={selectedVariant}
               onSuccess={() => {
                 setIsEditDialogOpen(false);
                 setSelectedVariant(null);
-                handleSuccess();
               }}
             />
           )}

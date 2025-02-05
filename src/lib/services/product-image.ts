@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 
 interface UploadImageOptions {
   file: File;
@@ -11,6 +12,50 @@ interface UploadResult {
 }
 
 export class ProductImageService {
+  private static supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  private static generateUniqueFileName(originalName: string): string {
+    const fileExt = originalName.split('.').pop();
+    const uniqueId = Math.random().toString(36).substring(2);
+    return `${uniqueId}.${fileExt}`;
+  }
+
+  public static getVariantImagePath(productId: string, fileName: string): string {
+    const uniqueFileName = this.generateUniqueFileName(fileName);
+    return `variants/${productId}/${uniqueFileName}`;
+  }
+
+  public static getProductImagePath(fileName: string): string {
+    const uniqueFileName = this.generateUniqueFileName(fileName);
+    return `products/${uniqueFileName}`;
+  }
+
+  public static getCategoryImagePath(fileName: string): string {
+    const uniqueFileName = this.generateUniqueFileName(fileName);
+    return `categories/${uniqueFileName}`;
+  }
+
+  public static async deleteImage(path: string): Promise<void> {
+    const { error } = await this.supabase.storage
+      .from('images')
+      .remove([path]);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  public static getPublicUrl(path: string): string {
+    const { data: { publicUrl } } = this.supabase.storage
+      .from('images')
+      .getPublicUrl(path);
+
+    return publicUrl;
+  }
+
   private static async uploadImage({ file, type, oldImagePath }: UploadImageOptions): Promise<UploadResult> {
     if (!file.type.startsWith('image/')) {
       throw new Error('Invalid file type. Only images are allowed.');
@@ -39,17 +84,6 @@ export class ProductImageService {
     }
 
     return result;
-  }
-
-  private static async deleteImage(path: string): Promise<void> {
-    const response = await fetch(`/api/upload?path=${encodeURIComponent(path)}`, {
-      method: 'DELETE'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete image');
-    }
   }
 
   static async uploadProductImage(file: File, oldImagePath?: string): Promise<UploadResult> {

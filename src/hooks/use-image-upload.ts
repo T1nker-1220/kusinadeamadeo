@@ -1,38 +1,62 @@
-import { ProductImageService } from '@/lib/services/product-image';
+import { createClient } from '@supabase/supabase-js';
+import { useState } from 'react';
 
-interface UseImageUploadOptions {
-  type: 'product' | 'variant' | 'category';
-  onSuccess?: (result: { url: string; path: string }) => void;
-  onError?: (error: Error) => void;
+interface UploadResult {
+  url: string;
+  path: string;
 }
 
-export function useImageUpload({ type, onSuccess, onError }: UseImageUploadOptions) {
-  const uploadImage = async (file: File) => {
+export function useImageUpload() {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadImage = async (file: File): Promise<UploadResult> => {
     try {
-      let result;
-      switch (type) {
-        case 'product':
-          result = await ProductImageService.uploadProductImage(file);
-          break;
-        case 'variant':
-          result = await ProductImageService.uploadVariantImage(file);
-          break;
-        case 'category':
-          result = await ProductImageService.uploadCategoryImage(file);
-          break;
-        default:
-          throw new Error('Invalid image type');
+      setIsUploading(true);
+
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      // Generate a unique file name to prevent collisions
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      // Upload the file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        throw error;
       }
 
-      onSuccess?.(result);
-      return result;
+      if (!data) {
+        throw new Error('Failed to upload image');
+      }
+
+      // Get the public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(data.path);
+
+      return {
+        url: publicUrl,
+        path: data.path,
+      };
     } catch (error) {
-      console.error(`Error uploading ${type} image:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
-      onError?.(new Error(errorMessage));
+      console.error('Error uploading image:', error);
       throw error;
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  return { uploadImage };
+  return {
+    uploadImage,
+    isUploading,
+  };
 }

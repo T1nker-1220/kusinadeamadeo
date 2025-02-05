@@ -303,7 +303,7 @@ export function DatabaseStateViewer() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleCopyToClipboard(func.arguments)}
+                                onClick={() => handleCopyToClipboard(JSON.stringify(func.arguments))}
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>

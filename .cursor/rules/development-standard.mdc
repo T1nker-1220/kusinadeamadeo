@@ -1,6 +1,6 @@
 ---
-description: This tasks is helpful for developing or implementing a project
-globs: *.tsx, *.ts, *.js, *.json, *.prisma, *.sql, *.css, *.mjs, *.cursorrules
+description: Core development standards and best practices for implementing features, managing code quality, and maintaining project architecture
+globs: *.{ts,tsx,js,jsx,mjs,cjs,json,prisma,sql,css}, .env*, *.config.*
 ---
 # Development Standards and Best Practices
 /* Usage: This document defines core development standards and requirements

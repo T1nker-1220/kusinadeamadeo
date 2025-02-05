@@ -1,0 +1,227 @@
+---
+description: Rules for maintaining comprehensive documentation across the project, including inline comments, API docs, and system architecture documentation
+globs: .{ts,tsx,js,jsx,md,mdx}, **/README.md, **/CHANGELOG.md, docs/**/*
+---
+## Documentation Intelligence Protocol
+
+1. **Automated Documentation Standards**
+  ```typescript
+   interface DocumentationProtocol {
+     inline: {
+       comments: 'quantum-detailed';
+       explanations: 'context-aware';
+       references: 'cross-linked';
+       updates: 'real-time';
+       maintenance: 'automated';
+     };
+     features: {
+       readme: 'auto-generated';
+       api: 'comprehensive';
+       usage: 'example-rich';
+       updates: 'change-triggered';
+     };
+     architecture: {
+       diagrams: 'auto-updated';
+       flows: 'real-time-sync';
+       dependencies: 'auto-mapped';
+       interactions: 'visualized';
+     };
+   }
+   ```
+
+2. **Documentation Types & Standards**
+   - Inline Code Documentation
+  ```typescript
+     /**
+      * @quantum_doc Automatically maintained by AI
+      * @feature_context Current feature's role in system
+      * @dependencies Auto-updated list of dependencies
+      * @usage Real-time updated usage examples
+      * @performance Current performance metrics
+      * @security Security considerations
+      * @updates Changelog maintained by AI
+      */
+     ```
+   - Feature Documentation
+     ```markdown
+     # Feature: {name}
+     > Auto-generated and maintained by AI
+
+     ## Overview
+     {AI-generated feature description}
+
+     ## Implementation Details
+     {Auto-updated technical details}
+
+     ## Dependencies
+     {Auto-mapped dependencies}
+
+     ## Usage Examples
+     {Real-time updated examples}
+
+     ## Performance Metrics
+     {Auto-tracked metrics}
+
+     ## Security Considerations
+     {AI-maintained security notes}
+
+     ## Recent Changes
+     {Auto-generated changelog}
+     ```
+   - API Documentation
+```typescript
+     /**
+      * @api_quantum_doc AI-maintained API documentation
+      * @route_context Auto-updated route context
+      * @request_schema Real-time validated schema
+      * @response_schema Auto-generated response types
+      * @examples Live request/response examples
+      * @performance Current performance metrics
+      * @security Auto-updated security measures
+      */
+     ```
+
+3. **Automated README Generation**
+```typescript
+   interface ReadmeProtocol {
+     features: {
+       overview: 'auto-generated';
+       setup: 'environment-aware';
+       usage: 'example-rich';
+       api: 'comprehensive';
+       testing: 'coverage-aware';
+     };
+     updates: {
+       changelog: 'commit-driven';
+       features: 'auto-documented';
+       fixes: 'issue-linked';
+     };
+     maintenance: {
+       dependencies: 'version-tracked';
+       security: 'vulnerability-aware';
+       performance: 'metrics-driven';
+  };
+}
+```
+
+4. **Documentation Triggers**
+```typescript
+   interface DocumentationTriggers {
+     code_changes: {
+       inline_docs: 'auto-update';
+       readme: 'sync-changes';
+       api_docs: 'regenerate';
+     };
+     feature_updates: {
+       documentation: 'auto-refresh';
+       examples: 'regenerate';
+       diagrams: 'redraw';
+     };
+     dependency_changes: {
+       requirements: 'auto-update';
+       compatibility: 'verify';
+       security: 'assess';
+  };
+}
+```
+
+5. **Documentation Locations**
+   - Root Level
+     ```
+     /
+     ├── README.md (Project overview)
+     ├── ARCHITECTURE.md (System design)
+     └── CHANGELOG.md (Auto-updated changes)
+     ```
+   - Feature Level
+     ```
+     /src/app/
+     ├── api/
+     │   ├── README.md (API documentation)
+     │   ├── ROUTES.md (Route documentation)
+     │   └── SECURITY.md (API security)
+     ├── components/
+     │   ├── README.md (Component library)
+     │   └── USAGE.md (Component examples)
+     └── features/
+         ├── auth/
+         │   ├── README.md (Auth documentation)
+         │   └── FLOW.md (Auth flow diagrams)
+         └── dashboard/
+             ├── README.md (Dashboard docs)
+             └── METRICS.md (Performance data)
+     ```
+
+6. **Documentation Maintenance Rules**
+```typescript
+   interface MaintenanceProtocol {
+     frequency: {
+       inline: 'real-time';
+       readme: 'on-change';
+       api: 'per-update';
+       diagrams: 'on-architecture-change';
+     };
+     validation: {
+       links: 'auto-verify';
+       examples: 'test-against-code';
+       schemas: 'type-check';
+       security: 'scan-and-update';
+     };
+     synchronization: {
+       code: 'bi-directional';
+       tests: 'coverage-linked';
+       types: 'schema-aware';
+       apis: 'spec-compliant';
+  };
+}
+```
+
+7. **Documentation Quality Standards**
+```typescript
+   interface QualityProtocol {
+     completeness: {
+       coverage: 'full-spectrum';
+       depth: 'comprehensive';
+       context: 'well-explained';
+       examples: 'practical';
+     };
+     accuracy: {
+       technical: 'verified';
+       currentness: 'real-time';
+       consistency: 'maintained';
+       relevance: 'high';
+     };
+     accessibility: {
+       readability: 'high';
+       structure: 'logical';
+       navigation: 'intuitive';
+       search: 'efficient';
+  };
+}
+```
+
+8. **Documentation Update Protocol**
+```typescript
+   interface UpdateProtocol {
+     triggers: {
+       code_change: boolean;
+       feature_addition: boolean;
+       api_update: boolean;
+       security_patch: boolean;
+       performance_change: boolean;
+     };
+     actions: {
+       update_inline: () => void;
+       regenerate_readme: () => void;
+       refresh_diagrams: () => void;
+       sync_examples: () => void;
+       validate_docs: () => void;
+     };
+     verification: {
+       completeness: () => boolean;
+       accuracy: () => boolean;
+       freshness: () => boolean;
+       consistency: () => boolean;
+  };
+}
+```
