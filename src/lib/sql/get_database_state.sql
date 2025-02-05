@@ -9,9 +9,48 @@ DECLARE
     table_record record;
     table_contents jsonb;
     dynamic_sql text;
+    storage_info jsonb;
 BEGIN
     -- Initialize table_contents as an empty object
     table_contents := '{}'::jsonb;
+
+    -- Get storage information
+    SELECT jsonb_build_object(
+        'buckets', (
+            SELECT jsonb_agg(jsonb_build_object(
+                'id', buckets.id,
+                'name', buckets.name,
+                'owner', buckets.owner,
+                'public', buckets.public,
+                'created_at', buckets.created_at,
+                'updated_at', buckets.updated_at,
+                'objects', (
+                    SELECT jsonb_agg(jsonb_build_object(
+                        'name', objects.name,
+                        'bucket_id', objects.bucket_id,
+                        'owner', objects.owner,
+                        'size', objects.metadata->>'size',
+                        'mimetype', objects.metadata->>'mimetype',
+                        'created_at', objects.created_at,
+                        'updated_at', objects.updated_at,
+                        'last_accessed_at', objects.last_accessed_at,
+                        'metadata', objects.metadata
+                    ))
+                    FROM storage.objects
+                    WHERE objects.bucket_id = buckets.id
+                )
+            ))
+            FROM storage.buckets
+        ),
+        'total_size', (
+            SELECT sum((objects.metadata->>'size')::bigint)
+            FROM storage.objects
+        ),
+        'object_count', (
+            SELECT count(*)
+            FROM storage.objects
+        )
+    ) INTO storage_info;
 
     -- For each table in public schema, get its contents
     FOR table_record IN
@@ -135,6 +174,7 @@ BEGIN
             FROM information_schema.triggers trg
             WHERE trg.trigger_schema = 'public'
         ),
+        'storage', storage_info,
         'table_contents', table_contents
     ) INTO result;
 
@@ -146,4 +186,4 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION get_database_state() TO authenticated;
 
 -- Add comment to the function
-COMMENT ON FUNCTION get_database_state() IS 'Returns a complete snapshot of the database state including tables, columns, policies, indexes, enums, functions, triggers, and actual table contents';
+COMMENT ON FUNCTION get_database_state() IS 'Returns a complete snapshot of the database state including tables, columns, policies, indexes, enums, functions, triggers, storage information, and actual table contents';

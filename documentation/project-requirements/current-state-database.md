@@ -1,6 +1,3 @@
-*This is the current state of the database. Make this as reference when you are implementing, updating or creating new features.*
-
-
 {
   "enums": [
     {
@@ -1137,21 +1134,873 @@
       ]
     }
   ],
+  "storage": {
+    "buckets": [
+      {
+        "id": "images",
+        "name": "images",
+        "owner": null,
+        "public": true,
+        "objects": [
+          {
+            "name": "products/beef-chaofan.png",
+            "size": "204025",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"774ab29fd811c68702cff6b1ed568217-1\"",
+              "size": 204025,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 204025,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.403446+00:00",
+            "updated_at": "2025-02-05T14:41:04.403446+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.403446+00:00"
+          },
+          {
+            "name": "products/graham-bar.png",
+            "size": "273872",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"052306adf4cfc53952a3a832f5c5d468-1\"",
+              "size": 273872,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 273872,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.444164+00:00",
+            "updated_at": "2025-02-05T14:41:04.444164+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.444164+00:00"
+          },
+          {
+            "name": "products/beef-mami.png",
+            "size": "326994",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"dd2747e58e00205256f7ad9e0e559051-1\"",
+              "size": 326994,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 326994,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.624535+00:00",
+            "updated_at": "2025-02-05T14:41:04.624535+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.624535+00:00"
+          },
+          {
+            "name": "products/hotsilog.png",
+            "size": "257567",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"3d7cf6ca8ac60c699431bd7ade59a01a-1\"",
+              "size": 257567,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 257567,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.838458+00:00",
+            "updated_at": "2025-02-05T14:41:06.838458+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.838458+00:00"
+          },
+          {
+            "name": "products/pares.png",
+            "size": "257488",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"1787538d248fe58fc209c1deb37d8f77-1\"",
+              "size": 257488,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 257488,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.877803+00:00",
+            "updated_at": "2025-02-05T14:41:06.877803+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.877803+00:00"
+          },
+          {
+            "name": "products/pastil.png",
+            "size": "179682",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"dda8d464a53983d2c1fb203ac4701658-1\"",
+              "size": 179682,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 179682,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.951741+00:00",
+            "updated_at": "2025-02-05T14:41:06.951741+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.951741+00:00"
+          },
+          {
+            "name": "products/shanghai-rice.png",
+            "size": "110745",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"3e6a015f2c7ec30beb2f7d00ca031c95-1\"",
+              "size": 110745,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 110745,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.114338+00:00",
+            "updated_at": "2025-02-05T14:41:08.114338+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.114338+00:00"
+          },
+          {
+            "name": "products/waffle.png",
+            "size": "313168",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"dc75b0aae475b8b8d46a068b8a9ddc74-1\"",
+              "size": 313168,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 313168,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.198406+00:00",
+            "updated_at": "2025-02-05T14:41:08.198406+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.198406+00:00"
+          },
+          {
+            "name": "products/tocilog.png",
+            "size": "248774",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"99e90ef74fadc0f9d04e6c45a6c35cc4-1\"",
+              "size": 248774,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 248774,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.551582+00:00",
+            "updated_at": "2025-02-05T14:41:08.551582+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.551582+00:00"
+          },
+          {
+            "name": "variants/greenapple-22oz.png",
+            "size": "113207",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"aba68cf7ad262d882f02f974f03345a5-1\"",
+              "size": 113207,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 113207,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.642448+00:00",
+            "updated_at": "2025-02-05T14:41:10.642448+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.642448+00:00"
+          },
+          {
+            "name": "variants/lychee-16oz.png",
+            "size": "64364",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"c3c9755b09804e278c4f2529e3d1f6e5-1\"",
+              "size": 64364,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 64364,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.668018+00:00",
+            "updated_at": "2025-02-05T14:41:10.668018+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.668018+00:00"
+          },
+          {
+            "name": "variants/greenapple-16oz.png",
+            "size": "68185",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"55310712842bda32e69ee7344cf1a0ed-1\"",
+              "size": 68185,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 68185,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.670957+00:00",
+            "updated_at": "2025-02-05T14:41:10.670957+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.670957+00:00"
+          },
+          {
+            "name": "categories/silog-meals.png",
+            "size": "426924",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"23490f88e8e16014cea493153939dbac-1\"",
+              "size": 426924,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:15.000Z",
+              "contentLength": 426924,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:15.11397+00:00",
+            "updated_at": "2025-02-05T14:41:15.11397+00:00",
+            "last_accessed_at": "2025-02-05T14:41:15.11397+00:00"
+          },
+          {
+            "name": "categories/ala-carte.png",
+            "size": "767899",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"673d8b94ff4ee2a998c07d5bbc8f4c72-1\"",
+              "size": 767899,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:15.000Z",
+              "contentLength": 767899,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:15.232002+00:00",
+            "updated_at": "2025-02-05T14:41:15.232002+00:00",
+            "last_accessed_at": "2025-02-05T14:41:15.232002+00:00"
+          },
+          {
+            "name": "categories/budget-meals.png",
+            "size": "1291608",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"b8d1f1d0352ce3f7dec9b79adb74f950-1\"",
+              "size": 1291608,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:16.000Z",
+              "contentLength": 1291608,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:16.036913+00:00",
+            "updated_at": "2025-02-05T14:41:16.036913+00:00",
+            "last_accessed_at": "2025-02-05T14:41:16.036913+00:00"
+          },
+          {
+            "name": "products/chicksilog.png",
+            "size": "213015",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"f7c56d06aa53cb0b773f2802850a17a4-1\"",
+              "size": 213015,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 213015,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.59164+00:00",
+            "updated_at": "2025-02-05T14:41:04.59164+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.59164+00:00"
+          },
+          {
+            "name": "products/cheese-stick.png",
+            "size": "276718",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"85841c397ad5d221bc37549682cff090-1\"",
+              "size": 276718,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 276718,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.719342+00:00",
+            "updated_at": "2025-02-05T14:41:04.719342+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.719342+00:00"
+          },
+          {
+            "name": "products/fries.png",
+            "size": "2027248",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"a5e8fede955642ce9130edd88f899ae1-1\"",
+              "size": 2027248,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:06.000Z",
+              "contentLength": 2027248,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:05.531847+00:00",
+            "updated_at": "2025-02-05T14:41:05.531847+00:00",
+            "last_accessed_at": "2025-02-05T14:41:05.531847+00:00"
+          },
+          {
+            "name": "products/hot-coffee.png",
+            "size": "69125",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"5d19f40e5d875b5b327ac1d167e0d52f-1\"",
+              "size": 69125,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 69125,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.337111+00:00",
+            "updated_at": "2025-02-05T14:41:06.337111+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.337111+00:00"
+          },
+          {
+            "name": "products/porksilog.png",
+            "size": "256776",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"c0bed243da5c2a249c8ba4fdf9efe861-1\"",
+              "size": 256776,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 256776,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.662215+00:00",
+            "updated_at": "2025-02-05T14:41:06.662215+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.662215+00:00"
+          },
+          {
+            "name": "products/logo.png",
+            "size": "634437",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"330844c04bcf14abb31e236e5b4af34d-1\"",
+              "size": 634437,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 634437,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:07.183511+00:00",
+            "updated_at": "2025-02-05T14:41:07.183511+00:00",
+            "last_accessed_at": "2025-02-05T14:41:07.183511+00:00"
+          },
+          {
+            "name": "products/skinless-rice.png",
+            "size": "127485",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"d88a11935a44cd02f8ba6e1b486cfcc7-1\"",
+              "size": 127485,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 127485,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:07.99376+00:00",
+            "updated_at": "2025-02-05T14:41:07.99376+00:00",
+            "last_accessed_at": "2025-02-05T14:41:07.99376+00:00"
+          },
+          {
+            "name": "products/siomai-rice.png",
+            "size": "133785",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"243d1800dead31d70151c5d5583bfce8-1\"",
+              "size": 133785,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 133785,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.272924+00:00",
+            "updated_at": "2025-02-05T14:41:08.272924+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.272924+00:00"
+          },
+          {
+            "name": "products/silog.png",
+            "size": "343509",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"1d575a141c1213f48da5fce0622729d5-1\"",
+              "size": 343509,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:09.000Z",
+              "contentLength": 343509,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.672094+00:00",
+            "updated_at": "2025-02-05T14:41:08.672094+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.672094+00:00"
+          },
+          {
+            "name": "variants/strawberry-16oz.png",
+            "size": "95700",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"5326c93432f45a6719c80003ceb0aa10-1\"",
+              "size": 95700,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 95700,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.690675+00:00",
+            "updated_at": "2025-02-05T14:41:10.690675+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.690675+00:00"
+          },
+          {
+            "name": "variants/blueberry-22oz.png",
+            "size": "130291",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"fe2602f6d681f70be3a1fb45f6aad501-1\"",
+              "size": 130291,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 130291,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.75501+00:00",
+            "updated_at": "2025-02-05T14:41:10.75501+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.75501+00:00"
+          },
+          {
+            "name": "variants/siomai-chicken.png",
+            "size": "123311",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"c893ef5f6d20a8a53a1d6f0b22b8baac-1\"",
+              "size": 123311,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 123311,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.80167+00:00",
+            "updated_at": "2025-02-05T14:41:10.80167+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.80167+00:00"
+          },
+          {
+            "name": "variants/blueberry-16oz.png",
+            "size": "104572",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"fe5af7148a0a7fcde57d94329e062a20-1\"",
+              "size": 104572,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 104572,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.835348+00:00",
+            "updated_at": "2025-02-05T14:41:10.835348+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.835348+00:00"
+          },
+          {
+            "name": "variants/lemon-16oz.png",
+            "size": "69456",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"272e22d099cf77ee527119d718425177-1\"",
+              "size": 69456,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 69456,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.961271+00:00",
+            "updated_at": "2025-02-05T14:41:10.961271+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.961271+00:00"
+          },
+          {
+            "name": "products/egg.png",
+            "size": "144324",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"63ce65a32d62be6f8e11bd7b5953771c-1\"",
+              "size": 144324,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 144324,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.429968+00:00",
+            "updated_at": "2025-02-05T14:41:04.429968+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.429968+00:00"
+          },
+          {
+            "name": "products/goto.png",
+            "size": "455897",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"29cd44d8dd9f83d69004e9ab69551879-1\"",
+              "size": 455897,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 455897,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.462365+00:00",
+            "updated_at": "2025-02-05T14:41:04.462365+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.462365+00:00"
+          },
+          {
+            "name": "products/fruit-soda.png",
+            "size": "150385",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"8ff9807a5933850d84b8d8627947c1ac-1\"",
+              "size": 150385,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 150385,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.528588+00:00",
+            "updated_at": "2025-02-05T14:41:04.528588+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.528588+00:00"
+          },
+          {
+            "name": "products/bangsilog.png",
+            "size": "257833",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"85069dbd65473a4080e6ee3f36b498bb-1\"",
+              "size": 257833,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:04.000Z",
+              "contentLength": 257833,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:04.644658+00:00",
+            "updated_at": "2025-02-05T14:41:04.644658+00:00",
+            "last_accessed_at": "2025-02-05T14:41:04.644658+00:00"
+          },
+          {
+            "name": "products/iced-coffee.png",
+            "size": "141782",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"6be1304b8bf913295961b2365c1505d6-1\"",
+              "size": 141782,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 141782,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.434937+00:00",
+            "updated_at": "2025-02-05T14:41:06.434937+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.434937+00:00"
+          },
+          {
+            "name": "products/hamsilog.png",
+            "size": "190711",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"be2410f7fd666211647328fa3c794413-1\"",
+              "size": 190711,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 190711,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.470789+00:00",
+            "updated_at": "2025-02-05T14:41:06.470789+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.470789+00:00"
+          },
+          {
+            "name": "products/pork-chaofan.png",
+            "size": "204025",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"774ab29fd811c68702cff6b1ed568217-1\"",
+              "size": 204025,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 204025,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.613018+00:00",
+            "updated_at": "2025-02-05T14:41:06.613018+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.613018+00:00"
+          },
+          {
+            "name": "products/lugaw.png",
+            "size": "195611",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"dbc80b7e9055b2da9e7bb3efa8f449a3-1\"",
+              "size": 195611,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:07.000Z",
+              "contentLength": 195611,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:06.994314+00:00",
+            "updated_at": "2025-02-05T14:41:06.994314+00:00",
+            "last_accessed_at": "2025-02-05T14:41:06.994314+00:00"
+          },
+          {
+            "name": "products/tapsilog.png",
+            "size": "234039",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"33ea3febdd350ae1c8de922dff473149-1\"",
+              "size": 234039,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 234039,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.069685+00:00",
+            "updated_at": "2025-02-05T14:41:08.069685+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.069685+00:00"
+          },
+          {
+            "name": "products/sisigsilog.png",
+            "size": "124131",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"dafa67f7a40913c625601a68dc6ce066-1\"",
+              "size": 124131,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 124131,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.105928+00:00",
+            "updated_at": "2025-02-05T14:41:08.105928+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.105928+00:00"
+          },
+          {
+            "name": "products/rice.png",
+            "size": "194920",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"39338b8ed95140243c52fe8be02e59ca-1\"",
+              "size": 194920,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:08.000Z",
+              "contentLength": 194920,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:08.215676+00:00",
+            "updated_at": "2025-02-05T14:41:08.215676+00:00",
+            "last_accessed_at": "2025-02-05T14:41:08.215676+00:00"
+          },
+          {
+            "name": "variants/lemon-22oz.png",
+            "size": "99430",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"08748670b5c471334daf73ca5c0d787e-1\"",
+              "size": 99430,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 99430,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:10.827226+00:00",
+            "updated_at": "2025-02-05T14:41:10.827226+00:00",
+            "last_accessed_at": "2025-02-05T14:41:10.827226+00:00"
+          },
+          {
+            "name": "variants/coke-float-16oz.png",
+            "size": "432266",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"094fe7f5b5efada3bb48da5a3b0a5d90-1\"",
+              "size": 432266,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:11.000Z",
+              "contentLength": 432266,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:11.053421+00:00",
+            "updated_at": "2025-02-05T14:41:11.053421+00:00",
+            "last_accessed_at": "2025-02-05T14:41:11.053421+00:00"
+          },
+          {
+            "name": "variants/strawberry-22oz.png",
+            "size": "138689",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"95688a5a05cdc4ab5d12ce7f9548a773-1\"",
+              "size": 138689,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:12.000Z",
+              "contentLength": 138689,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:12.06442+00:00",
+            "updated_at": "2025-02-05T14:41:12.06442+00:00",
+            "last_accessed_at": "2025-02-05T14:41:12.06442+00:00"
+          },
+          {
+            "name": "categories/beverages.png",
+            "size": "442340",
+            "owner": null,
+            "metadata": {
+              "eTag": "\"d779785a536a9820fa66ecd9da8c909b-1\"",
+              "size": 442340,
+              "mimetype": "image/png",
+              "cacheControl": "max-age=3600",
+              "lastModified": "2025-02-05T14:41:15.000Z",
+              "contentLength": 442340,
+              "httpStatusCode": 200
+            },
+            "mimetype": "image/png",
+            "bucket_id": "images",
+            "created_at": "2025-02-05T14:41:15.042381+00:00",
+            "updated_at": "2025-02-05T14:41:15.042381+00:00",
+            "last_accessed_at": "2025-02-05T14:41:15.042381+00:00"
+          }
+        ],
+        "created_at": "2025-01-16T15:25:39.127115+00:00",
+        "updated_at": "2025-01-16T15:25:39.127115+00:00"
+      }
+    ],
+    "total_size": 12916313,
+    "object_count": 44
+  },
   "triggers": null,
   "functions": [
-    {
-      "name": "exec_sql",
-      "schema": "public",
-      "language": "plpgsql",
-      "arguments": "sql text",
-      "returnType": "void"
-    },
     {
       "name": "get_database_state",
       "schema": "public",
       "language": "plpgsql",
       "arguments": "",
       "returnType": "jsonb"
+    },
+    {
+      "name": "exec_sql",
+      "schema": "public",
+      "language": "plpgsql",
+      "arguments": "sql text",
+      "returnType": "void"
     }
   ],
   "table_contents": {
@@ -1606,6 +2455,18 @@
     ],
     "OrderItemAddon": [],
     "ProductVariant": [
+      {
+        "id": "b547aecf-359c-42eb-b524-f64c7a6ea321",
+        "name": "Lychee 22oz",
+        "type": "SIZE",
+        "price": 39,
+        "stock": 0,
+        "imageUrl": null,
+        "createdAt": "2025-02-05T14:25:06.198",
+        "productId": "9d5cde11-1bcf-42c5-b9d9-41c78b43b5f0",
+        "updatedAt": "2025-02-05T14:38:42.09",
+        "isAvailable": true
+      },
       {
         "id": "06aeea79-2ae8-4122-b949-1fdea0d3d5c4",
         "name": "Blueberry 16oz",

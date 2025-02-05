@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Storage tab in database state viewer
+  - View all storage buckets and objects
+  - Display total storage usage statistics
+  - Show object metadata and details
+  - Real-time storage state monitoring
+  - Integrated with Supabase Storage
+  - Object listing with size, type, and timestamps
+  - Public/private bucket status indicators
+  - Comprehensive storage metrics
 - Enhanced variant management system
   - Comprehensive stock tracking and management
   - Real-time availability controls

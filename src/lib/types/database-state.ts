@@ -75,10 +75,37 @@ export interface DatabaseState {
   tables: TableInfo[];
   enums: EnumType[];
   functions: FunctionInfo[];
-  triggers: TriggerInfo[];
-  table_contents: {
-    [tableName: string]: Array<Record<string, unknown>>;
-  };
+  triggers: TriggerInfo[] | null;
+  table_contents: Record<string, any[]>;
+  storage: StorageInfo;
   timestamp: string;
   version: string;
+}
+
+export interface StorageInfo {
+  buckets: StorageBucket[];
+  total_size: number;
+  object_count: number;
+}
+
+export interface StorageBucket {
+  id: string;
+  name: string;
+  owner: string;
+  public: boolean;
+  created_at: string;
+  updated_at: string;
+  objects: StorageObject[];
+}
+
+export interface StorageObject {
+  name: string;
+  bucket_id: string;
+  owner: string;
+  size: string;
+  mimetype: string;
+  created_at: string;
+  updated_at: string;
+  last_accessed_at: string;
+  metadata: Record<string, any>;
 }
