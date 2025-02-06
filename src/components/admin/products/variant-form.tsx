@@ -97,12 +97,15 @@ export function VariantForm({ productId, initialData, onSuccess }: VariantFormPr
 
   const handleImageUpload = async (file: File) => {
     try {
-      const imagePath = ProductImageService.getVariantImagePath(productId, file.name);
-      const { url } = await uploadImage(file);
+      setIsLoading(true);
+      const { url, path } = await ProductImageService.uploadVariantImage(file, form.getValues('imageUrl'));
       form.setValue('imageUrl', url);
+      toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
+      toast.error(error instanceof Error ? error.message : 'Failed to upload image');
+    } finally {
+      setIsLoading(false);
     }
   };
 

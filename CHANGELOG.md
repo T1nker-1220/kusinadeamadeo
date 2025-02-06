@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Enhanced Image Upload System
+  - Improved image upload component with better UX
+  - Comprehensive file validation (type, size)
+  - Clear loading and error states
+  - Drag and drop support with visual feedback
+  - Progress indicators for upload/remove operations
+  - Proper error handling with descriptive messages
+  - Mobile-friendly upload interface
+  - Automatic cleanup of old images
+- Successful migration to Supabase Storage
+  - Completed migration of all product images
+  - Migrated variant images with proper organization
+  - Migrated category images maintaining structure
+  - Implemented proper storage bucket organization
+  - Added image backup functionality
+  - Ensured zero downtime during migration
 - Storage tab in database state viewer
   - View all storage buckets and objects
   - Display total storage usage statistics
@@ -67,6 +83,22 @@ All notable changes to this project will be documented in this file.
   - Added error state UI
   - Added proper error messages with toast notifications
   - Added type safety for database state interface
+- Improved image management system
+  - Enhanced image upload component with better validation
+  - Optimized image removal process
+  - Added loading states for better UX
+  - Improved error handling and recovery
+  - Better visual feedback for upload states
+  - Cleaner component structure
+  - More intuitive drag and drop interface
+  - Enhanced accessibility features
+- Storage system optimization
+  - Moved from local storage to Supabase Storage
+  - Improved image URL handling
+  - Better organization of image assets
+  - Enhanced image path generation
+  - Optimized storage bucket structure
+  - Improved image deletion process
 
 ### Fixed
 - Image storage consistency issues

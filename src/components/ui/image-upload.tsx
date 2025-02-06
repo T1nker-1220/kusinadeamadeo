@@ -25,6 +25,7 @@ export function ImageUpload({
   className,
 }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -49,11 +50,24 @@ export function ImageUpload({
         await onUpload(file);
       } catch (error) {
         console.error('Error uploading image:', error);
-        setError('Failed to upload image');
+        setError(error instanceof Error ? error.message : 'Failed to upload image');
       }
     },
     [onUpload]
   );
+
+  const handleRemove = async () => {
+    try {
+      setIsRemoving(true);
+      setError(null);
+      onChange('');
+    } catch (error) {
+      console.error('Error removing image:', error);
+      setError(error instanceof Error ? error.message : 'Failed to remove image');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -61,7 +75,7 @@ export function ImageUpload({
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
     maxFiles: 1,
-    disabled: disabled || isUploading,
+    disabled: disabled || isUploading || isRemoving,
   });
 
   return (
@@ -71,8 +85,8 @@ export function ImageUpload({
         className={cn(
           'relative border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors',
           isDragActive && 'border-primary bg-primary/5',
-          disabled && 'opacity-50 cursor-not-allowed',
-          isUploading && 'opacity-50 cursor-wait'
+          (disabled || isUploading || isRemoving) && 'opacity-50 cursor-not-allowed',
+          error && 'border-destructive'
         )}
       >
         <input {...getInputProps()} />
@@ -92,6 +106,11 @@ export function ImageUpload({
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                 <p className="text-sm">Uploading...</p>
               </>
+            ) : isRemoving ? (
+              <>
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-sm">Removing...</p>
+              </>
             ) : (
               <>
                 {isDragActive ? (
@@ -104,24 +123,33 @@ export function ImageUpload({
                     ? 'Drop the image here'
                     : 'Drag & drop or click to upload'}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  PNG, JPG, JPEG up to 5MB
+                </p>
               </>
             )}
           </div>
         )}
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="text-sm text-destructive flex items-center gap-2">
+          <span className="i-lucide-alert-circle h-4 w-4" />
+          {error}
+        </p>
+      )}
 
-      {value && !disabled && !isUploading && (
+      {value && !disabled && !isUploading && !isRemoving && (
         <Button
           type="button"
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={() => onChange('')}
+          onClick={handleRemove}
+          disabled={isRemoving}
         >
           <Trash className="h-4 w-4 mr-2" />
-          Remove Image
+          {isRemoving ? 'Removing...' : 'Remove Image'}
         </Button>
       )}
     </div>

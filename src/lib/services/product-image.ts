@@ -95,11 +95,59 @@ export class ProductImageService {
   }
 
   static async uploadVariantImage(file: File, oldImagePath?: string): Promise<UploadResult> {
-    return ProductImageService.uploadImage({
-      file,
-      type: 'variant',
-      oldImagePath
-    });
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Invalid file type. Only images are allowed.');
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image must be less than 5MB');
+      }
+
+      // Generate unique path for variant image
+      const fileExt = file.name.split('.').pop();
+      const uniqueId = Math.random().toString(36).substring(2);
+      const path = `variants/${uniqueId}.${fileExt}`;
+
+      // Upload new image
+      const { data, error } = await this.supabase.storage
+        .from('images')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('Failed to upload image');
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = this.supabase.storage
+        .from('images')
+        .getPublicUrl(data.path);
+
+      // Delete old image if it exists and is not a placeholder
+      if (oldImagePath) {
+        const oldPath = this.getImagePath(oldImagePath);
+        if (oldPath && !oldPath.includes('placeholder')) {
+          await this.deleteImage(oldPath).catch(console.error);
+        }
+      }
+
+      return {
+        url: publicUrl,
+        path: data.path,
+      };
+    } catch (error) {
+      console.error('Error uploading variant image:', error);
+      throw error;
+    }
   }
 
   static async uploadCategoryImage(file: File, oldImagePath?: string): Promise<UploadResult> {
