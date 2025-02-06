@@ -20,7 +20,9 @@
     "migrate:setup": "tsx src/scripts/setup-migration.ts",
     "migrate:products": "tsx src/scripts/migrate-products.ts",
     "migrate:products:dry-run": "tsx src/scripts/migrate-products.ts --dry-run",
-    "migrate:storage": "tsx scripts/migrate-storage.ts"
+    "migrate:storage": "tsx scripts/migrate-storage.ts",
+    "storage:init": "tsx scripts/init-storage.ts",
+    "storage:policies": "psql $DATABASE_URL -f scripts/storage-policies.sql"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

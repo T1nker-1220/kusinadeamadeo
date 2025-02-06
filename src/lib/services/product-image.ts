@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { StorageConfig } from './storage-config';
 
 interface UploadImageOptions {
   file: File;
-  type: 'product' | 'variant' | 'category';
+  type: 'products' | 'variants' | 'categories';
   oldImagePath?: string;
 }
 
@@ -11,6 +12,12 @@ interface UploadResult {
   path: string;
 }
 
+/**
+ * @quantum_doc Product Image Service
+ * @feature_context Handles product, variant, and category image operations
+ * @dependencies StorageConfig
+ * @security Implements secure image handling
+ */
 export class ProductImageService {
   private static supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,85 +45,26 @@ export class ProductImageService {
     return `categories/${uniqueFileName}`;
   }
 
-  public static async deleteImage(path: string): Promise<void> {
-    const { error } = await this.supabase.storage
-      .from('images')
-      .remove([path]);
-
-    if (error) {
-      throw error;
-    }
-  }
-
-  public static getPublicUrl(path: string): string {
-    const { data: { publicUrl } } = this.supabase.storage
-      .from('images')
-      .getPublicUrl(path);
-
-    return publicUrl;
-  }
-
+  /**
+   * Uploads an image to storage with proper validation and error handling
+   */
   private static async uploadImage({ file, type, oldImagePath }: UploadImageOptions): Promise<UploadResult> {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Invalid file type. Only images are allowed.');
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
-    // Upload new image
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to upload image');
-    }
-
-    const result = await response.json();
-
-    // If there's an old image and it's not a placeholder, delete it
-    if (oldImagePath && !oldImagePath.includes('placeholder')) {
-      await ProductImageService.deleteImage(oldImagePath).catch(console.error);
-    }
-
-    return result;
-  }
-
-  static async uploadProductImage(file: File, oldImagePath?: string): Promise<UploadResult> {
-    return ProductImageService.uploadImage({
-      file,
-      type: 'product',
-      oldImagePath
-    });
-  }
-
-  static async uploadVariantImage(file: File, oldImagePath?: string): Promise<UploadResult> {
     try {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Invalid file type. Only images are allowed.');
+      // Validate file
+      const validation = StorageConfig.validateFile(file);
+      if (!validation.isValid) {
+        throw new Error(validation.error);
       }
 
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('Image must be less than 5MB');
-      }
-
-      // Generate unique path for variant image
-      const fileExt = file.name.split('.').pop();
-      const uniqueId = Math.random().toString(36).substring(2);
-      const path = `variants/${uniqueId}.${fileExt}`;
+      // Generate unique path
+      const path = StorageConfig.generatePath(type, file.name);
 
       // Upload new image
       const { data, error } = await this.supabase.storage
-        .from('images')
+        .from(StorageConfig.BUCKET_NAME)
         .upload(path, file, {
-          cacheControl: '3600',
-          upsert: false,
+          cacheControl: StorageConfig.CACHE_CONTROL,
+          upsert: false
         });
 
       if (error) {
@@ -128,42 +76,70 @@ export class ProductImageService {
       }
 
       // Get public URL
-      const { data: { publicUrl } } = this.supabase.storage
-        .from('images')
-        .getPublicUrl(data.path);
+      const url = StorageConfig.getPublicUrl(path);
 
-      // Delete old image if it exists and is not a placeholder
+      // Delete old image if it exists
       if (oldImagePath) {
-        const oldPath = this.getImagePath(oldImagePath);
+        const oldPath = StorageConfig.extractPathFromUrl(oldImagePath);
         if (oldPath && !oldPath.includes('placeholder')) {
           await this.deleteImage(oldPath).catch(console.error);
         }
       }
 
-      return {
-        url: publicUrl,
-        path: data.path,
-      };
+      return { url, path };
     } catch (error) {
-      console.error('Error uploading variant image:', error);
-      throw error;
+      throw StorageConfig.handleStorageError(error);
     }
   }
 
-  static async uploadCategoryImage(file: File, oldImagePath?: string): Promise<UploadResult> {
-    return ProductImageService.uploadImage({
+  /**
+   * Deletes an image from storage
+   */
+  public static async deleteImage(path: string): Promise<void> {
+    try {
+      const { error } = await this.supabase.storage
+        .from(StorageConfig.BUCKET_NAME)
+        .remove([path]);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw StorageConfig.handleStorageError(error);
+    }
+  }
+
+  /**
+   * Uploads a product image
+   */
+  public static async uploadProductImage(file: File, oldImagePath?: string): Promise<UploadResult> {
+    return this.uploadImage({
       file,
-      type: 'category',
+      type: 'products',
       oldImagePath
     });
   }
 
-  static async deleteProductImage(path: string): Promise<void> {
-    return ProductImageService.deleteImage(path);
+  /**
+   * Uploads a variant image
+   */
+  public static async uploadVariantImage(file: File, oldImagePath?: string): Promise<UploadResult> {
+    return this.uploadImage({
+      file,
+      type: 'variants',
+      oldImagePath
+    });
   }
 
-  static async deleteVariantImage(path: string): Promise<void> {
-    return ProductImageService.deleteImage(path);
+  /**
+   * Uploads a category image
+   */
+  public static async uploadCategoryImage(file: File, oldImagePath?: string): Promise<UploadResult> {
+    return this.uploadImage({
+      file,
+      type: 'categories',
+      oldImagePath
+    });
   }
 
   static getImagePath(url: string): string | null {

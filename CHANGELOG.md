@@ -463,3 +463,80 @@ DELETE /api/products/[id]/variants/image
    - Create user guide for database state viewer
    - Document common error scenarios and solutions
    - Add developer documentation for component customization
+
+## [1.1.7] - 2024-03-21
+
+### Added
+- Enhanced storage policies for Supabase Storage
+  - Public access policy for image bucket
+  - Authenticated user upload permissions
+  - Admin-only delete and update permissions
+  - Folder-based access control for products, variants, and categories
+
+### Changed
+- Updated storage bucket permissions:
+  - Restricted image uploads to authenticated users
+  - Limited image deletion to admin users
+  - Controlled image updates through admin role
+  - Organized storage access by folder structure
+
+### Technical Details
+```sql
+-- Storage Policy Implementation
+-- Public access limited to specific folders
+CREATE POLICY "Public Access to Images"
+ON storage.objects FOR SELECT
+USING (
+  bucket_id = 'images'
+  AND storage.foldername(name) IN (ARRAY['products', 'variants', 'categories'])
+);
+
+-- Upload restrictions for authenticated users
+CREATE POLICY "Authenticated Users can Upload Images"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'images'
+  AND auth.role() = 'authenticated'
+  AND storage.foldername(name) IN (ARRAY['products', 'variants', 'categories'])
+);
+
+-- Admin-only delete permissions
+CREATE POLICY "Admin Users can Delete Images"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'images'
+  AND EXISTS (
+    SELECT 1 FROM "User"
+    WHERE id::text = auth.uid()::text
+    AND role = 'ADMIN'
+  )
+);
+
+-- Admin-only update permissions
+CREATE POLICY "Admin Users can Update Images"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'images'
+  AND EXISTS (
+    SELECT 1 FROM "User"
+    WHERE id::text = auth.uid()::text
+    AND role = 'ADMIN'
+  )
+);
+```
+
+### Implementation Notes
+- Storage policies follow least privilege principle
+- Public access is read-only and limited to specific folders
+- Upload permissions require authentication
+- Delete and update operations restricted to admin users
+- Folder structure enforces organization of uploaded files
+
+### Developer Notes
+- Always verify user role before delete/update operations
+- Use proper folder paths when uploading images
+- Handle permission errors gracefully in the UI
+- Implement proper error messages for unauthorized actions
+- Follow established folder structure for uploads
+- Test access control across different user roles
+- Verify policy effectiveness after any changes
