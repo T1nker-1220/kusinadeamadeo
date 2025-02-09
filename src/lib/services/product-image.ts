@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { useStorageStore } from '../stores/storage-store';
 import { StorageConfig } from './storage-config';
 
 interface UploadImageOptions {
@@ -24,6 +25,8 @@ export class ProductImageService {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
+  private static store = useStorageStore;
+
   private static generateUniqueFileName(originalName: string): string {
     const fileExt = originalName.split('.').pop();
     const uniqueId = Math.random().toString(36).substring(2);
@@ -46,9 +49,13 @@ export class ProductImageService {
   }
 
   /**
-   * Uploads an image to storage with proper validation and error handling
+   * Uploads an image to storage with proper validation, error handling, and real-time updates
    */
   private static async uploadImage({ file, type, oldImagePath }: UploadImageOptions): Promise<UploadResult> {
+    const store = this.store.getState();
+    store.setUploading(true);
+    store.setError(null);
+
     try {
       // Validate file
       const validation = StorageConfig.validateFile(file);
@@ -59,13 +66,15 @@ export class ProductImageService {
       // Generate unique path
       const path = StorageConfig.generatePath(type, file.name);
 
-      // Upload new image
-      const { data, error } = await this.supabase.storage
-        .from(StorageConfig.BUCKET_NAME)
-        .upload(path, file, {
-          cacheControl: StorageConfig.CACHE_CONTROL,
-          upsert: false
-        });
+      // Upload new image with retry logic
+      const { data, error } = await StorageConfig.retryOperation(async () => {
+        return await this.supabase.storage
+          .from(StorageConfig.BUCKET_NAME)
+          .upload(path, file, {
+            cacheControl: StorageConfig.CACHE_CONTROL,
+            upsert: false
+          });
+      });
 
       if (error) {
         throw error;
@@ -86,31 +95,53 @@ export class ProductImageService {
         }
       }
 
+      // Update store with successful upload
+      store.addRecentUpload(path, url);
+
       return { url, path };
     } catch (error) {
       throw StorageConfig.handleStorageError(error);
+    } finally {
+      store.setUploading(false);
     }
   }
 
   /**
-   * Deletes an image from storage
+   * Deletes an image from storage with real-time updates
    */
   public static async deleteImage(path: string): Promise<void> {
+    const store = this.store.getState();
+    store.setDeleting(true);
+    store.setError(null);
+
     try {
-      const { error } = await this.supabase.storage
-        .from(StorageConfig.BUCKET_NAME)
-        .remove([path]);
+      // Validate path before deletion
+      if (!StorageConfig.validatePath(path)) {
+        throw new Error('Invalid storage path');
+      }
+
+      // Delete image with retry logic
+      const { error } = await StorageConfig.retryOperation(async () => {
+        return await this.supabase.storage
+          .from(StorageConfig.BUCKET_NAME)
+          .remove([path]);
+      });
 
       if (error) {
         throw error;
       }
+
+      // Update store with successful deletion
+      store.addRecentDelete(path);
     } catch (error) {
       throw StorageConfig.handleStorageError(error);
+    } finally {
+      store.setDeleting(false);
     }
   }
 
   /**
-   * Uploads a product image
+   * Uploads a product image with real-time updates
    */
   public static async uploadProductImage(file: File, oldImagePath?: string): Promise<UploadResult> {
     return this.uploadImage({
@@ -121,7 +152,7 @@ export class ProductImageService {
   }
 
   /**
-   * Uploads a variant image
+   * Uploads a variant image with real-time updates
    */
   public static async uploadVariantImage(file: File, oldImagePath?: string): Promise<UploadResult> {
     return this.uploadImage({
@@ -132,7 +163,7 @@ export class ProductImageService {
   }
 
   /**
-   * Uploads a category image
+   * Uploads a category image with real-time updates
    */
   public static async uploadCategoryImage(file: File, oldImagePath?: string): Promise<UploadResult> {
     return this.uploadImage({
@@ -142,13 +173,10 @@ export class ProductImageService {
     });
   }
 
+  /**
+   * Gets image path from URL with validation
+   */
   static getImagePath(url: string): string | null {
-    try {
-      const urlObj = new URL(url);
-      const pathMatch = urlObj.pathname.match(/\/images\/(.+)$/);
-      return pathMatch ? pathMatch[1] : null;
-    } catch {
-      return null;
-    }
+    return StorageConfig.extractPathFromUrl(url);
   }
 }

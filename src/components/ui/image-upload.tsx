@@ -1,9 +1,11 @@
 'use client';
 
+import { StorageConfig } from '@/lib/services/storage-config';
+import { useStorageStore } from '@/lib/stores/storage-store';
 import { cn } from '@/lib/utils';
-import { ImageIcon, Trash, UploadCloud } from 'lucide-react';
+import { AlertCircle, ImageIcon, Trash, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from './button';
 
@@ -12,7 +14,6 @@ interface ImageUploadProps {
   disabled?: boolean;
   onChange: (value: string) => void;
   onUpload: (file: File) => Promise<void>;
-  isUploading?: boolean;
   className?: string;
 }
 
@@ -21,11 +22,20 @@ export function ImageUpload({
   disabled,
   onChange,
   onUpload,
-  isUploading,
   className,
 }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
-  const [isRemoving, setIsRemoving] = useState(false);
+  const { isUploading, isDeleting, error: storeError } = useStorageStore();
+
+  // Sync store error with local error state
+  useEffect(() => {
+    if (storeError) {
+      setError(storeError);
+      // Clear error after 5 seconds
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [storeError]);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -37,13 +47,10 @@ export function ImageUpload({
           return;
         }
 
-        if (!file.type.startsWith('image/')) {
-          setError('Please upload an image file');
-          return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-          setError('Image must be less than 5MB');
+        // Validate file using StorageConfig
+        const validation = StorageConfig.validateFile(file);
+        if (!validation.isValid) {
+          setError(validation.error || 'Invalid file');
           return;
         }
 
@@ -58,14 +65,11 @@ export function ImageUpload({
 
   const handleRemove = async () => {
     try {
-      setIsRemoving(true);
       setError(null);
       onChange('');
     } catch (error) {
       console.error('Error removing image:', error);
       setError(error instanceof Error ? error.message : 'Failed to remove image');
-    } finally {
-      setIsRemoving(false);
     }
   };
 
@@ -75,7 +79,8 @@ export function ImageUpload({
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
     maxFiles: 1,
-    disabled: disabled || isUploading || isRemoving,
+    maxSize: StorageConfig.MAX_FILE_SIZE,
+    disabled: disabled || isUploading || isDeleting,
   });
 
   return (
@@ -85,7 +90,7 @@ export function ImageUpload({
         className={cn(
           'relative border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors',
           isDragActive && 'border-primary bg-primary/5',
-          (disabled || isUploading || isRemoving) && 'opacity-50 cursor-not-allowed',
+          (disabled || isUploading || isDeleting) && 'opacity-50 cursor-not-allowed',
           error && 'border-destructive'
         )}
       >
@@ -97,6 +102,8 @@ export function ImageUpload({
               alt="Uploaded image"
               fill
               className="object-cover"
+              sizes="(max-width: 200px) 100vw, 200px"
+              priority
             />
           </div>
         ) : (
@@ -106,7 +113,7 @@ export function ImageUpload({
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                 <p className="text-sm">Uploading...</p>
               </>
-            ) : isRemoving ? (
+            ) : isDeleting ? (
               <>
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                 <p className="text-sm">Removing...</p>
@@ -124,7 +131,7 @@ export function ImageUpload({
                     : 'Drag & drop or click to upload'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  PNG, JPG, JPEG up to 5MB
+                  PNG, JPG, JPEG, GIF, WEBP up to {StorageConfig.MAX_FILE_SIZE / 1024 / 1024}MB
                 </p>
               </>
             )}
@@ -133,23 +140,23 @@ export function ImageUpload({
       </div>
 
       {error && (
-        <p className="text-sm text-destructive flex items-center gap-2">
-          <span className="i-lucide-alert-circle h-4 w-4" />
+        <p className="text-sm text-destructive flex items-center gap-2 animate-fadeIn">
+          <AlertCircle className="h-4 w-4" />
           {error}
         </p>
       )}
 
-      {value && !disabled && !isUploading && !isRemoving && (
+      {value && !disabled && !isUploading && !isDeleting && (
         <Button
           type="button"
           variant="outline"
           size="sm"
           className="w-full"
           onClick={handleRemove}
-          disabled={isRemoving}
+          disabled={isDeleting}
         >
           <Trash className="h-4 w-4 mr-2" />
-          {isRemoving ? 'Removing...' : 'Remove Image'}
+          {isDeleting ? 'Removing...' : 'Remove Image'}
         </Button>
       )}
     </div>

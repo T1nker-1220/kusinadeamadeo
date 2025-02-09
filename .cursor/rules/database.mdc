@@ -2,7 +2,7 @@
 description: This is the current state of the database on supabase complete database. Make this as reference when you are implementing, updating or creating new features.*
 globs: *current-state-database.md, *.tsx, *.ts, *.js, *.json, *.prisma, *.sql, *.css, *.mjs, *.cursorrules
 ---
-*This is the current state of the database. Make this as reference when you are implementing, updating or creating new features.*
+*This is the database current state complete information, you can reference here when you want to know some of the database state*
 
 
 {
