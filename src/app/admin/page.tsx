@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAdminStore } from '@/stores/adminStore';
+import { useAdminStore, Order } from '@/stores/adminStore';
 import { createClient } from '@/utils/supabase/client';
 import OrderCard from '@/components/admin/OrderCard';
 
 const supabase = createClient();
 
 export default function AdminPage() {
-  const { orders, setOrders, addOrder } = useAdminStore();
+  const { orders, setOrders, addOrder, updateOrderStatus } = useAdminStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Simple password protection
     if (!isAuthenticated) {
       const password = prompt('Enter admin password:');
-      if (password === 'kda-admin-24') {
+      if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
         setIsAuthenticated(true);
       } else {
         alert('Incorrect password.');
@@ -38,21 +38,21 @@ export default function AdminPage() {
 
     fetchOrders();
 
-    // Set up real-time subscription for new orders
+    // Set up real-time subscription for all order changes
     const channel = supabase
       .channel('realtime-orders')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'orders' },
+        { event: '*', schema: 'public', table: 'orders' },
         async (payload) => {
-          const { data: newOrderWithItems, error } = await supabase
-            .from('orders')
-            .select('*, order_items(*)')
-            .eq('id', payload.new.id)
-            .single();
-
-          if (newOrderWithItems) {
-            addOrder(newOrderWithItems);
+          if (payload.eventType === 'INSERT') {
+            const { data: newOrderWithItems } = await supabase
+              .from('orders').select('*, order_items(*)').eq('id', payload.new.id).single();
+            if (newOrderWithItems) addOrder(newOrderWithItems);
+          }
+          if (payload.eventType === 'UPDATE') {
+            const updatedOrder = payload.new as Order;
+            updateOrderStatus(updatedOrder.id, updatedOrder.status);
           }
         }
       )
@@ -62,7 +62,7 @@ export default function AdminPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAuthenticated, setOrders, addOrder]);
+  }, [isAuthenticated, setOrders, addOrder, updateOrderStatus]);
 
   if (!isAuthenticated) {
     return <div className="flex justify-center items-center h-screen"><p>Authenticating...</p></div>;

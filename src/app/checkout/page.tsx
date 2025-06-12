@@ -7,6 +7,17 @@ import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
 
+async function createSignedUrlWithRetry(supabase: any, filePath: string, maxRetries = 5, delayMs = 1000) {
+  for (let i = 0; i < maxRetries; i++) {
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(filePath, 31536000);
+    if (data && data.signedUrl) return data.signedUrl;
+    await new Promise(res => setTimeout(res, delayMs));
+  }
+  throw new Error('File not found for signed URL after multiple retries');
+}
+
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCustomerStore();
   const router = useRouter();
@@ -34,23 +45,23 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      // 1. Upload payment proof to Supabase Storage
+      // 1. Upload payment proof to the NEW, PRIVATE bucket
       const fileExt = paymentProof.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `payment_proofs/${fileName}`;
+      const filePath = `receipts/${fileName}`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('kda-assets') // Make sure this bucket exists and is public
-        .upload(filePath, paymentProof);
+        .from('payment-proofs')
+        .upload(filePath, paymentProof, { upsert: true });
+      console.log('Upload data:', uploadData, 'Upload error:', uploadError);
 
       if (uploadError) throw uploadError;
 
-      // 2. Get the public URL of the uploaded file
-      const { data: urlData } = supabase.storage
-        .from('kda-assets')
-        .getPublicUrl(filePath);
+      // Add a short delay to ensure file is available
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const paymentProofUrl = urlData.publicUrl;
+      // 2. Create a long-lived SIGNED URL instead of a public one, with retry
+      const paymentProofUrl = await createSignedUrlWithRetry(supabase, filePath);
 
       // 3. Prepare order data for insertion
       const orderData = {
