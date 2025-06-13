@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Cart, { CartToggle } from "@/components/customers/Cart";
 import { Toaster } from 'react-hot-toast';
+import ConditionalStepper from '@/components/ui/ConditionalStepper';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,9 +40,12 @@ export default function RootLayout({
         {/* This overlay dims the background when the cart is open */}
         <label htmlFor="cart-toggle" className="fixed inset-0 bg-black/30 z-10 hidden peer-checked:block"></label>
 
-        <div className="relative z-0">
-          {children}
-        </div>
+        {/* Stepper at the top, only on step pages */}
+        <ConditionalStepper>
+          <div className="relative z-0 pt-[72px] md:pt-0">
+            {children}
+          </div>
+        </ConditionalStepper>
       </body>
     </html>
   );

@@ -19,6 +19,7 @@ export type CartItem = {
   quantity: number;
   selectedOptions: SelectedOption[];
   itemTotal: number;
+  groupTag?: string;
 };
 
 type CustomerState = {
@@ -29,6 +30,7 @@ type CustomerState = {
   clearCart: () => void;
   cartCount: () => number;
   cartTotal: () => number;
+  setGroupTag: (cartItemId: string, tag: string) => void;
 };
 
 export const useCustomerStore = create<CustomerState>((set, get) => ({
@@ -85,5 +87,13 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
     return get().cart.reduce((total, item) => {
       return total + (item.itemTotal * item.quantity);
     }, 0);
+  },
+
+  setGroupTag: (cartItemId, tag) => {
+    set(state => ({
+      cart: state.cart.map(item => 
+        item.cartItemId === cartItemId ? { ...item, groupTag: tag } : item
+      )
+    }));
   },
 })); 

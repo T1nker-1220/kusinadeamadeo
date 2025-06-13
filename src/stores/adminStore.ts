@@ -7,6 +7,7 @@ type OrderItem = {
   quantity: number;
   item_price: number;
   selected_options: Record<string, string> | null;
+  group_tag: string | null;
 };
 
 // Define the main Order type
@@ -16,8 +17,10 @@ export type Order = {
   customer_phone: string;
   order_items: OrderItem[];
   total_price: number;
-  payment_proof_url: string;
-  status: 'New' | 'Preparing' | 'Ready' | 'Completed' | 'Cancelled';
+  payment_proof_url: string | null;
+  payment_method: string;
+  decline_reason: string | null;
+  status: 'Pending Confirmation' | 'Accepted' | 'Preparing' | 'Ready' | 'Completed' | 'Declined';
   created_at: string;
 };
 
