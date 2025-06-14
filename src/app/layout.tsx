@@ -4,6 +4,7 @@ import "./globals.css";
 // import Cart, { CartToggle } from "@/components/customers/Cart"; // Remove from global layout
 import { Toaster } from 'react-hot-toast';
 import ConditionalStepper from '@/components/ui/ConditionalStepper';
+import ThemeProvider from '@/components/ThemeProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,20 +32,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster position="bottom-center" />
-        {/* CartToggle and Cart moved to CustomerLayout only */}
-        {/* <input type="checkbox" id="cart-toggle" className="hidden peer" /> */}
-        {/* <CartToggle /> */}
-        {/* <Cart /> */}
+        <ThemeProvider>
+          <Toaster position="bottom-center" />
+          {/* CartToggle and Cart moved to CustomerLayout only */}
+          {/* <input type="checkbox" id="cart-toggle" className="hidden peer" /> */}
+          {/* <CartToggle /> */}
+          {/* <Cart /> */}
 
-        {/* <label htmlFor="cart-toggle" className="fixed inset-0 bg-black/30 z-10 hidden peer-checked:block"></label> */}
+          {/* <label htmlFor="cart-toggle" className="fixed inset-0 bg-black/30 z-10 hidden peer-checked:block"></label> */}
 
-        {/* Stepper at the top, only on step pages */}
-        <ConditionalStepper>
-          <div className="relative z-0 pt-[72px] md:pt-0">
-            {children}
-          </div>
-        </ConditionalStepper>
+          {/* Stepper at the top, only on step pages */}
+          <ConditionalStepper>
+            <div className="relative z-0 pt-[72px] md:pt-0">
+              {children}
+            </div>
+          </ConditionalStepper>
+        </ThemeProvider>
       </body>
     </html>
   );

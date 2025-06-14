@@ -1,5 +1,5 @@
+import CustomerLayout from '@/components/customers/CustomerLayout';
 import { createClient } from '@/utils/supabase/server';
-import MenuPageClient from '@/components/customers/MenuPageClient';
 import StoreStatusProvider from '@/components/customers/StoreStatusProvider';
 
 // This tells Next.js to always fetch fresh data, so your menu is always up-to-date
@@ -42,12 +42,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-      <header className="text-center py-8">
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">Kusina De Amadeo</h1>
-        <p className="text-lg text-neutral-600 mt-2">Your 24/7 Food Buddy</p>
-      </header>
-      <StoreStatusProvider categories={categories || []} products={products || []} />
-    </div>
+    <CustomerLayout>
+      <div className="min-h-screen bg-[var(--color-background)]">
+        <StoreStatusProvider categories={categories || []} products={products || []} />
+      </div>
+    </CustomerLayout>
   );
 }

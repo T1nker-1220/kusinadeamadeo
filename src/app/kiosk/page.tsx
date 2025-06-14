@@ -1,3 +1,4 @@
+import CustomerLayout from '@/components/customers/CustomerLayout';
 import { createClient } from '@/utils/supabase/server';
 import MenuPageClient from '@/components/customers/MenuPageClient';
 
@@ -28,24 +29,26 @@ export default async function KioskPage() {
   const isStoreOpen = storeSettings?.is_open ?? true;
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-      <header className="text-center py-8">
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">Welcome to Kusina De Amadeo</h1>
-        <p className="text-lg text-neutral-600 mt-2">Place your order here!</p>
-      </header>
+    <CustomerLayout>
+      <div className="min-h-screen bg-[var(--color-background)]">
+        <header className="text-center py-8">
+          <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">Welcome to Kusina De Amadeo</h1>
+          <p className="text-lg text-neutral-600 mt-2">Place your order here!</p>
+        </header>
 
-      {!isStoreOpen && (
-        <div className="max-w-4xl mx-auto p-4 mb-6 bg-red-100 border-l-4 border-red-500 text-red-700">
-          <p className="font-bold">Store Currently Closed</p>
-          <p>We are not accepting online orders at this time. Please check back later!</p>
-        </div>
-      )}
+        {!isStoreOpen && (
+          <div className="max-w-4xl mx-auto p-4 mb-6 bg-red-100 border-l-4 border-red-500 text-red-700">
+            <p className="font-bold">Store Currently Closed</p>
+            <p>We are not accepting online orders at this time. Please check back later!</p>
+          </div>
+        )}
 
-      <MenuPageClient 
-        categories={categories || []} 
-        products={products || []}
-        isStoreOpen={isStoreOpen}
-      />
-    </div>
+        <MenuPageClient 
+          categories={categories || []} 
+          products={products || []}
+          isStoreOpen={isStoreOpen}
+        />
+      </div>
+    </CustomerLayout>
   );
 } 

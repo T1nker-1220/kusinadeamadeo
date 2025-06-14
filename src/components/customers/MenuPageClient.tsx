@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import CategoryNav from "@/components/ui/CategoryNav";
 import ProductCard from "@/components/customers/ProductCard";
+import Header from '@/components/customers/Header';
 
 type Option = {
   id: number;
@@ -61,12 +62,20 @@ export default function MenuPageClient({ categories, products, isStoreOpen }: Me
 
   return (
     <>
-      <CategoryNav
-        categories={categories}
-        activeCategoryId={activeCategoryId}
-        onCategoryClick={handleCategoryClick}
-      />
-      <main className="px-2 sm:px-4 md:px-0 max-w-full">
+      <Header />
+      <section className="bg-white w-full text-center py-4 border-b border-orange-100">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight mb-1">Welcome to Kusina De Amadeo</h1>
+      </section>
+      <div className="sticky top-14 z-30 w-full bg-white border-b border-orange-200 shadow-sm overflow-x-auto">
+        <div className="max-w-full px-2 sm:px-4 flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-orange-200">
+          <CategoryNav
+            categories={categories}
+            activeCategoryId={activeCategoryId}
+            onCategoryClick={handleCategoryClick}
+          />
+        </div>
+      </div>
+      <main className="px-0 sm:px-4 md:px-0 max-w-full">
         {categories.map((category) => {
           const categoryProducts = products.filter((p) => p.category_id === category.id) || [];
           if (categoryProducts.length === 0) return null;
