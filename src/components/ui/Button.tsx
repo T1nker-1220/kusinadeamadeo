@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 export type ButtonProps = {
@@ -46,16 +45,14 @@ export default function Button({
       : ' bg-white text-orange-600 border border-orange-300';
   }
   return (
-    <motion.button
-      whileTap={{ scale: 0.96 }}
-      whileHover={{ scale: 1.03 }}
+    <button
       disabled={loading || props.disabled}
-      className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[var(--radius-md)] font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed ${classes} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[var(--radius-md)] font-semibold shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 hover:scale-105 ${classes} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...props}
     >
       {loading ? <Loader2 className="animate-spin w-5 h-5" /> : iconLeft}
       {children}
       {iconRight}
-    </motion.button>
+    </button>
   );
 } 

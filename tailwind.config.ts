@@ -9,16 +9,20 @@ const config: Config = {
     extend: {
       colors: {
         primary: '#ff8800', // Main orange
-        secondary: '#23201a',
-        background: '#18120b',
-        surface: '#23201a',
-        accent: '#ffb347',
-        muted: '#bcbcbc',
+        'primary-dark': '#d46d00', // Slightly darker for hover
+        secondary: '#23201a', // Deep brown/gray for cards/surfaces
+        background: '#181e29', // Deep blue-black for main background
+        'background-gradient-from': '#232b3a', // Gradient start (matches home page)
+        'background-gradient-to': '#181e29', // Gradient end (matches home page)
+        surface: '#232b3a', // Slightly lighter than background for cards
+        accent: '#ffb347', // Lighter orange for accents
+        muted: '#bcbcbc', // Muted text
         success: '#22c55e',
         danger: '#ef4444',
         info: '#3b82f6',
         border: '#e5e7eb',
-        // Add more semantic colors as needed
+        white: '#fff',
+        black: '#000',
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'sans-serif'],

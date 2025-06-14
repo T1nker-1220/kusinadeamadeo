@@ -101,7 +101,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background-gradient-to bg-gradient-to-b from-background-gradient-from to-background-gradient-to">
       <header className="sticky top-0 z-20 p-3 sm:p-4 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
         <h1 className="text-2xl font-extrabold text-primary tracking-tight">Admin Dashboard</h1>
         <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import MenuPageClient from "@/components/customers/MenuPageClient";
+import KusinaDeAmadeoImproved from "@/components/customers/menu/KusinaDeAmadeoImproved";
 
 type Option = {
   id: number;
@@ -54,14 +54,14 @@ export default function StoreStatusProvider({ categories, products }: Props) {
   }
 
   return (
-    <>
+    <div className="w-full h-full">
       {!isStoreOpen && (
         <div className="max-w-4xl mx-auto p-4 mb-6 bg-danger/10 border-l-4 border-danger text-danger">
           <p className="font-bold">Store Currently Closed</p>
           <p>We are not accepting online orders at this time. Please check back later!</p>
         </div>
       )}
-      <MenuPageClient categories={categories} products={products} isStoreOpen={isStoreOpen} />
-    </>
+      <KusinaDeAmadeoImproved categories={categories} products={products} isStoreOpen={isStoreOpen} />
+    </div>
   );
 } 

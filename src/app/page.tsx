@@ -1,51 +1,34 @@
-import CustomerLayout from '@/components/customers/CustomerLayout';
-import { createClient } from '@/utils/supabase/server';
-import StoreStatusProvider from '@/components/customers/StoreStatusProvider';
+import Image from 'next/image';
+import Button from '@/components/ui/Button';
+import Link from 'next/link';
 
 // This tells Next.js to always fetch fresh data, so your menu is always up-to-date
 export const revalidate = 0;
 
-// Define types for our data for better code safety
-type Option = {
-  id: number;
-  group_name: string;
-  name: string;
-  additional_price: number;
-};
-
-type Product = {
-  id: number;
-  name: string;
-  description: string | null;
-  base_price: number;
-  image_url: string | null;
-  category_id: number;
-  options: Option[];
-};
-
-type Category = { id: number; name: string };
-
-export default async function Home() {
-  const supabase = createClient();
-
-  const [
-    { data: categories, error: categoriesError },
-    { data: products, error: productsError }
-  ] = await Promise.all([
-    supabase.from('categories').select('*').order('sort_order', { ascending: true }),
-    supabase.from('products').select('*, options (*)').eq('is_available', true)
-  ]);
-
-  if (categoriesError || productsError) {
-    console.error(categoriesError || productsError);
-    return <p className="text-center text-danger mt-10">Error loading menu. Please try again later.</p>;
-  }
-
+export default function Home() {
   return (
-    <CustomerLayout>
-      <div className="min-h-screen bg-background">
-        <StoreStatusProvider categories={categories || []} products={products || []} />
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background-gradient-from to-background-gradient-to px-4">
+      <div className="flex flex-col items-center w-full max-w-md mx-auto">
+        <div className="mb-6">
+          <Image
+            src="/images/logo.png"
+            alt="Kusina De Amadeo Logo"
+            width={120}
+            height={120}
+            className="rounded-full shadow-lg border-4 border-primary bg-white"
+            priority
+          />
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-primary mb-2 text-center">Kusina De Amadeo</h1>
+        <p className="text-lg text-white/90 mb-8 text-center max-w-xs">
+          Your 24/7 Food Buddy. Order authentic Filipino meals, drinks, and more—ready for pickup, anytime!
+        </p>
+        <Link href="/menu" className="w-full">
+          <Button variant="primary" fullWidth className="text-lg py-3">
+            View Menu
+          </Button>
+        </Link>
       </div>
-    </CustomerLayout>
+    </main>
   );
 }
