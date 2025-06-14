@@ -23,11 +23,7 @@ export default function CategoryNav({ categories, activeCategoryId, onCategoryCl
   }, [activeCategoryId]);
 
   return (
-    <div
-      ref={navRef}
-      className="sticky top-0 z-30 bg-[var(--color-background)] border-b border-orange-100 overflow-x-auto flex gap-2 px-2 py-3 sm:px-4 md:px-8 scrollbar-hide"
-      style={{ WebkitOverflowScrolling: 'touch' }}
-    >
+    <nav className="sticky top-0 z-30 bg-surface border-b border-border overflow-x-auto flex gap-2 px-2 py-3 sm:px-4 md:px-8 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
       {categories.map((cat) => (
         <Button
           key={cat.id}
@@ -39,6 +35,6 @@ export default function CategoryNav({ categories, activeCategoryId, onCategoryCl
           {cat.name}
         </Button>
       ))}
-    </div>
+    </nav>
   );
 } 

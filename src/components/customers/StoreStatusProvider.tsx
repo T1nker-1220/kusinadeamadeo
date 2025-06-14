@@ -50,13 +50,13 @@ export default function StoreStatusProvider({ categories, products }: Props) {
   }, []);
 
   if (isStoreOpen === null) {
-    return <div className="flex justify-center items-center h-40 text-lg text-gray-500">Loading store status...</div>;
+    return <div className="flex justify-center items-center h-40 text-lg text-muted">Loading store status...</div>;
   }
 
   return (
     <>
       {!isStoreOpen && (
-        <div className="max-w-4xl mx-auto p-4 mb-6 bg-red-100 border-l-4 border-red-500 text-red-700">
+        <div className="max-w-4xl mx-auto p-4 mb-6 bg-danger/10 border-l-4 border-danger text-danger">
           <p className="font-bold">Store Currently Closed</p>
           <p>We are not accepting online orders at this time. Please check back later!</p>
         </div>

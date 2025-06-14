@@ -112,12 +112,12 @@ export default function CheckOut() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] px-2 sm:px-4 md:px-8 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-[var(--color-foreground)]">Checkout</h1>
+    <div className="min-h-screen bg-background px-2 sm:px-4 md:px-8 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-primary">Checkout</h1>
       <div className="grid md:grid-cols-2 gap-8">
         {/* Order Summary */}
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-[var(--color-foreground)]">Your Order</h2>
+          <h2 className="text-xl font-semibold mb-4 text-primary">Your Order</h2>
           <div className="space-y-3">
             {cart.map(item => (
               <div key={item.cartItemId} className="flex justify-between">
@@ -136,7 +136,7 @@ export default function CheckOut() {
           <Card className="space-y-6">
             {/* Payment Method Selection */}
             <div>
-              <h2 className="text-xl font-semibold text-[var(--color-foreground)]">Payment Method</h2>
+              <h2 className="text-xl font-semibold text-primary">Payment Method</h2>
               <div className="mt-2 flex gap-4">
                 <label><input type="radio" value="GCash" checked={paymentMethod === 'GCash'} onChange={() => setPaymentMethod('GCash')} /> Pay with GCash</label>
                 <label><input type="radio" value="PayAtStore" checked={paymentMethod === 'PayAtStore'} onChange={() => setPaymentMethod('PayAtStore')} /> Pay at Store</label>
@@ -161,11 +161,11 @@ export default function CheckOut() {
             {/* Conditionally render GCash details and upload */}
             {paymentMethod === 'GCash' && (
               <div>
-                <div className="mt-2 p-4 bg-[var(--color-accent)]/10 border border-[var(--color-accent)] rounded-lg">
+                <div className="mt-2 p-4 bg-accent/10 border border-accent rounded-lg">
                   <p>Please pay via GCash:</p>
                   <p className="font-bold">Name: John Nathaniel M.</p>
                   <p className="font-bold">Number: 09605088715</p>
-                  <p className="mt-2 text-sm text-[var(--color-danger)]">Strictly no payment, no serving of order.</p>
+                  <p className="mt-2 text-sm text-danger">Strictly no payment, no serving of order.</p>
                 </div>
                 <label htmlFor="paymentProof" className="block font-medium mb-1 mt-4">Upload GCash Screenshot</label>
                 <input
@@ -174,11 +174,11 @@ export default function CheckOut() {
                   onChange={handleFileChange}
                   required={paymentMethod === 'GCash'}
                   accept="image/*"
-                  className="w-full mt-1 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                  className="w-full mt-1 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
                 />
               </div>
             )}
-            {error && <p className="text-[var(--color-danger)]">{error}</p>}
+            {error && <p className="text-danger">{error}</p>}
             <Button type="submit" loading={isSubmitting} fullWidth>
               {isSubmitting ? 'Placing Order...' : 'Place Order'}
             </Button>

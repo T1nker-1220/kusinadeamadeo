@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full bg-white shadow flex justify-center items-center h-14 border-b border-orange-200">
+    <header className="sticky top-0 z-40 w-full bg-surface shadow flex justify-center items-center h-14 border-b border-border">
       <Image
         src="/images/logo.png"
         alt="Kusina De Amadeo Logo"

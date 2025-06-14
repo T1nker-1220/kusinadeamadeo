@@ -17,41 +17,41 @@ export default function Cart() {
   };
 
   return (
-    <aside className="fixed top-0 right-0 h-full w-full max-w-xs bg-[var(--color-surface)]/80 backdrop-blur-lg shadow-2xl p-0 transform translate-x-full peer-checked:translate-x-0 transition-transform z-20 flex flex-col border-l border-[var(--color-border)]">
-      <header className="p-5 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-lg">
-        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--color-foreground)] flex items-center gap-2">
+    <aside className="fixed top-0 right-0 h-full w-full max-w-xs bg-surface/80 backdrop-blur-lg shadow-2xl p-0 transform translate-x-full peer-checked:translate-x-0 transition-transform z-20 flex flex-col border-l border-border">
+      <header className="p-5 border-b border-border bg-surface/80 backdrop-blur-lg">
+        <h2 className="text-2xl font-extrabold tracking-tight text-primary flex items-center gap-2">
           <ShoppingCart size={22} /> Your Order
         </h2>
       </header>
       {cart.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <ShoppingBag size={48} className="text-[var(--color-muted)]" />
-          <p className="text-[var(--color-muted)] text-lg font-medium">Your cart is empty.</p>
+          <ShoppingBag size={48} className="text-muted" />
+          <p className="text-muted text-lg font-medium">Your cart is empty.</p>
         </div>
       ) : (
         <>
           <div className="mt-4 space-y-4 flex-grow overflow-y-auto px-4 pb-40">
             {cart.map(item => (
-              <Card key={item.cartItemId} className="flex items-center gap-3 p-4 shadow-md border-[var(--color-border)]">
+              <Card key={item.cartItemId} className="flex items-center gap-3 p-4 shadow-md border-border">
                 <div className="relative">
                   <Image
                     src={item.product.image_url || '/images/products/logo.png'}
                     alt={item.product.name}
                     width={56}
                     height={56}
-                    className="rounded-lg object-cover h-14 w-14 border-2 border-[var(--color-border)] shadow-sm"
+                    className="rounded-lg object-cover h-14 w-14 border-2 border-border shadow-sm"
                   />
                 </div>
                 <div className="flex-grow min-w-0">
-                  <p className="font-semibold text-base text-[var(--color-foreground)] truncate">{item.product.name}</p>
+                  <p className="font-semibold text-base text-primary truncate">{item.product.name}</p>
                   {item.selectedOptions.length > 0 && (
-                    <ul className="text-xs text-[var(--color-muted)]">
+                    <ul className="text-xs text-muted">
                       {item.selectedOptions.map((opt, idx) => (
                         <li key={idx}>{opt.group_name}: {opt.name}{opt.additional_price > 0 && ` (+₱${opt.additional_price})`}</li>
                       ))}
                     </ul>
                   )}
-                  <p className="text-[var(--color-success)] font-bold mt-1">₱{item.itemTotal}</p>
+                  <p className="text-success font-bold mt-1">₱{item.itemTotal}</p>
                   <input
                     type="text"
                     placeholder="Name for this item?"
@@ -75,10 +75,10 @@ export default function Cart() {
               </Card>
             ))}
           </div>
-          <footer className="fixed bottom-0 left-0 w-full max-w-xs p-5 border-t border-[var(--color-border)] bg-[var(--color-surface)]/90 backdrop-blur-lg z-30">
+          <footer className="fixed bottom-0 left-0 w-full max-w-xs p-5 border-t border-border bg-surface/90 backdrop-blur-lg z-30">
             <div className="flex justify-between items-center font-bold text-xl mb-3">
               <span>Total:</span>
-              <span className="text-[var(--color-success)]">₱{cartTotal()}</span>
+              <span className="text-success">₱{cartTotal()}</span>
             </div>
             <Link href="/checkout" className="block w-full">
               <Button variant="success" fullWidth iconLeft={<ShoppingCart size={18} />} aria-label="Proceed to checkout">
@@ -106,10 +106,10 @@ export default function Cart() {
 export function CartToggle() {
   const cartCount = useCustomerStore(state => state.cartCount());
   return (
-    <label htmlFor="cart-toggle" className="fixed top-4 right-4 z-30 bg-[var(--color-surface)]/90 backdrop-blur-lg p-3 rounded-full shadow-lg cursor-pointer flex items-center">
+    <label htmlFor="cart-toggle" className="fixed top-4 right-4 z-30 bg-surface/90 backdrop-blur-lg p-3 rounded-full shadow-lg cursor-pointer flex items-center">
       <ShoppingCart size={22} />
       {cartCount > 0 && (
-        <span className="bg-[var(--color-danger)] text-white text-xs rounded-full px-1.5 py-0.5 absolute -top-1 -right-1 min-w-[20px] text-center">
+        <span className="bg-danger text-white text-xs rounded-full px-1.5 py-0.5 absolute -top-1 -right-1 min-w-[20px] text-center">
           {cartCount}
         </span>
       )}

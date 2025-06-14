@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import CategoryNav from "@/components/ui/CategoryNav";
-import ProductCard from "@/components/customers/ProductCard";
+import ProductCard from "@/components/customers/menu/ProductCard";
 import Header from '@/components/customers/Header';
 
 type Option = {
@@ -63,11 +63,11 @@ export default function MenuPageClient({ categories, products, isStoreOpen }: Me
   return (
     <>
       <Header />
-      <section className="bg-white w-full text-center py-4 border-b border-orange-100">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight mb-1">Welcome to Kusina De Amadeo</h1>
+      <section className="bg-surface w-full text-center py-4 border-b border-border">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight mb-1">Welcome to Kusina De Amadeo</h1>
       </section>
-      <div className="sticky top-14 z-30 w-full bg-white border-b border-orange-200 shadow-sm overflow-x-auto">
-        <div className="max-w-full px-2 sm:px-4 flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-orange-200">
+      <div className="sticky top-14 z-30 w-full bg-surface border-b border-accent shadow-sm overflow-x-auto">
+        <div className="max-w-full px-2 sm:px-4 flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-accent">
           <CategoryNav
             categories={categories}
             activeCategoryId={activeCategoryId}
@@ -86,7 +86,7 @@ export default function MenuPageClient({ categories, products, isStoreOpen }: Me
               ref={(el: HTMLDivElement | null) => { sectionRefs.current[category.id] = el; }}
               className="mb-10"
             >
-              <h2 className="text-3xl font-bold text-orange-600 border-b-4 border-orange-300 pb-2 mb-6 px-1">
+              <h2 className="text-3xl font-bold text-primary border-b-4 border-accent pb-2 mb-6 px-1">
                 {category.name}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">

@@ -38,12 +38,12 @@ export default async function Home() {
 
   if (categoriesError || productsError) {
     console.error(categoriesError || productsError);
-    return <p className="text-center text-red-500 mt-10">Error loading menu. Please try again later.</p>;
+    return <p className="text-center text-danger mt-10">Error loading menu. Please try again later.</p>;
   }
 
   return (
     <CustomerLayout>
-      <div className="min-h-screen bg-[var(--color-background)]">
+      <div className="min-h-screen bg-background">
         <StoreStatusProvider categories={categories || []} products={products || []} />
       </div>
     </CustomerLayout>

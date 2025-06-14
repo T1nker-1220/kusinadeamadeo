@@ -11,11 +11,11 @@ const supabase = createClient();
 
 function KanbanColumn({ title, orders, emptyText }: { title: string; orders: Order[]; emptyText: string }) {
   return (
-    <div className="flex-1 min-w-[90vw] sm:min-w-[320px] bg-white rounded-xl p-3 sm:p-4 shadow-md border border-gray-200 flex flex-col">
-      <h2 className="text-lg sm:text-xl font-extrabold mb-3 text-gray-800 tracking-tight">{title} <span className="font-normal text-gray-400">({orders.length})</span></h2>
+    <div className="flex-1 min-w-[90vw] sm:min-w-[320px] bg-surface rounded-xl p-3 sm:p-4 shadow-md border border-border flex flex-col">
+      <h2 className="text-lg sm:text-xl font-extrabold mb-3 text-primary tracking-tight">{title} <span className="font-normal text-muted">({orders.length})</span></h2>
       <div className="space-y-4 flex-1 overflow-y-auto">
         {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-8 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full py-8 text-muted">
             <span className="text-3xl mb-2">🍽️</span>
             <span className="font-medium text-base text-center">{emptyText}</span>
           </div>
@@ -101,20 +101,20 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <header className="sticky top-0 z-20 p-3 sm:p-4 border-b bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
-        <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
+    <div className="flex flex-col h-screen bg-background">
+      <header className="sticky top-0 z-20 p-3 sm:p-4 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+        <h1 className="text-2xl font-extrabold text-primary tracking-tight">Admin Dashboard</h1>
         <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={handleToggleStoreStatus}
-            className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-semibold transition-colors text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 ${
-              isStoreOpen ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'
+            className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-semibold transition-colors text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent ${
+              isStoreOpen ? "bg-danger text-white hover:bg-danger/80" : "bg-success text-white hover:bg-success/80"
             }`}
           >
             <Power size={18} />
-            {isStoreOpen === null ? 'Loading...' : isStoreOpen ? 'Close Store' : 'Open Store'}
+            {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
           </button>
-          <Link href="/admin/reports" className="bg-blue-500 text-white font-bold py-2 px-3 sm:px-4 rounded-lg hover:bg-blue-600 text-base sm:text-lg">
+          <Link href="/admin/reports" className="bg-info text-white font-bold py-2 px-3 sm:px-4 rounded-lg hover:bg-info/80 text-base sm:text-lg">
             Reports
           </Link>
         </div>

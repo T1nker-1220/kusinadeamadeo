@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useCustomerStore } from "@/stores/customerStore";
 import Image from "next/image";
-import OptionsModal from '@/components/customers/OptionsModal';
+import OptionsModal from '@/components/customers/menu/OptionsModal';
 import toast from 'react-hot-toast';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -50,11 +50,11 @@ export default function ProductCard({ product, isStoreOpen }: { product: Product
             alt={product.name}
             width={600}
             height={450}
-            className="rounded-lg object-contain max-h-[70vh] w-auto h-auto bg-white"
+            className="rounded-lg object-contain max-h-[70vh] w-auto h-auto bg-surface"
             priority
           />
           <button
-            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-full font-semibold shadow hover:bg-orange-600 transition"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-full font-semibold shadow hover:bg-accent transition"
             onClick={() => setIsImageModalOpen(false)}
           >
             Close
@@ -102,7 +102,7 @@ export default function ProductCard({ product, isStoreOpen }: { product: Product
             variant="primary"
             fullWidth
             iconLeft={<Plus size={18} />}
-            className="mt-4"
+            className="mt-4 bg-primary text-white hover:bg-accent"
             disabled={!isStoreOpen}
           >
             {!isStoreOpen ? 'Store Closed' : product.options.length > 0 ? 'Select Options' : 'Add to Order'}

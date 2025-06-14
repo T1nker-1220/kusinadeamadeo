@@ -23,21 +23,21 @@ export default async function KioskPage() {
 
   if (categoriesError || productsError || settingsError) {
     console.error(categoriesError || productsError || settingsError);
-    return <p className="text-center text-red-500 mt-10">Error loading menu. Please try again later.</p>;
+    return <p className="text-center text-danger mt-10">Error loading menu. Please try again later.</p>;
   }
 
   const isStoreOpen = storeSettings?.is_open ?? true;
 
   return (
     <CustomerLayout>
-      <div className="min-h-screen bg-[var(--color-background)]">
+      <div className="min-h-screen bg-background">
         <header className="text-center py-8">
-          <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">Welcome to Kusina De Amadeo</h1>
-          <p className="text-lg text-neutral-600 mt-2">Place your order here!</p>
+          <h1 className="text-5xl font-extrabold text-primary tracking-tight">Welcome to Kusina De Amadeo</h1>
+          <p className="text-lg text-muted mt-2">Place your order here!</p>
         </header>
 
         {!isStoreOpen && (
-          <div className="max-w-4xl mx-auto p-4 mb-6 bg-red-100 border-l-4 border-red-500 text-red-700">
+          <div className="max-w-4xl mx-auto p-4 mb-6 bg-danger/10 border-l-4 border-danger text-danger">
             <p className="font-bold">Store Currently Closed</p>
             <p>We are not accepting online orders at this time. Please check back later!</p>
           </div>
