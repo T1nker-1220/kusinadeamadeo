@@ -13,7 +13,7 @@ import Modal from '@/components/ui/Modal';
 type Option = { id: number; group_name: string; name: string; additional_price: number; };
 type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; options: Option[]; };
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, isStoreOpen }: { product: Product; isStoreOpen: boolean }) {
   const addToCart = useCustomerStore((state) => state.addToCart);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -103,8 +103,9 @@ export default function ProductCard({ product }: { product: Product }) {
             fullWidth
             iconLeft={<Plus size={18} />}
             className="mt-4"
+            disabled={!isStoreOpen}
           >
-            {product.options.length > 0 ? 'Select Options' : 'Add to Order'}
+            {!isStoreOpen ? 'Store Closed' : product.options.length > 0 ? 'Select Options' : 'Add to Order'}
           </Button>
         </div>
       </Card>

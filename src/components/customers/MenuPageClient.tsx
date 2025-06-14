@@ -25,22 +25,20 @@ type Category = { id: number; name: string };
 type MenuPageClientProps = {
   categories: Category[];
   products: Product[];
+  isStoreOpen: boolean;
 };
 
-export default function MenuPageClient({ categories, products }: MenuPageClientProps) {
+export default function MenuPageClient({ categories, products, isStoreOpen }: MenuPageClientProps) {
   // --- Add refs for each category section ---
-  const sectionRefs = categories.reduce((acc, cat) => {
-    acc[cat.id] = useRef<HTMLDivElement>(null);
-    return acc;
-  }, {} as Record<number, React.RefObject<HTMLDivElement>>);
+  const sectionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(categories[0]?.id || null);
 
   // --- Scroll to section on nav click ---
   const handleCategoryClick = (id: number) => {
-    const ref = sectionRefs[id];
-    if (ref && ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    const ref = sectionRefs.current[id];
+    if (ref) {
+      ref.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -49,9 +47,9 @@ export default function MenuPageClient({ categories, products }: MenuPageClientP
     const handleScroll = () => {
       let current = categories[0]?.id || null;
       categories.forEach((cat) => {
-        const ref = sectionRefs[cat.id];
-        if (ref && ref.current) {
-          const rect = ref.current.getBoundingClientRect();
+        const ref = sectionRefs.current[cat.id];
+        if (ref) {
+          const rect = ref.getBoundingClientRect();
           if (rect.top < 120) current = cat.id;
         }
       });
@@ -59,7 +57,7 @@ export default function MenuPageClient({ categories, products }: MenuPageClientP
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [categories, sectionRefs]);
+  }, [categories]);
 
   return (
     <>
@@ -76,7 +74,7 @@ export default function MenuPageClient({ categories, products }: MenuPageClientP
           return (
             <section
               key={category.id}
-              ref={sectionRefs[category.id]}
+              ref={(el: HTMLDivElement | null) => { sectionRefs.current[category.id] = el; }}
               className="mb-10"
             >
               <h2 className="text-3xl font-bold text-orange-600 border-b-4 border-orange-300 pb-2 mb-6 px-1">
@@ -84,7 +82,7 @@ export default function MenuPageClient({ categories, products }: MenuPageClientP
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {categoryProducts.map((product: Product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} isStoreOpen={isStoreOpen} />
                 ))}
               </div>
             </section>

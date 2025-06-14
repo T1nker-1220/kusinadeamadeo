@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import MenuPageClient from '@/components/customers/MenuPageClient';
+import StoreStatusProvider from '@/components/customers/StoreStatusProvider';
 
 // This tells Next.js to always fetch fresh data, so your menu is always up-to-date
 export const revalidate = 0;
@@ -27,15 +28,13 @@ type Category = { id: number; name: string };
 export default async function Home() {
   const supabase = createClient();
 
-  const { data: categories, error: categoriesError } = await supabase
-    .from('categories')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
-  const { data: products, error: productsError } = await supabase
-    .from('products')
-    .select('*, options (*)')
-    .eq('is_available', true);
+  const [
+    { data: categories, error: categoriesError },
+    { data: products, error: productsError }
+  ] = await Promise.all([
+    supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+    supabase.from('products').select('*, options (*)').eq('is_available', true)
+  ]);
 
   if (categoriesError || productsError) {
     console.error(categoriesError || productsError);
@@ -48,7 +47,7 @@ export default async function Home() {
         <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">Kusina De Amadeo</h1>
         <p className="text-lg text-neutral-600 mt-2">Your 24/7 Food Buddy</p>
       </header>
-      <MenuPageClient categories={categories || []} products={products || []} />
+      <StoreStatusProvider categories={categories || []} products={products || []} />
     </div>
   );
 }
