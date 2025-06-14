@@ -6,9 +6,15 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { Plus, Minus, Trash2, ShoppingCart, ShoppingBag } from 'lucide-react';
+import { useKiosk } from '@/hooks/useKiosk';
 
 export default function Cart() {
-  const { cart, removeFromCart, updateQuantity, cartCount, cartTotal } = useCustomerStore();
+  const { cart, removeFromCart, updateQuantity, cartCount, cartTotal, clearCart } = useCustomerStore();
+  const { isKiosk } = useKiosk();
+
+  const handleStartOver = () => {
+    clearCart();
+  };
 
   return (
     <aside className="fixed top-0 right-0 h-full w-full max-w-xs bg-[var(--color-surface)]/80 backdrop-blur-lg shadow-2xl p-0 transform translate-x-full peer-checked:translate-x-0 transition-transform z-20 flex flex-col border-l border-[var(--color-border)]">
@@ -79,6 +85,16 @@ export default function Cart() {
                 Checkout
               </Button>
             </Link>
+            {isKiosk && (
+              <Button 
+                variant="danger" 
+                fullWidth 
+                className="mt-2"
+                onClick={handleStartOver}
+              >
+                Start Over / Clear All Items
+              </Button>
+            )}
           </footer>
         </>
       )}
