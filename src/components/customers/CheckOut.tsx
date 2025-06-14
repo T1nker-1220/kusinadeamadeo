@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useKiosk } from '@/hooks/useKiosk';
 
 const supabase = createClient();
 
@@ -24,6 +25,7 @@ async function createSignedUrlWithRetry(supabase: any, filePath: string, maxRetr
 export default function CheckOut() {
   const { cart, cartTotal, clearCart } = useCustomerStore();
   const router = useRouter();
+  const { isKiosk } = useKiosk();
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -95,7 +97,9 @@ export default function CheckOut() {
         .insert(orderItemsData);
       if (itemsError) throw itemsError;
       clearCart();
-      if (paymentMethod === 'PayAtStore') {
+      if (isKiosk) {
+        router.push('/kiosk');
+      } else if (paymentMethod === 'PayAtStore') {
         router.push(`/order/${newOrder.id}/status`);
       } else {
         router.push('/order-success');
