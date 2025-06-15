@@ -1,7 +1,10 @@
-
 import { createClient } from '@/utils/supabase/server';
 import StoreStatusProvider from '@/components/customers/StoreStatusProvider';
 import Image from 'next/image';
+import MenuContainer from '@/components/customers/menu/MenuContainer';
+import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import { History } from 'lucide-react';
 
 // This tells Next.js to always fetch fresh data, so your menu is always up-to-date
 export const revalidate = 0;
@@ -26,7 +29,7 @@ type Product = {
 
 type Category = { id: number; name: string };
 
-export default async function MenuPage() {
+export default async function NormalMenuPage() {
   const supabase = createClient();
 
   const [
@@ -43,8 +46,22 @@ export default async function MenuPage() {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <StoreStatusProvider categories={categories || []} products={products || []} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header with Order History link */}
+      <div className="w-full px-4 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-white">Menu</h1>
+        <Link href="/normal-menu/order-history">
+          <Button variant="secondary" className="text-sm">
+            <History className="w-4 h-4 mr-2" />
+            Order History
+          </Button>
+        </Link>
+      </div>
+      
+      <StoreStatusProvider 
+        categories={categories} 
+        products={products} 
+      />
     </div>
   );
 }
