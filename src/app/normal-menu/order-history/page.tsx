@@ -7,7 +7,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { Clock, Package, User, Phone, CreditCard, Trash2 } from "lucide-react";
+import { Clock, Package, User, CreditCard, Trash2 } from "lucide-react";
 
 const supabase = createClient();
 
@@ -171,10 +171,7 @@ export default function OrderHistoryPage() {
                           <User className="w-4 h-4" />
                           <span>{order.customerName}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          <span>{order.customerPhone}</span>
-                        </div>
+
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-4 h-4" />
                           <span>{order.paymentMethod === 'PayAtStore' ? 'Pay at Store' : 'GCash'}</span>

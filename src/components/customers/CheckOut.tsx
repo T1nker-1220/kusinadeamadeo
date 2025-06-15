@@ -27,7 +27,6 @@ export default function CheckOut() {
   const router = useRouter();
 
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +41,7 @@ export default function CheckOut() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cart.length === 0 || !fullName || !phone) {
+    if (cart.length === 0 || !fullName) {
       setError('Please fill all fields.');
       return;
     }
@@ -66,7 +65,6 @@ export default function CheckOut() {
       }
       const orderData = {
         customer_name: fullName,
-        customer_phone: phone,
         total_price: cartTotal(),
         payment_proof_url: paymentProofUrl,
         payment_method: paymentMethod,
@@ -104,7 +102,7 @@ export default function CheckOut() {
           totalPrice: cartTotal(),
           paymentMethod: paymentMethod,
           customerName: fullName,
-          customerPhone: phone,
+          customerPhone: '', // Empty since we removed phone number
           items: cart,
           status: orderData.status,
         });
@@ -185,14 +183,6 @@ export default function CheckOut() {
               id="fullName"
               value={fullName}
               onChange={e => setFullName(e.target.value)}
-              required
-            />
-            <Input
-              label="Phone Number"
-              type="tel"
-              id="phone"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
               required
             />
             {/* Conditionally render GCash details and upload */}

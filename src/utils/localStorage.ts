@@ -11,7 +11,7 @@ export interface OrderHistoryItem {
   totalPrice: number;
   paymentMethod: 'PayAtStore' | 'GCash';
   customerName: string;
-  customerPhone: string;
+  customerPhone?: string; // Optional since we no longer collect phone numbers
   items: CartItem[];
   status: string;
 }

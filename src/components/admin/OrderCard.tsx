@@ -157,7 +157,6 @@ export default function OrderCard({ order }: Props) {
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
           <h2 className="text-xl font-bold text-[var(--color-foreground)]">{order.customer_name}</h2>
-          <p className="text-[var(--color-muted)]">{order.customer_phone}</p>
           <p className="text-sm text-[var(--color-muted)]">Order placed at: {new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
         </div>
         <div className="text-right flex flex-col items-end gap-2">
