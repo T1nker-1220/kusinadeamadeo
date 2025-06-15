@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
-import { Plus, ShoppingCart, X, Minus, ChevronRight } from "lucide-react"
 import ImprovedProductCard from "./ProductCard"
 import ImprovedCart from "./Cart"
 import { useCustomerStore } from "@/stores/customerStore"

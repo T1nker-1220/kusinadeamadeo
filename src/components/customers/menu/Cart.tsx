@@ -8,11 +8,12 @@ import Link from "next/link"
 import CartPreview from "./CartPreview"
 
 export default function ImprovedCart() {
-  const { 
-    cart, 
-    removeFromCart, 
-    updateQuantity, 
-    cartTotal 
+  const {
+    cart,
+    removeFromCart,
+    updateQuantity,
+    cartTotal,
+    setGroupTag
   } = useCustomerStore()
   
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -84,6 +85,11 @@ export default function ImprovedCart() {
                           />
                           <div>
                             <h4 className="font-semibold text-white mb-1">{item.product.name}</h4>
+                            {item.groupTag && (
+                              <div className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full inline-block mb-1">
+                                For: {item.groupTag}
+                              </div>
+                            )}
                             {item.selectedOptions.length > 0 && (
                               <ul className="text-xs text-slate-400">
                                 {item.selectedOptions.map((opt, idx) => (
@@ -120,7 +126,26 @@ export default function ImprovedCart() {
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
-                        <span className="text-green-400 font-bold">₱{item.itemTotal * item.quantity}</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-green-400 font-bold">₱{item.itemTotal * item.quantity}</span>
+                          <div className="mt-1 flex items-center space-x-1">
+                            <input
+                              type="text"
+                              placeholder="Enter name"
+                              value={item.groupTag || ''}
+                              onChange={(e) => setGroupTag(item.cartItemId, e.target.value)}
+                              className="w-24 text-xs px-2 py-1 rounded bg-slate-700 border border-slate-600 text-white focus:border-blue-500 focus:outline-none"
+                            />
+                            {item.groupTag && (
+                              <button
+                                onClick={() => setGroupTag(item.cartItemId, '')}
+                                className="text-xs text-slate-400 hover:text-red-400"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -233,6 +258,11 @@ export default function ImprovedCart() {
                         />
                         <div>
                           <h4 className="font-semibold text-white mb-1">{item.product.name}</h4>
+                          {item.groupTag && (
+                            <div className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full inline-block mb-1">
+                              For: {item.groupTag}
+                            </div>
+                          )}
                           {item.selectedOptions.length > 0 && (
                             <ul className="text-xs text-slate-400">
                               {item.selectedOptions.map((opt, idx) => (
@@ -269,7 +299,26 @@ export default function ImprovedCart() {
                           <Plus className="w-3 h-3" />
                         </button>
                       </div>
-                      <span className="text-green-400 font-bold">₱{item.itemTotal * item.quantity}</span>
+                      <div className="flex flex-col items-end">
+                        <span className="text-green-400 font-bold">₱{item.itemTotal * item.quantity}</span>
+                        <div className="mt-1 flex items-center space-x-1">
+                          <input
+                            type="text"
+                            placeholder="Enter name"
+                            value={item.groupTag || ''}
+                            onChange={(e) => setGroupTag(item.cartItemId, e.target.value)}
+                            className="w-24 text-xs px-2 py-1 rounded bg-slate-700 border border-slate-600 text-white focus:border-blue-500 focus:outline-none"
+                          />
+                          {item.groupTag && (
+                            <button
+                              onClick={() => setGroupTag(item.cartItemId, '')}
+                              className="text-xs text-slate-400 hover:text-red-400"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

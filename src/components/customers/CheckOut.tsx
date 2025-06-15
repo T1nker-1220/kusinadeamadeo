@@ -112,7 +112,7 @@ export default function CheckOut() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-2 sm:px-4 md:px-8 py-8">
+    <div className="min-h-screen bg-background px-2 sm:px-4 md:px-8 pt-0 md:pt-30 pb-24 md:pb-8">
       <h1 className="text-3xl font-bold mb-6 text-primary">Checkout</h1>
       <div className="grid md:grid-cols-2 gap-8">
         {/* Order Summary */}
@@ -120,9 +120,28 @@ export default function CheckOut() {
           <h2 className="text-xl font-semibold mb-4 text-primary">Your Order</h2>
           <div className="space-y-3">
             {cart.map(item => (
-              <div key={item.cartItemId} className="flex justify-between">
-                <span>{item.quantity}x {item.product.name}</span>
-                <span>₱{item.itemTotal * item.quantity}</span>
+              <div key={item.cartItemId} className="mb-2">
+                <div className="flex justify-between">
+                  <div>
+                    <span>{item.quantity}x {item.product.name}</span>
+                    {item.groupTag && (
+                      <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        For: {item.groupTag}
+                      </span>
+                    )}
+                  </div>
+                  <span>₱{item.itemTotal * item.quantity}</span>
+                </div>
+                {item.selectedOptions.length > 0 && (
+                  <div className="text-xs text-muted-foreground mt-1 ml-4">
+                    {item.selectedOptions.map((opt, idx) => (
+                      <span key={idx} className="mr-2">
+                        {opt.group_name}: {opt.name}
+                        {opt.additional_price > 0 && ` (+₱${opt.additional_price})`}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             <div className="border-t pt-3 mt-3 flex justify-between font-bold text-lg">
