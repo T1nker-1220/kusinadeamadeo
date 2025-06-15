@@ -32,6 +32,7 @@ export default function CheckOut() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'GCash' | 'PayAtStore'>('GCash');
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -49,10 +50,8 @@ export default function CheckOut() {
       setError('Please upload GCash payment proof.');
       return;
     }
-
     setIsSubmitting(true);
     setError(null);
-
     try {
       let paymentProofUrl = null;
       if (paymentMethod === 'GCash' && paymentProof) {
@@ -94,12 +93,11 @@ export default function CheckOut() {
         .from('order_items')
         .insert(orderItemsData);
       if (itemsError) throw itemsError;
-      
       if (!isKioskMode) {
         saveLastOrder(cart);
       }
       clearCart();
-
+      setOrderPlaced(true);
       if (isKioskMode) {
         router.replace(`/kiosk-menu/success?orderId=${newOrder.id}`);
       } else {
@@ -121,40 +119,42 @@ export default function CheckOut() {
       <h1 className="text-3xl font-bold mb-6 text-primary">Checkout</h1>
       <div className="grid md:grid-cols-2 gap-8">
         {/* Order Summary */}
-        <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary">Your Order</h2>
-          <div className="space-y-3">
-            {cart.map(item => (
-              <div key={item.cartItemId} className="mb-2">
-                <div className="flex justify-between">
-                  <div>
-                    <span>{item.quantity}x {item.product.name}</span>
-                    {item.groupTag && (
-                      <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        For: {item.groupTag}
-                      </span>
-                    )}
+        {!orderPlaced && (
+          <Card>
+            <h2 className="text-xl font-semibold mb-4 text-primary">Your Order</h2>
+            <div className="space-y-3">
+              {cart.map(item => (
+                <div key={item.cartItemId} className="mb-2">
+                  <div className="flex justify-between">
+                    <div>
+                      <span>{item.quantity}x {item.product.name}</span>
+                      {item.groupTag && (
+                        <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                          For: {item.groupTag}
+                        </span>
+                      )}
+                    </div>
+                    <span>₱{item.itemTotal * item.quantity}</span>
                   </div>
-                  <span>₱{item.itemTotal * item.quantity}</span>
+                  {item.selectedOptions.length > 0 && (
+                    <div className="text-xs text-muted-foreground mt-1 ml-4">
+                      {item.selectedOptions.map((opt, idx) => (
+                        <span key={idx} className="mr-2">
+                          {opt.group_name}: {opt.name}
+                          {opt.additional_price > 0 && ` (+₱${opt.additional_price})`}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {item.selectedOptions.length > 0 && (
-                  <div className="text-xs text-muted-foreground mt-1 ml-4">
-                    {item.selectedOptions.map((opt, idx) => (
-                      <span key={idx} className="mr-2">
-                        {opt.group_name}: {opt.name}
-                        {opt.additional_price > 0 && ` (+₱${opt.additional_price})`}
-                      </span>
-                    ))}
-                  </div>
-                )}
+              ))}
+              <div className="border-t pt-3 mt-3 flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span>₱{cartTotal()}</span>
               </div>
-            ))}
-            <div className="border-t pt-3 mt-3 flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>₱{cartTotal()}</span>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
         {/* Payment and Details Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="space-y-6">
@@ -202,8 +202,8 @@ export default function CheckOut() {
                 />
               </div>
             )}
-            {error && <p className="text-danger">{error}</p>}
-            <Button type="submit" loading={isSubmitting} fullWidth>
+            {error && <div className="text-danger text-sm">{error}</div>}
+            <Button type="submit" variant="primary" fullWidth disabled={isSubmitting || orderPlaced}>
               {isSubmitting ? 'Placing Order...' : 'Place Order'}
             </Button>
           </Card>
