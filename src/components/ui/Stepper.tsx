@@ -4,8 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ShoppingBag, ShoppingCart, CreditCard, CheckCircle } from 'lucide-react';
 
 const steps = [
-  { label: 'Menu', path: '/', icon: <ShoppingBag size={20} /> },
-  { label: 'Cart', path: '/cart', icon: <ShoppingCart size={20} /> },
+  { label: 'Menu', path: '/menu', icon: <ShoppingBag size={20} /> },
   { label: 'Checkout', path: '/checkout', icon: <CreditCard size={20} /> },
   { label: 'Success', path: '/order-success', icon: <CheckCircle size={20} /> },
 ];
