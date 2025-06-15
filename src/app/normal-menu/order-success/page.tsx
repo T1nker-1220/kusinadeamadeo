@@ -17,7 +17,7 @@ export default function MenuOrderSuccessPage() {
             Back to Menu
           </Button>
         </Link>
-        <Link href="/normal-menu/report">
+        <Link href="/normal-menu/order-history">
           <Button variant="secondary" className="text-lg py-3 px-8">
             View Order History
           </Button>
