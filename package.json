@@ -20,6 +20,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
+    "recharts": "^2.15.3",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-scrollbar": "^0.1.0",
     "zustand": "^5.0.5"

@@ -5,6 +5,7 @@ import { useAdminStore, Order } from '@/stores/adminStore';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import OrderCard from '@/components/admin/OrderCard';
+import AdminGuard from '@/components/admin/AdminGuard';
 import { Loader2, Power, Clock } from 'lucide-react';
 
 const supabase = createClient();
@@ -31,7 +32,6 @@ function KanbanColumn({ title, orders, emptyText }: { title: string; orders: Ord
 
 export default function AdminPage() {
   const { orders, setOrders, addOrder, updateOrderStatus } = useAdminStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
   const [waitTime, setWaitTime] = useState('');
   const [isSavingWaitTime, setIsSavingWaitTime] = useState(false);
@@ -42,17 +42,6 @@ export default function AdminPage() {
   const readyOrders = orders.filter(o => o.status === "Ready");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      const password = prompt('Enter admin password:');
-      if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-        setIsAuthenticated(true);
-      } else {
-        alert('Incorrect password.');
-        window.location.href = '/';
-      }
-      return;
-    }
-
     const fetchInitialData = async () => {
       try {
         // Fetch orders first
@@ -138,7 +127,7 @@ export default function AdminPage() {
       supabase.removeChannel(orderChannel);
       supabase.removeChannel(settingsChannel);
     };
-  }, [isAuthenticated, setOrders, addOrder, updateOrderStatus]);
+  }, [setOrders, addOrder, updateOrderStatus]);
 
   const handleToggleStoreStatus = async () => {
     if (isStoreOpen === null) return;
@@ -160,57 +149,57 @@ export default function AdminPage() {
     setIsSavingWaitTime(false);
   };
 
-  if (!isAuthenticated) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" /> Authenticating...</div>;
-  }
+
 
   return (
-    <div className="flex flex-col h-screen bg-background-gradient-to bg-gradient-to-b from-background-gradient-from to-background-gradient-to">
-      <header className="sticky top-0 z-20 p-2 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <h1 className="text-lg font-bold text-primary tracking-tight">Admin Dashboard</h1>
-        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-          <div className="flex items-center gap-2">
-            <label htmlFor="wait-time" className="font-semibold text-sm flex items-center gap-1">
-              <Clock size={14}/> Wait Time:
-            </label>
-            <input
-              id="wait-time"
-              type="text"
-              value={waitTime}
-              onChange={(e) => setWaitTime(e.target.value)}
-              className="p-1 border rounded-md bg-white w-24 text-sm"
-              placeholder="e.g., 15-20 min"
-            />
-            <button 
-              onClick={handleSaveWaitTime} 
-              disabled={isSavingWaitTime}
-              className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+    <AdminGuard>
+      <div className="flex flex-col h-screen bg-background-gradient-to bg-gradient-to-b from-background-gradient-from to-background-gradient-to">
+        <header className="sticky top-0 z-20 p-2 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <h1 className="text-lg font-bold text-primary tracking-tight">Admin Dashboard</h1>
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <div className="flex items-center gap-2">
+              <label htmlFor="wait-time" className="font-semibold text-sm flex items-center gap-1">
+                <Clock size={14}/> Wait Time:
+              </label>
+              <input
+                id="wait-time"
+                type="text"
+                value={waitTime}
+                onChange={(e) => setWaitTime(e.target.value)}
+                className="p-1 border rounded-md bg-white w-24 text-sm"
+                placeholder="e.g., 15-20 min"
+              />
+              <button 
+                onClick={handleSaveWaitTime} 
+                disabled={isSavingWaitTime}
+                className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+              >
+                {isSavingWaitTime ? <Loader2 size={12} className="animate-spin" /> : null}
+                Save
+              </button>
+            </div>
+            <button
+              onClick={handleToggleStoreStatus}
+              className={`flex items-center gap-1 px-3 py-1 rounded font-semibold transition-colors text-sm focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-accent ${
+                isStoreOpen ? "bg-danger text-white hover:bg-danger/80" : "bg-success text-white hover:bg-success/80"
+              }`}
             >
-              {isSavingWaitTime ? <Loader2 size={12} className="animate-spin" /> : null}
-              Save
+              <Power size={14} />
+              {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
             </button>
+            <Link href="/admin/report" className="bg-info text-white font-bold py-1 px-3 rounded hover:bg-info/80 text-sm">
+              Reports
+            </Link>
           </div>
-          <button
-            onClick={handleToggleStoreStatus}
-            className={`flex items-center gap-1 px-3 py-1 rounded font-semibold transition-colors text-sm focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-accent ${
-              isStoreOpen ? "bg-danger text-white hover:bg-danger/80" : "bg-success text-white hover:bg-success/80"
-            }`}
-          >
-            <Power size={14} />
-            {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
-          </button>
-          <Link href="/admin/report" className="bg-info text-white font-bold py-1 px-3 rounded hover:bg-info/80 text-sm">
-            Reports
-          </Link>
-        </div>
-      </header>
+        </header>
 
-      <main className="flex-grow flex flex-col sm:flex-row gap-2 p-2 overflow-x-auto">
-        <KanbanColumn title="Pending Confirmation" orders={pendingOrders} emptyText="No pending orders yet!" />
-        <KanbanColumn title="Accepted" orders={acceptedOrders} emptyText="No accepted orders." />
-        <KanbanColumn title="Preparing" orders={preparingOrders} emptyText="No orders being prepared." />
-        <KanbanColumn title="Ready for Pickup" orders={readyOrders} emptyText="No orders ready for pickup." />
-      </main>
-    </div>
+        <main className="flex-grow flex flex-col sm:flex-row gap-2 p-2 overflow-x-auto">
+          <KanbanColumn title="Pending Confirmation" orders={pendingOrders} emptyText="No pending orders yet!" />
+          <KanbanColumn title="Accepted" orders={acceptedOrders} emptyText="No accepted orders." />
+          <KanbanColumn title="Preparing" orders={preparingOrders} emptyText="No orders being prepared." />
+          <KanbanColumn title="Ready for Pickup" orders={readyOrders} emptyText="No orders ready for pickup." />
+        </main>
+      </div>
+    </AdminGuard>
   );
 } 

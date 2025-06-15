@@ -13,8 +13,11 @@ import {
   Download,
   Filter,
   BarChart3,
-  PieChart
+  PieChart,
+  UserCheck
 } from 'lucide-react';
+import { OverviewRevenueChart, AnalyticsTrendChart } from '@/components/report';
+import AdminGuard from '@/components/admin/AdminGuard';
 
 const supabase = createClient();
 
@@ -32,6 +35,7 @@ type ReportData = {
     date: string;
     revenue: number;
     orders: number;
+    completedOrders: number;
   }>;
   ordersByStatus: Array<{
     status: string;
@@ -46,21 +50,29 @@ type ReportData = {
     hour: number;
     orders: number;
   }>;
+  salesByOwner: Array<{
+    owner: string;
+    total_revenue: number;
+    total_items_sold: number;
+    products: Array<{
+      product_name: string;
+      quantity_sold: number;
+      revenue: number;
+    }>;
+  }>;
 };
 
 type DateRange = '7d' | '30d' | '90d' | 'all';
 
 export default function ReportsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('30d');
-  const [selectedView, setSelectedView] = useState<'overview' | 'products' | 'analytics'>('overview');
+  const [selectedView, setSelectedView] = useState<'overview' | 'products' | 'analytics' | 'owner'>('overview');
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     fetchReportData();
-  }, [isAuthenticated, dateRange]);
+  }, [dateRange]);
 
   const getDateFilter = () => {
     const now = new Date();
@@ -81,7 +93,7 @@ export default function ReportsPage() {
     try {
       const dateFilter = getDateFilter();
       
-      // Fetch orders with items
+      // Fetch orders with items and product owner information
       const { data: orders } = await supabase
         .from('orders')
         .select(`
@@ -93,7 +105,12 @@ export default function ReportsPage() {
           order_items (
             product_name,
             quantity,
-            item_price
+            item_price,
+            product_id,
+            products!order_items_product_id_fkey (
+              owner,
+              name
+            )
           )
         `)
         .gte('created_at', dateFilter)
@@ -131,14 +148,15 @@ export default function ReportsPage() {
         .sort((a, b) => b.total_quantity - a.total_quantity)
         .slice(0, 10);
 
-      // Revenue by date (last 30 days)
-      const dateMap = new Map<string, { revenue: number; orders: number }>();
+      // Revenue by date (last 30 days) with completed orders
+      const dateMap = new Map<string, { revenue: number; orders: number; completedOrders: number }>();
       orders.forEach(order => {
         const date = new Date(order.created_at).toISOString().split('T')[0];
-        const current = dateMap.get(date) || { revenue: 0, orders: 0 };
+        const current = dateMap.get(date) || { revenue: 0, orders: 0, completedOrders: 0 };
         dateMap.set(date, {
           revenue: current.revenue + order.total_price,
-          orders: current.orders + 1
+          orders: current.orders + 1,
+          completedOrders: current.completedOrders + (order.status === 'Completed' ? 1 : 0)
         });
       });
 
@@ -177,6 +195,42 @@ export default function ReportsPage() {
         .map(([hour, orders]) => ({ hour, orders }))
         .sort((a, b) => a.hour - b.hour);
 
+      // Calculate sales by owner
+      const ownerMap = new Map<string, { revenue: number; itemsSold: number; productMap: Map<string, { quantity: number; revenue: number }> }>();
+
+      orders.forEach(order => {
+        order.order_items?.forEach(item => {
+          // Default to 'Unassigned' if owner is null or product data is missing
+          const productData = Array.isArray(item.products) ? item.products[0] : item.products;
+          const owner = productData?.owner || 'Unassigned';
+          const itemRevenue = item.item_price * item.quantity;
+
+          if (!ownerMap.has(owner)) {
+            ownerMap.set(owner, { revenue: 0, itemsSold: 0, productMap: new Map() });
+          }
+
+          const ownerInfo = ownerMap.get(owner)!;
+          ownerInfo.revenue += itemRevenue;
+          ownerInfo.itemsSold += item.quantity;
+          
+          const productSalesData = ownerInfo.productMap.get(item.product_name) || { quantity: 0, revenue: 0 };
+          productSalesData.quantity += item.quantity;
+          productSalesData.revenue += itemRevenue;
+          ownerInfo.productMap.set(item.product_name, productSalesData);
+        });
+      });
+
+      const salesByOwner = Array.from(ownerMap.entries()).map(([owner, data]) => ({
+        owner,
+        total_revenue: data.revenue,
+        total_items_sold: data.itemsSold,
+        products: Array.from(data.productMap.entries()).map(([product_name, pData]) => ({
+          product_name,
+          quantity_sold: pData.quantity,
+          revenue: pData.revenue
+        })).sort((a, b) => b.revenue - a.revenue)
+      })).sort((a, b) => b.total_revenue - a.total_revenue);
+
       setReportData({
         totalRevenue,
         totalOrders,
@@ -186,7 +240,8 @@ export default function ReportsPage() {
         revenueByDate,
         ordersByStatus,
         paymentMethods,
-        hourlyDistribution
+        hourlyDistribution,
+        salesByOwner
       });
     } catch (error) {
       console.error('Error fetching report data:', error);
@@ -211,7 +266,8 @@ export default function ReportsPage() {
       revenueByDate: reportData.revenueByDate,
       ordersByStatus: reportData.ordersByStatus,
       paymentMethods: reportData.paymentMethods,
-      hourlyDistribution: reportData.hourlyDistribution
+      hourlyDistribution: reportData.hourlyDistribution,
+      salesByOwner: reportData.salesByOwner
     };
 
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
@@ -225,10 +281,6 @@ export default function ReportsPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (!isAuthenticated) {
-    return <div className="flex justify-center items-center h-screen">Authenticating...</div>;
-  }
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -238,7 +290,8 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <AdminGuard>
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-20 p-4 border-b bg-surface shadow-sm">
         <div className="flex items-center justify-between">
@@ -279,6 +332,7 @@ export default function ReportsPage() {
           {[
             { key: 'overview', label: 'Overview', icon: BarChart3 },
             { key: 'products', label: 'Products', icon: ShoppingBag },
+            { key: 'owner', label: 'Owner Sales', icon: UserCheck },
             { key: 'analytics', label: 'Analytics', icon: PieChart }
           ].map(({ key, label, icon: Icon }) => (
             <button
@@ -350,25 +404,8 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                {/* Revenue Chart */}
-                <div className="bg-surface rounded-xl p-6 border border-border">
-                  <h3 className="text-xl font-bold mb-4">Daily Revenue Trend</h3>
-                  <div className="h-64 flex items-end gap-2 overflow-x-auto">
-                    {reportData.revenueByDate.map((day, index) => (
-                      <div key={day.date} className="flex flex-col items-center min-w-[60px]">
-                        <div 
-                          className="bg-primary w-8 rounded-t min-h-[4px]"
-                          style={{ 
-                            height: `${Math.max(4, (day.revenue / Math.max(...reportData.revenueByDate.map(d => d.revenue))) * 200)}px` 
-                          }}
-                        />
-                        <span className="text-xs text-muted mt-2 rotate-45 origin-left">
-                          {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* Enhanced Revenue Chart */}
+                <OverviewRevenueChart data={reportData.revenueByDate} />
               </div>
             )}
 
@@ -397,9 +434,51 @@ export default function ReportsPage() {
               </div>
             )}
 
+            {/* Owner Sales Tab */}
+            {selectedView === 'owner' && (
+              <div className="space-y-6">
+                {reportData.salesByOwner.map((ownerData) => (
+                  <div key={ownerData.owner} className="bg-surface rounded-xl p-6 border border-border">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-primary">{ownerData.owner}'s Sales</h3>
+                        <p className="text-muted">{ownerData.total_items_sold} items sold</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-muted text-sm">Total Revenue</p>
+                        <p className="text-3xl font-extrabold text-success">
+                          ₱{ownerData.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-border pt-4">
+                      <h4 className="font-semibold mb-2">Product Breakdown:</h4>
+                      <div className="space-y-2">
+                        {ownerData.products.map(product => (
+                          <div key={product.product_name} className="flex justify-between items-center p-2 bg-background rounded-md">
+                            <div>
+                              <span className="font-medium">{product.product_name}</span>
+                              <span className="text-muted text-sm ml-2">({product.quantity_sold} sold)</span>
+                            </div>
+                            <span className="font-semibold text-success/80">
+                              ₱{product.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Analytics Tab */}
             {selectedView === 'analytics' && (
               <div className="space-y-6">
+                {/* Multi-Metric Trend Analysis */}
+                <AnalyticsTrendChart data={reportData.revenueByDate} />
+                
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Order Status Distribution */}
                   <div className="bg-surface rounded-xl p-6 border border-border">
@@ -472,5 +551,6 @@ export default function ReportsPage() {
         )}
       </main>
     </div>
+    </AdminGuard>
   );
 }
