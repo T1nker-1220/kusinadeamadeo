@@ -5,6 +5,8 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import ConditionalStepper from '@/components/ui/ConditionalStepper';
 import ThemeProvider from '@/components/ThemeProvider';
+import KioskInitializer from '@/components/KioskInitializer';
+import KioskGuard from '@/components/KioskGuard';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +35,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <KioskInitializer />
+          <KioskGuard />
           <Toaster position="bottom-center" />
           {/* CartToggle and Cart moved to CustomerLayout only */}
           {/* <input type="checkbox" id="cart-toggle" className="hidden peer" /> */}
