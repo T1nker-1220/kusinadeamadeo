@@ -7,7 +7,7 @@ export type CardProps = {
 
 export default function Card({ children, className = '' }: CardProps) {
   return (
-    <div className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-lg p-6 ${className}`}>
+    <div className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-lg p-3 ${className}`}>
       {children}
     </div>
   );

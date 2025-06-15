@@ -16,27 +16,27 @@ type Props = {
 const statusMeta: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   'Pending Confirmation': {
     color: 'bg-yellow-400 text-black',
-    icon: <Clock size={16} className="inline-block mr-1" />, label: 'Pending Confirmation'
+    icon: <Clock size={12} className="inline-block mr-1" />, label: 'Pending'
   },
   'Accepted': {
     color: 'bg-blue-500 text-white',
-    icon: <BadgeCheck size={16} className="inline-block mr-1" />, label: 'Accepted'
+    icon: <BadgeCheck size={12} className="inline-block mr-1" />, label: 'Accepted'
   },
   'Preparing': {
     color: 'bg-[var(--color-warning)] text-black',
-    icon: <Loader2 size={16} className="inline-block mr-1 animate-spin" />, label: 'Preparing'
+    icon: <Loader2 size={12} className="inline-block mr-1 animate-spin" />, label: 'Preparing'
   },
   'Ready': {
     color: 'bg-[var(--color-success)] text-white',
-    icon: <BadgeCheck size={16} className="inline-block mr-1" />, label: 'Ready'
+    icon: <BadgeCheck size={12} className="inline-block mr-1" />, label: 'Ready'
   },
   'Completed': {
     color: 'bg-gray-300 text-gray-800',
-    icon: <CheckCircle size={16} className="inline-block mr-1" />, label: 'Completed'
+    icon: <CheckCircle size={12} className="inline-block mr-1" />, label: 'Done'
   },
   'Declined': {
     color: 'bg-[var(--color-danger)] text-white',
-    icon: <XCircle size={16} className="inline-block mr-1" />, label: 'Declined'
+    icon: <XCircle size={12} className="inline-block mr-1" />, label: 'Declined'
   },
 };
 
@@ -127,62 +127,61 @@ export default function OrderCard({ order }: Props) {
   const orderNumber = order.id.toString().slice(-4); // Last 4 digits
 
   return (
-    <Card className="mb-6">
-      {/* Order Number Header - Prominent Display */}
-      <div className="flex justify-between items-center mb-4 p-3 bg-orange-100 border border-orange-300 rounded-lg">
-        <div className="flex items-center gap-3">
+    <Card className="mb-2">
+      {/* Order Number Header - Compact Display */}
+      <div className="flex justify-between items-center mb-2 p-2 bg-orange-100 border border-orange-300 rounded">
+        <div className="flex items-center gap-2">
           <div className="text-center">
-            <p className="text-sm font-medium text-orange-800">Order Number</p>
-            <p className="text-3xl font-bold text-orange-900">#{orderNumber}</p>
+            <p className="text-xs font-medium text-orange-800">Order #</p>
+            <p className="text-lg font-bold text-orange-900">#{orderNumber}</p>
           </div>
           <button
             onClick={handleToggleCalled}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
               isCalled 
-                ? 'bg-green-500 text-white shadow-lg' 
+                ? 'bg-green-500 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            {isCalled ? <PhoneCall size={18} /> : <Phone size={18} />}
-            {isCalled ? 'Called' : 'Mark as Called'}
+            {isCalled ? <PhoneCall size={12} /> : <Phone size={12} />}
+            {isCalled ? 'Called' : 'Call'}
           </button>
         </div>
-        <div className="text-right">
-          <span className={`px-3 py-1 text-sm font-semibold rounded-full flex items-center ${meta.color}`}>
-            {meta.icon} {meta.label}
-          </span>
-        </div>
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center ${meta.color}`}>
+          {meta.icon} {meta.label}
+        </span>
       </div>
 
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+      <div className="flex justify-between items-start mb-2">
         <div>
-          <h2 className="text-xl font-bold text-[var(--color-foreground)]">{order.customer_name}</h2>
-          <p className="text-sm text-[var(--color-muted)]">Order placed at: {new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+          <h2 className="text-sm font-bold text-[var(--color-foreground)]">{order.customer_name}</h2>
+          <p className="text-xs text-[var(--color-muted)]">{new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
         </div>
-        <div className="text-right flex flex-col items-end gap-2">
-          <span className={`px-3 py-1 text-sm font-semibold rounded-full flex items-center ${meta.color}`}>
-            {meta.icon} {meta.label}
-          </span>
-          <p className="text-2xl font-bold text-[var(--color-success)]">₱{order.total_price}</p>
-        </div>
+        <p className="text-lg font-bold text-[var(--color-success)]">₱{order.total_price}</p>
       </div>
-      <div className="border-t my-4 border-[var(--color-border)]"></div>
-      <div className="grid md:grid-cols-2 gap-6">
+
+      <div className="border-t my-2 border-[var(--color-border)]"></div>
+
+      <div className="grid grid-cols-1 gap-2">
         <div>
-          <h3 className="font-semibold mb-2 text-[var(--color-foreground)]">Items Ordered:</h3>
+          <h3 className="text-xs font-semibold mb-1 text-[var(--color-foreground)]">Items:</h3>
           {orderItems.length === 0 ? (
-            <p className="text-[var(--color-muted)] text-sm">No items found for this order</p>
+            <p className="text-[var(--color-muted)] text-xs">No items found</p>
           ) : (
             Object.entries(groupedItems).map(([tag, items]) => (
-              <div key={tag} className="mb-2">
-                <p className="font-bold text-sm underline">{tag}</p>
-                <ul className="space-y-1 text-sm list-disc list-inside">
+              <div key={tag} className="mb-1">
+                <p className="font-bold text-xs text-blue-600">{tag}</p>
+                <ul className="space-y-0 text-xs">
                   {items.map(item => (
-                    <li key={item.id}>
-                      <span className="font-medium">{item.quantity}x {item.product_name}</span>
-                      {item.selected_options && Object.entries(item.selected_options).map(([key, value]) => (
-                        <span key={key} className="text-[var(--color-muted)] ml-2">({value})</span>
-                      ))}
+                    <li key={item.id} className="flex justify-between">
+                      <span>
+                        <span className="font-medium">{item.quantity}x {item.product_name}</span>
+                        {item.selected_options && Object.entries(item.selected_options).length > 0 && (
+                          <span className="text-[var(--color-muted)] ml-1">
+                            ({Object.values(item.selected_options).join(', ')})
+                          </span>
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -190,34 +189,60 @@ export default function OrderCard({ order }: Props) {
             ))
           )}
         </div>
-        <div>
+
+        <div className="space-y-1">
           {order.payment_proof_url && (
             <a
               href={order.payment_proof_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-full text-center mb-4"
+              className="block"
             >
-              <Button variant="accent" fullWidth>View Payment Proof</Button>
+              <Button variant="accent" fullWidth className="h-6 text-xs px-2 py-1">Payment Proof</Button>
             </a>
           )}
+          
           {order.status === 'Pending Confirmation' && (
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              <Button onClick={handleDecline} variant="danger">Decline</Button>
-              <Button onClick={handleAccept} variant="success">Accept</Button>
+            <div className="grid grid-cols-2 gap-1">
+              <Button onClick={handleDecline} variant="danger" className="h-6 text-xs px-2 py-1">Decline</Button>
+              <Button onClick={handleAccept} variant="success" className="h-6 text-xs px-2 py-1">Accept</Button>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2 text-sm mt-4">
-            <Button onClick={() => handleStatusUpdate('Preparing')} disabled={order.status !== 'Accepted'} variant="warning">Start Preparing</Button>
-            <Button onClick={() => handleStatusUpdate('Ready')} disabled={order.status !== 'Preparing'} variant="success">Mark as Ready</Button>
-            <Button onClick={() => handleStatusUpdate('Completed')} disabled={order.status !== 'Ready'} variant="secondary" className="col-span-2">Mark as Completed</Button>
+          
+          <div className="grid grid-cols-2 gap-1">
+            <Button 
+              onClick={() => handleStatusUpdate('Preparing')} 
+              disabled={order.status !== 'Accepted'} 
+              variant="warning"
+              className="h-6 text-xs px-1 py-1"
+            >
+              Prepare
+            </Button>
+            <Button 
+              onClick={() => handleStatusUpdate('Ready')} 
+              disabled={order.status !== 'Preparing'} 
+              variant="success"
+              className="h-6 text-xs px-1 py-1"
+            >
+              Ready
+            </Button>
           </div>
+          
+          <Button 
+            onClick={() => handleStatusUpdate('Completed')} 
+            disabled={order.status !== 'Ready'} 
+            variant="secondary" 
+            className="w-full h-6 text-xs px-2 py-1"
+          >
+            Complete
+          </Button>
         </div>
       </div>
+
       {order.status === 'Declined' && order.decline_reason && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 rounded">
-          <p className="font-semibold text-red-700">Decline Reason:</p>
-          <p className="text-red-700">{order.decline_reason}</p>
+        <div className="mt-2 p-2 bg-red-100 border border-red-400 rounded">
+          <p className="font-semibold text-xs text-red-700">Declined:</p>
+          <p className="text-xs text-red-700">{order.decline_reason}</p>
         </div>
       )}
     </Card>

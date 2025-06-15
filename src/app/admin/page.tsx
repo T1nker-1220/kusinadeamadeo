@@ -11,13 +11,13 @@ const supabase = createClient();
 
 function KanbanColumn({ title, orders, emptyText }: { title: string; orders: Order[]; emptyText: string }) {
   return (
-    <div className="flex-1 min-w-[90vw] sm:min-w-[320px] bg-surface rounded-xl p-3 sm:p-4 shadow-md border border-border flex flex-col">
-      <h2 className="text-lg sm:text-xl font-extrabold mb-3 text-primary tracking-tight">{title} <span className="font-normal text-muted">({orders.length})</span></h2>
-      <div className="space-y-4 flex-1 overflow-y-auto">
+    <div className="flex-1 min-w-[85vw] sm:min-w-[280px] bg-surface rounded-lg p-2 shadow-md border border-border flex flex-col">
+      <h2 className="text-sm font-bold mb-2 text-primary tracking-tight">{title} <span className="font-normal text-muted text-xs">({orders.length})</span></h2>
+      <div className="space-y-1 flex-1 overflow-y-auto">
         {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-8 text-muted">
-            <span className="text-3xl mb-2">🍽️</span>
-            <span className="font-medium text-base text-center">{emptyText}</span>
+          <div className="flex flex-col items-center justify-center h-24 py-4 text-muted">
+            <span className="text-2xl mb-1">🍽️</span>
+            <span className="font-medium text-xs text-center">{emptyText}</span>
           </div>
         ) : (
           orders.map(order => (
@@ -148,29 +148,29 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background-gradient-to bg-gradient-to-b from-background-gradient-from to-background-gradient-to">
-      <header className="sticky top-0 z-20 p-3 sm:p-4 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
-        <h1 className="text-2xl font-extrabold text-primary tracking-tight">Admin Dashboard</h1>
-        <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+      <header className="sticky top-0 z-20 p-2 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h1 className="text-lg font-bold text-primary tracking-tight">Admin Dashboard</h1>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleToggleStoreStatus}
-            className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-semibold transition-colors text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent ${
+            className={`flex items-center gap-1 px-3 py-1 rounded font-semibold transition-colors text-sm focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-accent ${
               isStoreOpen ? "bg-danger text-white hover:bg-danger/80" : "bg-success text-white hover:bg-success/80"
             }`}
           >
-            <Power size={18} />
+            <Power size={14} />
             {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
           </button>
-          <Link href="/admin/report" className="bg-info text-white font-bold py-2 px-3 sm:px-4 rounded-lg hover:bg-info/80 text-base sm:text-lg">
+          <Link href="/admin/report" className="bg-info text-white font-bold py-1 px-3 rounded hover:bg-info/80 text-sm">
             Reports
           </Link>
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col sm:flex-row gap-4 sm:gap-6 p-2 sm:p-6 overflow-x-auto">
+      <main className="flex-grow flex flex-col sm:flex-row gap-2 p-2 overflow-x-auto">
         <KanbanColumn title="Pending Confirmation" orders={pendingOrders} emptyText="No pending orders yet!" />
         <KanbanColumn title="Accepted" orders={acceptedOrders} emptyText="No accepted orders." />
-        <KanbanColumn title="Preparing" orders={preparingOrders} emptyText="No orders are being prepared." />
-        <KanbanColumn title="Ready for Pickup" orders={readyOrders} emptyText="No orders are ready for pickup." />
+        <KanbanColumn title="Preparing" orders={preparingOrders} emptyText="No orders being prepared." />
+        <KanbanColumn title="Ready for Pickup" orders={readyOrders} emptyText="No orders ready for pickup." />
       </main>
     </div>
   );
