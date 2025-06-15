@@ -30,7 +30,7 @@ export default function CheckOut() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'GCash' | 'PayAtStore'>('GCash');
+  const [paymentMethod, setPaymentMethod] = useState<'GCash' | 'PayAtStore'>(isKioskMode ? 'PayAtStore' : 'GCash');
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +68,7 @@ export default function CheckOut() {
         total_price: cartTotal(),
         payment_proof_url: paymentProofUrl,
         payment_method: paymentMethod,
-        status: paymentMethod === 'PayAtStore' ? 'Pending Confirmation' : 'Preparing',
+        status: 'Pending Confirmation', // Both payment methods require admin confirmation
       };
       const { data: newOrder, error: orderError } = await supabase
         .from('orders')
@@ -112,11 +112,8 @@ export default function CheckOut() {
       if (isKioskMode) {
         router.replace(`/kiosk-menu/success?orderId=${newOrder.id}`);
       } else {
-        if (paymentMethod === 'PayAtStore') {
-          router.push(`/normal-menu/order-status/${newOrder.id}`);
-        } else {
-          router.push('/normal-menu/order-success');
-        }
+        // All personal device orders get status tracking regardless of payment method
+        router.push(`/normal-menu/order-status/${newOrder.id}`);
       }
     } catch (err: any) {
       console.error(err);
@@ -173,9 +170,16 @@ export default function CheckOut() {
             <div>
               <h2 className="text-xl font-semibold text-primary">Payment Method</h2>
               <div className="mt-2 flex gap-4">
-                <label><input type="radio" value="GCash" checked={paymentMethod === 'GCash'} onChange={() => setPaymentMethod('GCash')} /> Pay with GCash</label>
+                {!isKioskMode && (
+                  <label><input type="radio" value="GCash" checked={paymentMethod === 'GCash'} onChange={() => setPaymentMethod('GCash')} /> Pay with GCash</label>
+                )}
                 <label><input type="radio" value="PayAtStore" checked={paymentMethod === 'PayAtStore'} onChange={() => setPaymentMethod('PayAtStore')} /> Pay at Store</label>
               </div>
+              {isKioskMode && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Only "Pay at Store" is available on kiosk devices for security reasons.
+                </p>
+              )}
             </div>
             <Input
               label="Full Name"
