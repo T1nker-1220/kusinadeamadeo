@@ -51,21 +51,11 @@ type ReportData = {
 type DateRange = '7d' | '30d' | '90d' | 'all';
 
 export default function ReportsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('30d');
   const [selectedView, setSelectedView] = useState<'overview' | 'products' | 'analytics'>('overview');
-
-  useEffect(() => {
-    const password = prompt('Enter admin password:');
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-    } else {
-      alert('Incorrect password.');
-      window.location.href = '/admin';
-    }
-  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;

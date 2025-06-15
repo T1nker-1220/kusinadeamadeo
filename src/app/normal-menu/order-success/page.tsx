@@ -1,19 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useCustomerStore } from '@/stores/customerStore';
 import Button from '@/components/ui/Button';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MenuOrderSuccessPage() {
-  const setIsKioskMode = useCustomerStore((state) => state.setIsKioskMode);
-
-  useEffect(() => {
-    // Ensure we're in personal device mode
-    setIsKioskMode(false);
-  }, [setIsKioskMode]);
-
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 px-4 text-center">
       <CheckCircle className="text-green-500 w-24 h-24 mb-6" />

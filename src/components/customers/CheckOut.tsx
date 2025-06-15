@@ -63,7 +63,6 @@ export default function CheckOut() {
           .from('payment-proofs')
           .upload(filePath, paymentProof, { upsert: true });
         if (uploadError) throw uploadError;
-        await new Promise((resolve) => setTimeout(resolve, 1500));
         paymentProofUrl = await createSignedUrlWithRetry(supabase, filePath);
       }
       const orderData = {

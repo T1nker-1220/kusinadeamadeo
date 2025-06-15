@@ -2,7 +2,6 @@
 
 import { use, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { useCustomerStore } from "@/stores/customerStore";
 import Link from "next/link";
 
 const supabase = createClient();
@@ -50,14 +49,8 @@ const statusMeta: Record<OrderStatus, { label: string; color: string; message: s
 
 export default function OrderStatusPage(props: { params: Promise<{ id: string }> }) {
   const { id } = use(props.params);
-  const setIsKioskMode = useCustomerStore((state) => state.setIsKioskMode);
   const [status, setStatus] = useState<OrderStatus>("Pending Confirmation");
   const [declineReason, setDeclineReason] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Ensure we're in normal menu mode
-    setIsKioskMode(false);
-  }, [setIsKioskMode]);
 
   useEffect(() => {
     // Fetch initial order status
