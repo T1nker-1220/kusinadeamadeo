@@ -102,12 +102,12 @@ export default function CheckOut() {
       clearCart();
 
       if (isKioskMode) {
-        router.replace(`/kiosk/success?orderId=${newOrder.id}`);
+        router.replace(`/kiosk-menu/success?orderId=${newOrder.id}`);
       } else {
         if (paymentMethod === 'PayAtStore') {
-          router.push(`/order/${newOrder.id}/status`);
+          router.push(`/normal-menu/order-status/${newOrder.id}`);
         } else {
-          router.push('/order-success');
+          router.push('/normal-menu/order-success');
         }
       }
     } catch (err: any) {

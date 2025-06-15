@@ -12,11 +12,11 @@ export default function KioskGuard() {
   useEffect(() => {
     // If user is in kiosk mode but not on a kiosk-allowed path, redirect to kiosk
     if (isKioskMode) {
-      const allowedKioskPaths = ['/kiosk', '/kiosk/success', '/checkout'];
+      const allowedKioskPaths = ['/kiosk-menu', '/kiosk-menu/success', '/kiosk-menu/cart', '/kiosk-menu/checkout'];
       const isOnAllowedPath = allowedKioskPaths.some(path => pathname.startsWith(path));
       
       if (!isOnAllowedPath) {
-        router.replace('/kiosk');
+        router.replace('/kiosk-menu');
       }
     }
   }, [pathname, router, isKioskMode]);

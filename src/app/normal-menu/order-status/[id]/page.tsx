@@ -1,6 +1,8 @@
 "use client";
+
 import { use, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useCustomerStore } from "@/stores/customerStore";
 import Link from "next/link";
 
 const supabase = createClient();
@@ -48,8 +50,14 @@ const statusMeta: Record<OrderStatus, { label: string; color: string; message: s
 
 export default function OrderStatusPage(props: { params: Promise<{ id: string }> }) {
   const { id } = use(props.params);
+  const setIsKioskMode = useCustomerStore((state) => state.setIsKioskMode);
   const [status, setStatus] = useState<OrderStatus>("Pending Confirmation");
   const [declineReason, setDeclineReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Ensure we're in normal menu mode
+    setIsKioskMode(false);
+  }, [setIsKioskMode]);
 
   useEffect(() => {
     // Fetch initial order status
@@ -122,14 +130,19 @@ export default function OrderStatusPage(props: { params: Promise<{ id: string }>
   };
 
   return (
-    <div className="text-center max-w-xl mx-auto p-8 mt-20">
-      {renderContent()}
-      <Link
-        href="/"
-        className="mt-8 inline-block bg-gray-500 text-white font-bold py-2 px-6 rounded-lg"
-      >
-        Back to Menu
-      </Link>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-16">
+      <div className="text-center max-w-xl mx-auto p-8 bg-slate-800 rounded-lg border border-slate-600 shadow-xl">
+        <h2 className="text-2xl font-bold text-white mb-6">Order Status</h2>
+        <div className="text-white">
+          {renderContent()}
+        </div>
+        <Link
+          href="/normal-menu"
+          className="mt-8 inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+        >
+          Back to Menu
+        </Link>
+      </div>
     </div>
   );
-} 
+}

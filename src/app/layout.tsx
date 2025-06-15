@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 // import Cart, { CartToggle } from "@/components/customers/Cart"; // Remove from global layout
 import { Toaster } from 'react-hot-toast';
-import ConditionalStepper from '@/components/ui/ConditionalStepper';
 import ThemeProvider from '@/components/ThemeProvider';
 import KioskInitializer from '@/components/KioskInitializer';
 import KioskGuard from '@/components/KioskGuard';
@@ -45,12 +44,7 @@ export default function RootLayout({
 
           {/* <label htmlFor="cart-toggle" className="fixed inset-0 bg-black/30 z-10 hidden peer-checked:block"></label> */}
 
-          {/* Stepper at the top, only on step pages */}
-          <ConditionalStepper>
-            <div className="relative z-0 pt-[72px] md:pt-0">
               {children}
-            </div>
-          </ConditionalStepper>
         </ThemeProvider>
       </body>
     </html>

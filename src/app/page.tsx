@@ -23,7 +23,7 @@ export default function Home() {
         <p className="text-lg text-white/90 mb-8 text-center max-w-xs">
           Your 24/7 Food Buddy. Order authentic Filipino meals, drinks, and more—ready for pickup, anytime!
         </p>
-        <Link href="/menu" className="w-full">
+        <Link href="/normal-menu" className="w-full">
           <Button variant="primary" fullWidth className="text-lg py-3">
             View Menu
           </Button>

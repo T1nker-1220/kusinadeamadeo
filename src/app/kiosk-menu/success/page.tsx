@@ -13,7 +13,7 @@ export default function KioskSuccessPage() {
   useEffect(() => {
     // Automatically redirect back to the kiosk menu after 15 seconds.
     const timer = setTimeout(() => {
-      router.replace('/kiosk');
+      router.replace('/kiosk-menu');
     }, 15000); // 15 seconds
 
     return () => clearTimeout(timer);
@@ -35,7 +35,7 @@ export default function KioskSuccessPage() {
         </div>
       )}
 
-      <Button variant="primary" onClick={() => router.replace('/kiosk')} className="text-lg py-3">
+      <Button variant="primary" onClick={() => router.replace('/kiosk-menu')} className="text-lg py-3">
         Start New Order
       </Button>
     </main>

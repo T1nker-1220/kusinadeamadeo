@@ -30,9 +30,9 @@ export default function ImprovedCart() {
   const handleStartOver = () => {
     clearCart()
     if (isKioskMode) {
-      router.push('/kiosk')
+      router.push('/kiosk-menu')
     } else {
-      router.push('/menu')
+      router.push('/normal-menu')
     }
   }
 
@@ -171,21 +171,23 @@ export default function ImprovedCart() {
                     <span className="text-2xl font-bold text-green-400">₱{cartTotal()}</span>
                   </div>
 
-                  <Link href="/checkout">
+                  <Link href={isKioskMode ? "/kiosk-menu/checkout" : "/normal-menu/checkout"}>
                     <button className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
                       Proceed to Checkout
                       <ChevronRight className="w-5 h-5 ml-2" />
                     </button>
                   </Link>
 
-                  <Button
-                    variant="danger"
-                    fullWidth
-                    className="mt-2"
-                    onClick={handleStartOver}
-                  >
-                    Start New Order / Clear Cart
-                  </Button>
+                  {isKioskMode && (
+                    <Button
+                      variant="danger"
+                      fullWidth
+                      className="mt-2"
+                      onClick={handleStartOver}
+                    >
+                      Start New Order / Clear Cart
+                    </Button>
+                  )}
                 </div>
               </>
             )}
@@ -353,21 +355,23 @@ export default function ImprovedCart() {
                   <span className="text-2xl font-bold text-green-400">₱{cartTotal()}</span>
                 </div>
 
-                <Link href="/checkout">
+                <Link href={isKioskMode ? "/kiosk-menu/checkout" : "/normal-menu/checkout"}>
                   <button className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
                     Proceed to Checkout
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </button>
                 </Link>
 
-                <Button
-                  variant="danger"
-                  fullWidth
-                  className="mt-2"
-                  onClick={handleStartOver}
-                >
-                  Start New Order / Clear Cart
-                </Button>
+                {isKioskMode && (
+                  <Button
+                    variant="danger"
+                    fullWidth
+                    className="mt-2"
+                    onClick={handleStartOver}
+                  >
+                    Start New Order / Clear Cart
+                  </Button>
+                )}
               </div>
             </>
           )}

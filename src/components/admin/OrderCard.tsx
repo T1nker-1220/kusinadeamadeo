@@ -76,12 +76,15 @@ export default function OrderCard({ order }: Props) {
   };
 
   // Group items by their tag for display
-  const groupedItems = order.order_items.reduce((acc, item) => {
+  // Ensure order_items exists and is an array
+  const orderItems = order.order_items || [];
+  
+  const groupedItems = orderItems.reduce((acc, item) => {
     const tag = item.group_tag || 'Unassigned';
     if (!acc[tag]) acc[tag] = [];
     acc[tag].push(item);
     return acc;
-  }, {} as Record<string, typeof order.order_items>);
+  }, {} as Record<string, typeof orderItems>);
 
   const meta = statusMeta[order.status] || { color: '', icon: null, label: order.status };
 
@@ -104,21 +107,25 @@ export default function OrderCard({ order }: Props) {
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h3 className="font-semibold mb-2 text-[var(--color-foreground)]">Items Ordered:</h3>
-          {Object.entries(groupedItems).map(([tag, items]) => (
-            <div key={tag} className="mb-2">
-              <p className="font-bold text-sm underline">{tag}</p>
-              <ul className="space-y-1 text-sm list-disc list-inside">
-                {items.map(item => (
-                  <li key={item.id}>
-                    <span className="font-medium">{item.quantity}x {item.product_name}</span>
-                    {item.selected_options && Object.entries(item.selected_options).map(([key, value]) => (
-                      <span key={key} className="text-[var(--color-muted)] ml-2">({value})</span>
-                    ))}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {orderItems.length === 0 ? (
+            <p className="text-[var(--color-muted)] text-sm">No items found for this order</p>
+          ) : (
+            Object.entries(groupedItems).map(([tag, items]) => (
+              <div key={tag} className="mb-2">
+                <p className="font-bold text-sm underline">{tag}</p>
+                <ul className="space-y-1 text-sm list-disc list-inside">
+                  {items.map(item => (
+                    <li key={item.id}>
+                      <span className="font-medium">{item.quantity}x {item.product_name}</span>
+                      {item.selected_options && Object.entries(item.selected_options).map(([key, value]) => (
+                        <span key={key} className="text-[var(--color-muted)] ml-2">({value})</span>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
         </div>
         <div>
           {order.payment_proof_url && (

@@ -52,8 +52,37 @@ export default function AdminPage() {
     }
 
     const fetchInitialData = async () => {
-      const { data: orderData } = await supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
-      if (orderData) setOrders(orderData);
+      try {
+        // Fetch orders first
+        const { data: orders, error: ordersError } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (ordersError) throw ordersError;
+        if (!orders) return;
+        
+        // Fetch all order items
+        const { data: allOrderItems, error: itemsError } = await supabase
+          .from('order_items')
+          .select('*');
+        
+        if (itemsError) throw itemsError;
+        
+        console.log('🔍 All order items from DB:', allOrderItems);
+        console.log('🔍 Sample order ID:', orders[0]?.id);
+        console.log('🔍 Sample order items for first order:', allOrderItems?.filter(item => item.order_id === orders[0]?.id));
+        
+        // Manually join the data
+        const ordersWithItems = orders.map(order => ({
+          ...order,
+          order_items: allOrderItems?.filter(item => String(item.order_id) === String(order.id)) || []
+        }));
+        
+        setOrders(ordersWithItems);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
 
       const { data: settingsData } = await supabase.from('store_settings').select('is_open').eq('id', 1).single();
       if (settingsData) setIsStoreOpen(settingsData.is_open);
@@ -65,12 +94,28 @@ export default function AdminPage() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'orders' },
       async (payload) => {
-        const { data: newOrderWithItems } = await supabase
+        // Fetch the new order
+        const { data: newOrder } = await supabase
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*')
           .eq('id', payload.new.id)
           .single();
-        if (newOrderWithItems) addOrder(newOrderWithItems);
+        
+        if (newOrder) {
+          // Fetch its items separately
+          const { data: orderItems } = await supabase
+            .from('order_items')
+            .select('*')
+            .eq('order_id', newOrder.id);
+          
+          // Manually join
+          const newOrderWithItems = {
+            ...newOrder,
+            order_items: orderItems || []
+          };
+          
+          addOrder(newOrderWithItems);
+        }
       }
     ).on(
       'postgres_changes',
@@ -115,7 +160,7 @@ export default function AdminPage() {
             <Power size={18} />
             {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
           </button>
-          <Link href="/admin/reports" className="bg-info text-white font-bold py-2 px-3 sm:px-4 rounded-lg hover:bg-info/80 text-base sm:text-lg">
+          <Link href="/admin/report" className="bg-info text-white font-bold py-2 px-3 sm:px-4 rounded-lg hover:bg-info/80 text-base sm:text-lg">
             Reports
           </Link>
         </div>
