@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import KioskSuccessClient from './KioskSuccessClient';
+import KioskSuccessClient from '../../../components/customers/KioskSuccessClient';
 
 function LoadingFallback() {
   return (
