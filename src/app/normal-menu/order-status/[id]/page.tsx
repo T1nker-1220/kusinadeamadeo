@@ -3,6 +3,10 @@
 import { use, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCustomerStore } from "@/stores/customerStore";
+import { showError, showSuccess } from "@/utils/toast";
+import Button from "@/components/ui/Button";
 
 const supabase = createClient();
 
@@ -49,8 +53,11 @@ const statusMeta: Record<OrderStatus, { label: string; color: string; message: s
 
 export default function OrderStatusPage(props: { params: Promise<{ id: string }> }) {
   const { id } = use(props.params);
+  const router = useRouter();
+  const { addToCart, setGroupTag, clearCart } = useCustomerStore();
   const [status, setStatus] = useState<OrderStatus>("Pending Confirmation");
   const [declineReason, setDeclineReason] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Fetch initial order status
@@ -90,6 +97,54 @@ export default function OrderStatusPage(props: { params: Promise<{ id: string }>
     };
   }, [id]);
 
+  const repopulateCartFromOrder = async () => {
+    setIsLoading(true);
+    // 1. Fetch the declined order items along with the product data needed for reconstruction
+    const { data: orderItems, error } = await supabase
+      .from("order_items")
+      .select("*, products(*, options(*))")
+      .eq("order_id", id);
+    if (error || !orderItems) {
+      showError("Could not retrieve order details. Please start a new order.");
+      setIsLoading(false);
+      return;
+    }
+    // 2. Clear any existing items in the cart to avoid conflicts
+    clearCart();
+    // 3. Loop through each item and reconstruct it for the cart
+    for (const item of orderItems) {
+      if (!item.products) continue; // Skip if the product was deleted
+      const fullProduct = item.products;
+      // Reconstruct the `selectedOptions` array with all its data
+      const reconstructedOptions = item.selected_options 
+        ? Object.entries(item.selected_options).map(([group, name]) => {
+            const originalOption = fullProduct.options.find(
+              (opt: any) => opt.group_name === group && opt.name === name
+            );
+            return {
+              group_name: group,
+              name: name as string,
+              additional_price: originalOption?.additional_price || 0,
+            };
+          })
+        : [];
+      // Add the item to the cart (the store handles quantity)
+      for (let i = 0; i < item.quantity; i++) {
+        addToCart(fullProduct, reconstructedOptions);
+      }
+      // Re-apply the group tag if it exists
+      if (item.group_tag) {
+        const signature = `${fullProduct.id}-${reconstructedOptions.map(o => `${o.group_name}:${o.name}`).sort().join('-')}`;
+        setGroupTag(signature, item.group_tag);
+      }
+    }
+    // 4. Notify the user and redirect
+    showError(`Order was declined: ${declineReason}`);
+    showSuccess("Your previous items have been added back to your cart.");
+    router.push('/normal-menu/cart');
+    setIsLoading(false);
+  };
+
   const renderContent = () => {
     if (status === "Declined") {
       return (
@@ -100,6 +155,14 @@ export default function OrderStatusPage(props: { params: Promise<{ id: string }>
           <p className="font-semibold mt-2">
             Reason: <span className="font-normal">{declineReason || "No reason provided."}</span>
           </p>
+          <Button 
+            variant="warning" 
+            onClick={repopulateCartFromOrder} 
+            loading={isLoading}
+            className="mt-6"
+          >
+            Modify and Resubmit Order
+          </Button>
         </>
       );
     }
@@ -129,12 +192,20 @@ export default function OrderStatusPage(props: { params: Promise<{ id: string }>
         <div className="text-white">
           {renderContent()}
         </div>
-        <Link
-          href="/normal-menu"
-          className="mt-8 inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-        >
-          Back to Menu
-        </Link>
+        <div className="mt-8 flex gap-4 justify-center">
+          <Link
+            href="/normal-menu/order-history"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            Back to Order History
+          </Link>
+          <Link
+            href="/normal-menu"
+            className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            Back to Menu
+          </Link>
+        </div>
       </div>
     </div>
   );
