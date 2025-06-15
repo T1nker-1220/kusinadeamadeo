@@ -6,6 +6,8 @@ import { ShoppingCart, Plus, Minus, X, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import CartPreview from "./CartPreview"
+import { useKiosk } from "@/hooks/useKiosk"
+import Button from "@/components/ui/Button"
 
 export default function ImprovedCart() {
   const {
@@ -13,10 +15,12 @@ export default function ImprovedCart() {
     removeFromCart,
     updateQuantity,
     cartTotal,
-    setGroupTag
+    setGroupTag,
+    clearCart
   } = useCustomerStore()
   
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const { isKiosk } = useKiosk()
 
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0)
@@ -163,6 +167,17 @@ export default function ImprovedCart() {
                       <ChevronRight className="w-5 h-5 ml-2" />
                     </button>
                   </Link>
+
+                  {isKiosk && (
+                    <Button
+                      variant="danger"
+                      fullWidth
+                      className="mt-2"
+                      onClick={() => clearCart()}
+                    >
+                      Start New Order / Clear Cart
+                    </Button>
+                  )}
                 </div>
               </>
             )}
@@ -336,6 +351,17 @@ export default function ImprovedCart() {
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </button>
                 </Link>
+
+                {isKiosk && (
+                  <Button
+                    variant="danger"
+                    fullWidth
+                    className="mt-2"
+                    onClick={() => clearCart()}
+                  >
+                    Start New Order / Clear Cart
+                  </Button>
+                )}
               </div>
             </>
           )}

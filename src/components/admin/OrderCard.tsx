@@ -59,7 +59,7 @@ export default function OrderCard({ order }: Props) {
   };
 
   const handleAccept = async () => {
-    handleStatusUpdate('Preparing');
+    handleStatusUpdate('Accepted');
   };
 
   const handleDecline = async () => {
