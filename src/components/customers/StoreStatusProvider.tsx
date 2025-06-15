@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import KusinaDeAmadeoImproved from "@/components/customers/menu/KusinaDeAmadeoImproved";
+import KusinaDeAmadeoImproved from "@/components/customers/menu/MenuContainer";
 
 type Option = {
   id: number;

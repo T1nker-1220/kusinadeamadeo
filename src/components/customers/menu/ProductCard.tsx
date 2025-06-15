@@ -1,114 +1,106 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { useCustomerStore } from "@/stores/customerStore";
-import Image from "next/image";
-import OptionsModal from '@/components/customers/menu/OptionsModal';
-import toast from 'react-hot-toast';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { Plus } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
+import { useState } from "react"
+import Image from "next/image"
+import { Plus } from "lucide-react"
+import { useCustomerStore } from "@/stores/customerStore"
+import OptionsModal from './OptionsModal'
+import toast from "react-hot-toast"
 
-type Option = { id: number; group_name: string; name: string; additional_price: number; };
-type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; options: Option[]; };
+type Option = {
+  id: number;
+  group_name: string;
+  name: string;
+  additional_price: number;
+};
 
-export default function ProductCard({ product, isStoreOpen }: { product: Product; isStoreOpen: boolean }) {
-  const addToCart = useCustomerStore((state) => state.addToCart);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+type Product = {
+  id: number;
+  name: string;
+  description: string | null;
+  base_price: number;
+  image_url: string | null;
+  options: Option[];
+};
+
+type ImprovedProductCardProps = {
+  product: Product;
+  isStoreOpen: boolean;
+};
+
+export default function ImprovedProductCard({ 
+  product, 
+  isStoreOpen 
+}: ImprovedProductCardProps) {
+  const addToCart = useCustomerStore((state) => state.addToCart)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [justAdded, setJustAdded] = useState(false)
 
   const handleAddToCart = () => {
     if (product.options.length > 0) {
-      setIsModalOpen(true);
+      setIsModalOpen(true)
     } else {
       addToCart({
         id: product.id,
         name: product.name,
         base_price: product.base_price,
         image_url: product.image_url,
-      });
-      toast.success(`${product.name} added to order!`);
+      })
+      
+      // Show animation feedback
+      setJustAdded(true)
+      setTimeout(() => setJustAdded(false), 600)
+      
+      toast.success(`${product.name} added to order!`)
     }
-  };
-
-  const groupOptions = (options: Option[]) => {
-    return options.reduce((acc, option) => {
-      (acc[option.group_name] = acc[option.group_name] || []).push(option);
-      return acc;
-    }, {} as Record<string, Option[]>);
-  };
-  const groupedOptions = groupOptions(product.options);
+  }
 
   return (
     <>
       <OptionsModal product={product} onClose={() => setIsModalOpen(false)} open={isModalOpen} />
-      <Modal open={isImageModalOpen} onClose={() => setIsImageModalOpen(false)}>
-        <div className="flex flex-col items-center">
+      
+      <div className="bg-slate-800 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 group overflow-hidden rounded-xl">
+        <div className="relative overflow-hidden">
           <Image
-            src={product.image_url || '/images/products/logo.png'}
+            src={product.image_url || "/images/products/logo.png"}
             alt={product.name}
-            width={600}
-            height={450}
-            className="rounded-lg object-contain max-h-[70vh] w-auto h-auto bg-surface"
-            priority
+            width={300}
+            height={200}
+            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+
+        <div className="p-4">
+          <h3 className="font-bold text-xl text-white mb-2 group-hover:text-orange-400 transition-colors">
+            {product.name}
+          </h3>
+          {product.description && (
+            <p className="text-slate-400 text-sm mb-3 leading-relaxed">{product.description}</p>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-green-400">₱{product.base_price}</span>
+          </div>
+        </div>
+
+        <div className="p-4 pt-0">
           <button
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-full font-semibold shadow hover:bg-accent transition"
-            onClick={() => setIsImageModalOpen(false)}
+            onClick={handleAddToCart}
+            disabled={!isStoreOpen}
+            className={`w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center ${
+              justAdded ? "animate-pulse bg-green-500" : ""
+            } ${!isStoreOpen ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            Close
+            <Plus className="w-4 h-4 mr-2" />
+            {!isStoreOpen 
+              ? "Store Closed" 
+              : product.options.length > 0 
+                ? "Select Options" 
+                : "Add to Order"
+            }
           </button>
         </div>
-      </Modal>
-      <Card className="flex flex-col h-full transition-transform hover:scale-[1.03]">
-        <div
-          className="relative w-full aspect-[4/3] bg-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden cursor-pointer group"
-          onClick={() => setIsImageModalOpen(true)}
-          tabIndex={0}
-          aria-label={`View full image of ${product.name}`}
-          role="button"
-        >
-          <Image
-            src={product.image_url || '/images/products/logo.png'}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            priority
-          />
-        </div>
-        <div className="p-0 flex flex-col flex-grow mt-4">
-          <h3 className="text-xl font-bold text-[var(--color-foreground)]">{product.name}</h3>
-          {product.description && <p className="text-[var(--color-muted)] text-sm mb-2">{product.description}</p>}
-          <p className="text-2xl font-semibold text-[var(--color-success)] mt-auto mb-3">
-              {product.base_price > 0 && `₱${product.base_price}`}
-          </p>
-          {Object.entries(groupedOptions).map(([groupName, options]) => (
-            <div key={groupName} className="mt-2 text-sm">
-              <h4 className="font-semibold text-[var(--color-foreground)] capitalize">{groupName}:</h4>
-              <ul className="list-disc list-inside text-[var(--color-muted)]">
-                {options.map((option) => (
-                    <li key={option.id}>
-                      {option.name} 
-                      {option.additional_price > 0 && ` (+₱${option.additional_price})`}
-                    </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <Button
-            onClick={handleAddToCart}
-            variant="primary"
-            fullWidth
-            iconLeft={<Plus size={18} />}
-            className="mt-4 bg-primary text-white hover:bg-accent"
-            disabled={!isStoreOpen}
-          >
-            {!isStoreOpen ? 'Store Closed' : product.options.length > 0 ? 'Select Options' : 'Add to Order'}
-          </Button>
-        </div>
-      </Card>
+      </div>
     </>
-  );
-} 
+  )
+}

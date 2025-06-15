@@ -1,6 +1,11 @@
-"use client";
-import { useState, useRef, useEffect } from "react";
-import ProductCard from "@/components/customers/menu/ProductCard";
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Plus, ShoppingCart, X, Minus, ChevronRight } from "lucide-react"
+import ImprovedProductCard from "./ProductCard"
+import ImprovedCart from "./Cart"
+import { useCustomerStore } from "@/stores/customerStore"
 
 type Option = {
   id: number;
@@ -21,126 +26,75 @@ type Product = {
 
 type Category = { id: number; name: string };
 
-type MenuPageClientProps = {
+type KusinaDeAmadeoImprovedProps = {
   categories: Category[];
   products: Product[];
   isStoreOpen: boolean;
 };
 
-export default function MenuPageClient({ categories, products, isStoreOpen }: MenuPageClientProps) {
-  // --- Add refs for each category section ---
-  const sectionRefs = useRef<Record<number | 'all', HTMLDivElement | null>>({ all: null });
-
-  // Add 'All' as default
-  const [activeCategoryId, setActiveCategoryId] = useState<number | 'all'>('all');
-
-  // --- Scroll to section on nav click ---
-  const handleCategoryClick = (id: number | 'all') => {
-    setActiveCategoryId(id);
-    if (id === 'all') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      const ref = sectionRefs.current[id];
-      if (ref) {
-        ref.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  };
-
-  // --- Update active category on scroll (skip if 'All' is selected) ---
-  useEffect(() => {
-    if (activeCategoryId === 'all') return;
-    const handleScroll = () => {
-      let current = categories[0]?.id ?? 'all';
-      categories.forEach((cat) => {
-        const ref = sectionRefs.current[cat.id];
-        if (ref) {
-          const rect = ref.getBoundingClientRect();
-          if (rect.top < 120) current = cat.id;
-        }
-      });
-      setActiveCategoryId(current);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [categories, activeCategoryId]);
+export default function KusinaDeAmadeoImproved({ 
+  categories, 
+  products, 
+  isStoreOpen 
+}: KusinaDeAmadeoImprovedProps) {
+  const [activeTab, setActiveTab] = useState(categories[0]?.name || "")
+  
+  // Group products by category
+  const productsByCategory = categories.reduce((acc, category) => {
+    acc[category.name] = products.filter(
+      product => product.category_id === category.id
+    )
+    return acc
+  }, {} as Record<string, Product[]>)
 
   return (
-    <>
-      <div className="sticky top-0 z-30 w-full bg-transparent">
-        <div className="bg-surface/90 border-b border-border flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-accent py-3 px-0 sm:px-4 mb-8 w-full">
-          {/* All Tab */}
-          <button
-            onClick={() => handleCategoryClick('all')}
-            className={`px-5 py-2 rounded-full font-semibold transition-colors text-base focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap
-              ${activeCategoryId === 'all'
-                ? 'bg-primary text-white shadow border border-primary'
-                : 'bg-background-gradient-from/80 text-white border border-border hover:bg-primary/20'}
-            `}
-            aria-selected={activeCategoryId === 'all'}
-            tabIndex={0}
-            type="button"
-          >
-            All
-          </button>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full">
           {/* Category Tabs */}
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => handleCategoryClick(cat.id)}
-              className={`px-5 py-2 rounded-full font-semibold transition-colors text-base focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap
-                ${cat.id === activeCategoryId
-                  ? 'bg-primary text-white shadow border border-primary'
-                  : 'bg-background-gradient-from/80 text-white border border-border hover:bg-primary/20'}
-              `}
-              aria-selected={cat.id === activeCategoryId}
-              tabIndex={0}
-              type="button"
+          <div className="grid w-full grid-cols-3 md:grid-cols-6 bg-slate-800 border border-slate-600 rounded-xl p-1 mb-8 overflow-x-auto">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setActiveTab(category.name)}
+                className={`
+                  px-3 py-2 rounded-lg transition-all duration-200 text-xs md:text-sm font-medium
+                  ${activeTab === category.name 
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white' 
+                    : 'text-slate-300 hover:bg-slate-700'}
+                `}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Category Content */}
+          {categories.map((category) => (
+            <div 
+              key={category.id} 
+              className={activeTab === category.name ? 'block' : 'hidden'}
             >
-              {cat.name}
-            </button>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold text-white mb-2">{category.name}</h2>
+                <div className="h-1 w-24 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {productsByCategory[category.name]?.map((product) => (
+                  <ImprovedProductCard 
+                    key={product.id} 
+                    product={product} 
+                    isStoreOpen={isStoreOpen} 
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
-      <main className="px-0 sm:px-4 md:px-0 max-w-full mb-8">
-        {/* Show all products if 'All' is selected */}
-        {activeCategoryId === 'all' ? (
-          <section className="mb-10" ref={el => { sectionRefs.current['all'] = el as HTMLDivElement | null; }}>
-            <h2 className="text-3xl font-extrabold text-primary mb-2 mt-0 text-left px-1">
-              All Products
-            </h2>
-            <div className="h-1 w-16 bg-primary rounded mb-6 ml-1" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {products.map((product: Product) => (
-                <ProductCard key={product.id} product={product} isStoreOpen={isStoreOpen} />
-              ))}
-            </div>
-          </section>
-        ) : (
-          categories.map((category) => {
-            const categoryProducts = products.filter((p) => p.category_id === category.id) || [];
-            if (categoryProducts.length === 0) return null;
 
-            return (
-              <section
-                key={category.id}
-                ref={(el: HTMLDivElement | null) => { sectionRefs.current[category.id] = el; }}
-                className="mb-10"
-              >
-                <h2 className="text-3xl font-extrabold text-primary mb-2 mt-0 text-left px-1">
-                  {category.name}
-                </h2>
-                <div className="h-1 w-16 bg-primary rounded mb-6 ml-1" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                  {categoryProducts.map((product: Product) => (
-                    <ProductCard key={product.id} product={product} isStoreOpen={isStoreOpen} />
-                  ))}
-                </div>
-              </section>
-            );
-          })
-        )}
-      </main>
-    </>
-  );
-} 
+      <ImprovedCart />
+    </div>
+  )
+}
