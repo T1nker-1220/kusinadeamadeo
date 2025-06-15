@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminStore, Order } from '@/stores/adminStore';
 import { createClient } from '@/utils/supabase/client';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { BadgeCheck, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { BadgeCheck, Clock, CheckCircle, XCircle, Loader2, Phone, PhoneCall } from 'lucide-react';
 
 const supabase = createClient();
 
@@ -40,8 +40,45 @@ const statusMeta: Record<string, { color: string; icon: React.ReactNode; label: 
   },
 };
 
+// Utility functions for localStorage
+const getCalledOrders = (): Set<string> => {
+  try {
+    const calledOrders = localStorage.getItem('admin-called-orders');
+    return new Set(calledOrders ? JSON.parse(calledOrders) : []);
+  } catch {
+    return new Set();
+  }
+};
+
+const setCalledOrder = (orderId: string, called: boolean) => {
+  try {
+    const calledOrders = getCalledOrders();
+    if (called) {
+      calledOrders.add(orderId);
+    } else {
+      calledOrders.delete(orderId);
+    }
+    localStorage.setItem('admin-called-orders', JSON.stringify([...calledOrders]));
+  } catch (error) {
+    console.error('Failed to update called orders:', error);
+  }
+};
+
 export default function OrderCard({ order }: Props) {
   const updateOrderStatus = useAdminStore((state) => state.updateOrderStatus);
+  const [isCalled, setIsCalled] = useState(false);
+
+  // Load called status from localStorage
+  useEffect(() => {
+    const calledOrders = getCalledOrders();
+    setIsCalled(calledOrders.has(order.id.toString()));
+  }, [order.id]);
+
+  const handleToggleCalled = () => {
+    const newCalledState = !isCalled;
+    setIsCalled(newCalledState);
+    setCalledOrder(order.id.toString(), newCalledState);
+  };
 
   const handleStatusUpdate = async (newStatus: Order['status']) => {
     const { data, error } = await supabase
@@ -87,9 +124,36 @@ export default function OrderCard({ order }: Props) {
   }, {} as Record<string, typeof orderItems>);
 
   const meta = statusMeta[order.status] || { color: '', icon: null, label: order.status };
+  const orderNumber = order.id.toString().slice(-4); // Last 4 digits
 
   return (
     <Card className="mb-6">
+      {/* Order Number Header - Prominent Display */}
+      <div className="flex justify-between items-center mb-4 p-3 bg-orange-100 border border-orange-300 rounded-lg">
+        <div className="flex items-center gap-3">
+          <div className="text-center">
+            <p className="text-sm font-medium text-orange-800">Order Number</p>
+            <p className="text-3xl font-bold text-orange-900">#{orderNumber}</p>
+          </div>
+          <button
+            onClick={handleToggleCalled}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              isCalled 
+                ? 'bg-green-500 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {isCalled ? <PhoneCall size={18} /> : <Phone size={18} />}
+            {isCalled ? 'Called' : 'Mark as Called'}
+          </button>
+        </div>
+        <div className="text-right">
+          <span className={`px-3 py-1 text-sm font-semibold rounded-full flex items-center ${meta.color}`}>
+            {meta.icon} {meta.label}
+          </span>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
           <h2 className="text-xl font-bold text-[var(--color-foreground)]">{order.customer_name}</h2>
