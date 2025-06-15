@@ -29,19 +29,24 @@ type Props = {
 
 export default function StoreStatusProvider({ categories, products }: Props) {
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
+  const [waitTime, setWaitTime] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
     let settingsChannel: any;
     const fetchStatus = async () => {
-      const { data } = await supabase.from("store_settings").select("is_open").eq("id", 1).single();
+      const { data } = await supabase.from("store_settings").select("is_open, estimated_wait_time").eq("id", 1).single();
       setIsStoreOpen(data?.is_open ?? true);
+      setWaitTime(data?.estimated_wait_time || null);
     };
     fetchStatus();
     settingsChannel = supabase.channel("realtime-store-settings").on(
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "store_settings", filter: "id=eq.1" },
-      (payload) => setIsStoreOpen(payload.new.is_open)
+      (payload) => {
+        setIsStoreOpen(payload.new.is_open);
+        setWaitTime(payload.new.estimated_wait_time || null);
+      }
     ).subscribe();
     return () => {
       if (settingsChannel) supabase.removeChannel(settingsChannel);
@@ -61,7 +66,7 @@ export default function StoreStatusProvider({ categories, products }: Props) {
           <p>We are not accepting online orders at this time. Please check back later!</p>
         </div>
       )}
-      <KusinaDeAmadeoImproved categories={categories} products={products} isStoreOpen={isStoreOpen} />
+      <KusinaDeAmadeoImproved categories={categories} products={products} isStoreOpen={isStoreOpen} waitTime={waitTime} />
     </div>
   );
 } 

@@ -5,7 +5,7 @@ import { useAdminStore, Order } from '@/stores/adminStore';
 import { createClient } from '@/utils/supabase/client';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { BadgeCheck, Clock, CheckCircle, XCircle, Loader2, Phone, PhoneCall } from 'lucide-react';
+import { BadgeCheck, Clock, CheckCircle, XCircle, Loader2, Phone, PhoneCall, Printer } from 'lucide-react';
 
 const supabase = createClient();
 
@@ -80,6 +80,11 @@ export default function OrderCard({ order }: Props) {
     setCalledOrder(order.id.toString(), newCalledState);
   };
 
+  const handlePrint = () => {
+    // Open the dedicated print page in a new tab
+    window.open(`/admin/print/${order.id}`, '_blank');
+  };
+
   const handleStatusUpdate = async (newStatus: Order['status']) => {
     const { data, error } = await supabase
       .from('orders')
@@ -145,6 +150,14 @@ export default function OrderCard({ order }: Props) {
           >
             {isCalled ? <PhoneCall size={12} /> : <Phone size={12} />}
             {isCalled ? 'Called' : 'Call'}
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all"
+            aria-label="Print Order"
+          >
+            <Printer size={12} />
+            Print
           </button>
         </div>
         <span className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center ${meta.color}`}>

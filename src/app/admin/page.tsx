@@ -5,7 +5,7 @@ import { useAdminStore, Order } from '@/stores/adminStore';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import OrderCard from '@/components/admin/OrderCard';
-import { Loader2, Power } from 'lucide-react';
+import { Loader2, Power, Clock } from 'lucide-react';
 
 const supabase = createClient();
 
@@ -33,6 +33,8 @@ export default function AdminPage() {
   const { orders, setOrders, addOrder, updateOrderStatus } = useAdminStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
+  const [waitTime, setWaitTime] = useState('');
+  const [isSavingWaitTime, setIsSavingWaitTime] = useState(false);
 
   const pendingOrders = orders.filter(o => o.status === "Pending Confirmation");
   const acceptedOrders = orders.filter(o => o.status === "Accepted");
@@ -84,8 +86,11 @@ export default function AdminPage() {
         console.error('Error fetching orders:', error);
       }
 
-      const { data: settingsData } = await supabase.from('store_settings').select('is_open').eq('id', 1).single();
-      if (settingsData) setIsStoreOpen(settingsData.is_open);
+      const { data: settingsData } = await supabase.from('store_settings').select('is_open, estimated_wait_time').eq('id', 1).single();
+      if (settingsData) {
+        setIsStoreOpen(settingsData.is_open);
+        setWaitTime(settingsData.estimated_wait_time || '');
+      }
     };
 
     fetchInitialData();
@@ -142,6 +147,19 @@ export default function AdminPage() {
     await supabase.from('store_settings').update({ is_open: newStatus }).eq('id', 1);
   };
 
+  const handleSaveWaitTime = async () => {
+    setIsSavingWaitTime(true);
+    const { error } = await supabase
+      .from('store_settings')
+      .update({ estimated_wait_time: waitTime })
+      .eq('id', 1);
+      
+    if (error) {
+      alert("Failed to save wait time.");
+    }
+    setIsSavingWaitTime(false);
+  };
+
   if (!isAuthenticated) {
     return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" /> Authenticating...</div>;
   }
@@ -150,7 +168,28 @@ export default function AdminPage() {
     <div className="flex flex-col h-screen bg-background-gradient-to bg-gradient-to-b from-background-gradient-from to-background-gradient-to">
       <header className="sticky top-0 z-20 p-2 border-b bg-surface shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h1 className="text-lg font-bold text-primary tracking-tight">Admin Dashboard</h1>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+          <div className="flex items-center gap-2">
+            <label htmlFor="wait-time" className="font-semibold text-sm flex items-center gap-1">
+              <Clock size={14}/> Wait Time:
+            </label>
+            <input
+              id="wait-time"
+              type="text"
+              value={waitTime}
+              onChange={(e) => setWaitTime(e.target.value)}
+              className="p-1 border rounded-md bg-white w-24 text-sm"
+              placeholder="e.g., 15-20 min"
+            />
+            <button 
+              onClick={handleSaveWaitTime} 
+              disabled={isSavingWaitTime}
+              className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            >
+              {isSavingWaitTime ? <Loader2 size={12} className="animate-spin" /> : null}
+              Save
+            </button>
+          </div>
           <button
             onClick={handleToggleStoreStatus}
             className={`flex items-center gap-1 px-3 py-1 rounded font-semibold transition-colors text-sm focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-accent ${

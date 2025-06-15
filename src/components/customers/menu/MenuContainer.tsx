@@ -5,6 +5,7 @@ import ImprovedProductCard from "./ProductCard"
 import ImprovedCart from "./Cart"
 import { useCustomerStore } from "@/stores/customerStore"
 import RecentOrder from './RecentOrder'
+import { Clock } from 'lucide-react'
 
 type Option = {
   id: number;
@@ -29,12 +30,14 @@ type KusinaDeAmadeoImprovedProps = {
   categories: Category[];
   products: Product[];
   isStoreOpen: boolean;
+  waitTime?: string | null;
 };
 
 export default function KusinaDeAmadeoImproved({ 
   categories, 
   products, 
-  isStoreOpen 
+  isStoreOpen,
+  waitTime 
 }: KusinaDeAmadeoImprovedProps) {
   const [activeTab, setActiveTab] = useState(categories[0]?.name || "")
   const { isKioskMode } = useCustomerStore()
@@ -52,6 +55,15 @@ export default function KusinaDeAmadeoImproved({
       <div className="w-full px-1 py-2">
         <div className="w-full">
           {!isKioskMode && <RecentOrder />}
+          {/* Wait Time Banner */}
+          {(isStoreOpen && waitTime) && (
+            <div className="bg-orange-500/20 border border-orange-500 text-orange-100 text-center py-2 text-sm font-semibold rounded-lg mx-1 mb-4">
+              <div className="flex justify-center items-center gap-2">
+                <Clock size={16} />
+                <span>Estimated Wait Time: {waitTime}</span>
+              </div>
+            </div>
+          )}
           {/* Category Tabs */}
           <div className="grid w-full grid-cols-3 md:grid-cols-6 bg-slate-800 border border-slate-600 rounded-lg p-1 mb-4 overflow-x-auto mx-1">
             {categories.map((category) => (

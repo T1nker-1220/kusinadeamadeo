@@ -18,7 +18,7 @@ export default async function KioskPage() {
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order', { ascending: true }),
     supabase.from('products').select('*, options (*)').eq('is_available', true),
-    supabase.from('store_settings').select('is_open').eq('id', 1).single()
+    supabase.from('store_settings').select('is_open, estimated_wait_time').eq('id', 1).single()
   ]);
 
   if (categoriesError || productsError || settingsError) {
@@ -41,6 +41,7 @@ export default async function KioskPage() {
           categories={categories || []} 
           products={products || []}
           isStoreOpen={isStoreOpen}
+          waitTime={storeSettings?.estimated_wait_time}
         />
       </div>
   );
