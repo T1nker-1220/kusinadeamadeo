@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { saveLastOrder } from '@/utils/localStorage';
+import { saveLastOrder, saveOrderToHistory } from '@/utils/localStorage';
 
 const supabase = createClient();
 
@@ -80,6 +80,7 @@ export default function CheckOut() {
       if (orderError) throw orderError;
       const orderItemsData = cart.map((item: CartItem) => ({
         order_id: newOrder.id,
+        product_id: item.product.id,
         product_name: item.product.name,
         quantity: item.quantity,
         item_price: item.itemTotal,
@@ -95,6 +96,18 @@ export default function CheckOut() {
       if (itemsError) throw itemsError;
       if (!isKioskMode) {
         saveLastOrder(cart);
+        // Save order to history for normal menu users
+        saveOrderToHistory({
+          id: newOrder.id.toString(),
+          orderNumber: newOrder.id.toString(),
+          placedAt: new Date().toISOString(),
+          totalPrice: cartTotal(),
+          paymentMethod: paymentMethod,
+          customerName: fullName,
+          customerPhone: phone,
+          items: cart,
+          status: orderData.status,
+        });
       }
       clearCart();
       setOrderPlaced(true);
