@@ -54,7 +54,7 @@ export default function OrderCard({ order }: Props) {
     if (data) {
       updateOrderStatus(order.id, newStatus);
     } else {
-      console.error('Failed to update status:', error);
+      console.error('❌ Failed to update status:', error);
     }
   };
 
