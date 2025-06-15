@@ -59,44 +59,42 @@ export default function ImprovedProductCard({
     <>
       <OptionsModal product={product} onClose={() => setIsModalOpen(false)} open={isModalOpen} />
       
-      <div className="bg-slate-800 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 group overflow-hidden rounded-xl">
+      <div className="bg-slate-800 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 group overflow-hidden rounded-lg">
         <div className="relative overflow-hidden">
           <Image
             src={product.image_url || "/images/products/logo.png"}
             alt={product.name}
-            width={300}
-            height={200}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            width={200}
+            height={120}
+            className="w-full h-24 sm:h-28 object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
 
-        <div className="p-4">
-          <h3 className="font-bold text-xl text-white mb-2 group-hover:text-orange-400 transition-colors">
+        <div className="p-2">
+          <h3 className="font-bold text-sm text-white mb-1 group-hover:text-orange-400 transition-colors line-clamp-2 leading-tight">
             {product.name}
           </h3>
           {product.description && (
-            <p className="text-slate-400 text-sm mb-3 leading-relaxed">{product.description}</p>
+            <p className="text-slate-400 text-xs mb-2 leading-tight line-clamp-2">{product.description}</p>
           )}
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-green-400">₱{product.base_price}</span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-green-400">₱{product.base_price}</span>
           </div>
-        </div>
-
-        <div className="p-4 pt-0">
+          
           <button
             onClick={handleAddToCart}
             disabled={!isStoreOpen}
-            className={`w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center ${
+            className={`w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium py-1.5 rounded-md transition-all duration-200 flex items-center justify-center text-xs ${
               justAdded ? "animate-pulse bg-green-500" : ""
             } ${!isStoreOpen ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-3 h-3 mr-1" />
             {!isStoreOpen 
-              ? "Store Closed" 
+              ? "Closed" 
               : product.options.length > 0 
-                ? "Select Options" 
-                : "Add to Order"
+                ? "Options" 
+                : "Add"
             }
           </button>
         </div>

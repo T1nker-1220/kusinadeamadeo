@@ -31,9 +31,9 @@ export default async function KioskPage() {
   return (
       <div className="min-h-screen bg-background">
         {!isStoreOpen && (
-          <div className="max-w-4xl mx-auto p-4 mb-6 bg-danger/10 border-l-4 border-danger text-danger">
-            <p className="font-bold">Store Currently Closed</p>
-            <p>We are not accepting online orders at this time. Please check back later!</p>
+          <div className="mx-auto p-2 mb-4 bg-danger/10 border-l-4 border-danger text-danger">
+            <p className="font-bold text-sm">Store Currently Closed</p>
+            <p className="text-sm">We are not accepting online orders at this time. Please check back later!</p>
           </div>
         )}
 

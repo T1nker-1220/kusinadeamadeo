@@ -49,17 +49,17 @@ export default function KusinaDeAmadeoImproved({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-1 py-2">
         <div className="w-full">
           {!isKioskMode && <RecentOrder />}
           {/* Category Tabs */}
-          <div className="grid w-full grid-cols-3 md:grid-cols-6 bg-slate-800 border border-slate-600 rounded-xl p-1 mb-8 overflow-x-auto">
+          <div className="grid w-full grid-cols-3 md:grid-cols-6 bg-slate-800 border border-slate-600 rounded-lg p-1 mb-4 overflow-x-auto mx-1">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveTab(category.name)}
                 className={`
-                  px-3 py-2 rounded-lg transition-all duration-200 text-xs md:text-sm font-medium
+                  px-2 py-1 rounded-md transition-all duration-200 text-xs font-medium
                   ${activeTab === category.name 
                     ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white' 
                     : 'text-slate-300 hover:bg-slate-700'}
@@ -76,12 +76,12 @@ export default function KusinaDeAmadeoImproved({
               key={category.id} 
               className={activeTab === category.name ? 'block' : 'hidden'}
             >
-              <div className="mb-6">
-                <h2 className="text-3xl font-bold text-white mb-2">{category.name}</h2>
-                <div className="h-1 w-24 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></div>
+              <div className="mb-3 px-1">
+                <h2 className="text-xl font-bold text-white mb-1">{category.name}</h2>
+                <div className="h-0.5 w-16 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 px-1">
                 {productsByCategory[category.name]?.map((product) => (
                   <ImprovedProductCard 
                     key={product.id} 

@@ -38,23 +38,23 @@ export default function RecentOrder() {
   }
 
   return (
-    <div className="mb-8 p-4 bg-surface border border-border rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-primary flex items-center">
-          <RotateCcw className="mr-2" size={20} />
+    <div className="mb-3 p-2 mx-1 bg-surface border border-border rounded-lg shadow-sm">
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-sm font-bold text-primary flex items-center">
+          <RotateCcw className="mr-1" size={16} />
           Quick Re-order
         </h2>
-        <Button onClick={handleAddAllToCart} variant="secondary">
-          Add All to Cart
+        <Button onClick={handleAddAllToCart} variant="secondary" className="text-xs px-2 py-1">
+          Add All
         </Button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
         {lastOrder.map((item) => (
-          <div key={item.cartItemId} className="bg-secondary p-3 rounded-md text-center">
-            <p className="font-semibold text-sm truncate">{item.product.name}</p>
-            <p className="text-xs text-muted mb-2">x{item.quantity}</p>
-            <Button onClick={() => handleAddItemToCart(item)} variant="chip" active={false}>
-              <Plus size={14} className="mr-1" /> Add
+          <div key={item.cartItemId} className="bg-secondary p-2 rounded-md text-center">
+            <p className="font-medium text-xs truncate">{item.product.name}</p>
+            <p className="text-xs text-muted mb-1">x{item.quantity}</p>
+            <Button onClick={() => handleAddItemToCart(item)} variant="chip" active={false} className="text-xs px-1 py-0.5">
+              <Plus size={12} className="mr-0.5" /> Add
             </Button>
           </div>
         ))}
