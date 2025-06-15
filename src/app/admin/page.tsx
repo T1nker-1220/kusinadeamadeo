@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
 
   const pendingOrders = orders.filter(o => o.status === "Pending Confirmation");
+  const acceptedOrders = orders.filter(o => o.status === "Accepted");
   const preparingOrders = orders.filter(o => o.status === "Preparing");
   const readyOrders = orders.filter(o => o.status === "Ready");
 
@@ -122,6 +123,7 @@ export default function AdminPage() {
 
       <main className="flex-grow flex flex-col sm:flex-row gap-4 sm:gap-6 p-2 sm:p-6 overflow-x-auto">
         <KanbanColumn title="Pending Confirmation" orders={pendingOrders} emptyText="No pending orders yet!" />
+        <KanbanColumn title="Accepted" orders={acceptedOrders} emptyText="No accepted orders." />
         <KanbanColumn title="Preparing" orders={preparingOrders} emptyText="No orders are being prepared." />
         <KanbanColumn title="Ready for Pickup" orders={readyOrders} emptyText="No orders are ready for pickup." />
       </main>
