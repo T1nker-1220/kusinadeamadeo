@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { useKiosk } from '@/hooks/useKiosk';
+import { saveLastOrder } from '@/utils/localStorage';
 
 const supabase = createClient();
 
@@ -23,9 +23,8 @@ async function createSignedUrlWithRetry(supabase: any, filePath: string, maxRetr
 }
 
 export default function CheckOut() {
-  const { cart, cartTotal, clearCart } = useCustomerStore();
+  const { cart, cartTotal, clearCart, isKioskMode } = useCustomerStore();
   const router = useRouter();
-  const { isKiosk } = useKiosk();
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -96,13 +95,20 @@ export default function CheckOut() {
         .from('order_items')
         .insert(orderItemsData);
       if (itemsError) throw itemsError;
+      
+      if (!isKioskMode) {
+        saveLastOrder(cart);
+      }
       clearCart();
-      if (isKiosk) {
-        router.push('/kiosk');
-      } else if (paymentMethod === 'PayAtStore') {
-        router.push(`/order/${newOrder.id}/status`);
+
+      if (isKioskMode) {
+        router.replace(`/kiosk/success?orderId=${newOrder.id}`);
       } else {
-        router.push('/order-success');
+        if (paymentMethod === 'PayAtStore') {
+          router.push(`/order/${newOrder.id}/status`);
+        } else {
+          router.push('/order-success');
+        }
       }
     } catch (err: any) {
       console.error(err);
