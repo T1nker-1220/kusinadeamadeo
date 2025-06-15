@@ -31,10 +31,13 @@ type CustomerState = {
   cartCount: () => number;
   cartTotal: () => number;
   setGroupTag: (cartItemId: string, tag: string) => void;
+  isKioskMode: boolean;
+  setIsKioskMode: (isKiosk: boolean) => void;
 };
 
 export const useCustomerStore = create<CustomerState>((set, get) => ({
   cart: [],
+  isKioskMode: false,
 
   addToCart: (product, options = []) => {
     const cart = get().cart;
@@ -96,4 +99,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       )
     }));
   },
+
+  setIsKioskMode: (isKiosk: boolean) => set({ isKioskMode: isKiosk }),
 })); 

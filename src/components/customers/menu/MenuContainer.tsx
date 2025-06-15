@@ -4,6 +4,7 @@ import { useState } from "react"
 import ImprovedProductCard from "./ProductCard"
 import ImprovedCart from "./Cart"
 import { useCustomerStore } from "@/stores/customerStore"
+import RecentOrder from './RecentOrder'
 
 type Option = {
   id: number;
@@ -36,6 +37,7 @@ export default function KusinaDeAmadeoImproved({
   isStoreOpen 
 }: KusinaDeAmadeoImprovedProps) {
   const [activeTab, setActiveTab] = useState(categories[0]?.name || "")
+  const { isKioskMode } = useCustomerStore()
   
   // Group products by category
   const productsByCategory = categories.reduce((acc, category) => {
@@ -49,6 +51,7 @@ export default function KusinaDeAmadeoImproved({
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="w-full">
+          {!isKioskMode && <RecentOrder />}
           {/* Category Tabs */}
           <div className="grid w-full grid-cols-3 md:grid-cols-6 bg-slate-800 border border-slate-600 rounded-xl p-1 mb-8 overflow-x-auto">
             {categories.map((category) => (

@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useCustomerStore } from "@/stores/customerStore"
 import { ShoppingCart, Plus, Minus, X, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import CartPreview from "./CartPreview"
-import { useKiosk } from "@/hooks/useKiosk"
 import Button from "@/components/ui/Button"
 
 export default function ImprovedCart() {
@@ -16,14 +16,24 @@ export default function ImprovedCart() {
     updateQuantity,
     cartTotal,
     setGroupTag,
-    clearCart
+    clearCart,
+    isKioskMode
   } = useCustomerStore()
   
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const { isKiosk } = useKiosk()
+  const router = useRouter()
 
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0)
+  }
+
+  const handleStartOver = () => {
+    clearCart()
+    if (isKioskMode) {
+      router.push('/kiosk')
+    } else {
+      router.push('/menu')
+    }
   }
 
   return (
@@ -168,16 +178,14 @@ export default function ImprovedCart() {
                     </button>
                   </Link>
 
-                  {isKiosk && (
-                    <Button
-                      variant="danger"
-                      fullWidth
-                      className="mt-2"
-                      onClick={() => clearCart()}
-                    >
-                      Start New Order / Clear Cart
-                    </Button>
-                  )}
+                  <Button
+                    variant="danger"
+                    fullWidth
+                    className="mt-2"
+                    onClick={handleStartOver}
+                  >
+                    Start New Order / Clear Cart
+                  </Button>
                 </div>
               </>
             )}
@@ -352,16 +360,14 @@ export default function ImprovedCart() {
                   </button>
                 </Link>
 
-                {isKiosk && (
-                  <Button
-                    variant="danger"
-                    fullWidth
-                    className="mt-2"
-                    onClick={() => clearCart()}
-                  >
-                    Start New Order / Clear Cart
-                  </Button>
-                )}
+                <Button
+                  variant="danger"
+                  fullWidth
+                  className="mt-2"
+                  onClick={handleStartOver}
+                >
+                  Start New Order / Clear Cart
+                </Button>
               </div>
             </>
           )}
