@@ -10,7 +10,7 @@ export default function KioskInitializer() {
 
   useEffect(() => {
     // Set the global kiosk state based on the initial URL path.
-    const isKioskRoute = pathname.startsWith('/kiosk-menu');
+    const isKioskRoute = pathname.startsWith('/kiosk-menu') || pathname.startsWith('/kiosk');
     setIsKioskMode(isKioskRoute);
   }, [pathname, setIsKioskMode]);
 
