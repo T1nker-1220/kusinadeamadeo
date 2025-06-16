@@ -132,13 +132,13 @@ export default function OrderCard({ order }: Props) {
   const orderNumber = order.id.toString().slice(-4); // Last 4 digits
 
   return (
-    <Card className="mb-2">
+    <Card className="mb-2 bg-slate-700/50 border-slate-600">
       {/* Order Number Header - Compact Display */}
-      <div className="flex justify-between items-center mb-2 p-2 bg-orange-100 border border-orange-300 rounded">
+      <div className="flex justify-between items-center mb-2 p-2 bg-orange-500/20 border border-orange-500/30 rounded">
         <div className="flex items-center gap-2">
           <div className="text-center">
-            <p className="text-xs font-medium text-orange-800">Order #</p>
-            <p className="text-lg font-bold text-orange-900">#{orderNumber}</p>
+            <p className="text-xs font-medium text-orange-200">Order #</p>
+            <p className="text-lg font-bold text-orange-100">#{orderNumber}</p>
           </div>
           <button
             onClick={handleToggleCalled}
@@ -167,30 +167,30 @@ export default function OrderCard({ order }: Props) {
 
       <div className="flex justify-between items-start mb-2">
         <div>
-          <h2 className="text-sm font-bold text-[var(--color-foreground)]">{order.customer_name}</h2>
-          <p className="text-xs text-[var(--color-muted)]">{new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+          <h2 className="text-sm font-bold text-white">{order.customer_name}</h2>
+          <p className="text-xs text-slate-300">{new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
         </div>
-        <p className="text-lg font-bold text-[var(--color-success)]">₱{order.total_price}</p>
+        <p className="text-lg font-bold text-green-400">₱{order.total_price}</p>
       </div>
 
-      <div className="border-t my-2 border-[var(--color-border)]"></div>
+      <div className="border-t my-2 border-slate-600"></div>
 
       <div className="grid grid-cols-1 gap-2">
         <div>
-          <h3 className="text-xs font-semibold mb-1 text-[var(--color-foreground)]">Items:</h3>
+          <h3 className="text-xs font-semibold mb-1 text-white">Items:</h3>
           {orderItems.length === 0 ? (
-            <p className="text-[var(--color-muted)] text-xs">No items found</p>
+            <p className="text-slate-400 text-xs">No items found</p>
           ) : (
             Object.entries(groupedItems).map(([tag, items]) => (
               <div key={tag} className="mb-1">
-                <p className="font-bold text-xs text-blue-600">{tag}</p>
+                <p className="font-bold text-xs text-blue-400">{tag}</p>
                 <ul className="space-y-0 text-xs">
                   {items.map(item => (
                     <li key={item.id} className="flex justify-between">
                       <span>
-                        <span className="font-medium">{item.quantity}x {item.product_name}</span>
+                        <span className="font-medium text-slate-200">{item.quantity}x {item.product_name}</span>
                         {item.selected_options && Object.entries(item.selected_options).length > 0 && (
-                          <span className="text-[var(--color-muted)] ml-1">
+                          <span className="text-slate-400 ml-1">
                             ({Object.values(item.selected_options).join(', ')})
                           </span>
                         )}
@@ -253,9 +253,9 @@ export default function OrderCard({ order }: Props) {
       </div>
 
       {order.status === 'Declined' && order.decline_reason && (
-        <div className="mt-2 p-2 bg-red-100 border border-red-400 rounded">
-          <p className="font-semibold text-xs text-red-700">Declined:</p>
-          <p className="text-xs text-red-700">{order.decline_reason}</p>
+        <div className="mt-2 p-2 bg-red-500/20 border border-red-500/30 rounded">
+          <p className="font-semibold text-xs text-red-200">Declined:</p>
+          <p className="text-xs text-red-300">{order.decline_reason}</p>
         </div>
       )}
     </Card>
