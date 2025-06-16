@@ -32,6 +32,20 @@ export default function ImprovedCart() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const router = useRouter()
 
+  // Prevent background scrolling when cart is open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isCartOpen])
+
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
@@ -89,8 +103,9 @@ export default function ImprovedCart() {
   });
 
   const renderCartContent = () => (
-    <>
-      <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[calc(100vh-240px)] md:max-h-[calc(100vh-260px)]">
+    <div className="flex flex-col h-full">
+      {/* Scrollable cart items area */}
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[calc(80vh-200px)] md:max-h-[calc(100vh-260px)]">
         {Object.entries(groupedCart).map(([groupName, groupData]) => (
           <div key={groupName} className="bg-slate-700/50 rounded-lg p-3 border border-slate-600">
             <div className="flex justify-between items-center mb-3">
@@ -172,7 +187,9 @@ export default function ImprovedCart() {
           </div>
         ))}
       </div>
-      <div className="mt-6 pt-4 border-t border-slate-600">
+      
+      {/* Sticky checkout section */}
+      <div className="mt-4 pt-4 border-t border-slate-600 bg-slate-800 sticky bottom-0">
         <div className="flex justify-between items-center mb-4">
           <span className="text-xl font-bold text-white">Grand Total:</span>
           <span className="text-2xl font-bold text-green-400">₱{cartTotal()}</span>
@@ -189,7 +206,7 @@ export default function ImprovedCart() {
           </Button>
         )}
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -277,11 +294,11 @@ export default function ImprovedCart() {
           isCartOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`} onClick={() => setIsCartOpen(false)}></div>
         
-        <div className={`fixed bottom-0 left-0 right-0 h-[80vh] bg-slate-800 border-t border-slate-600 rounded-t-2xl shadow-2xl p-6 transform transition-transform duration-300 z-50 ${
+        <div className={`fixed bottom-0 left-0 right-0 h-[80vh] bg-slate-800 border-t border-slate-600 rounded-t-2xl shadow-2xl transform transition-transform duration-300 z-50 flex flex-col ${
           isCartOpen ? "translate-y-0" : "translate-y-full"
         }`}>
           {/* Mobile cart header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
             <div className="flex items-center space-x-2">
               <ShoppingCart className="w-5 h-5 text-orange-500" />
               <h3 className="text-xl font-bold text-white">Your Order</h3>
@@ -299,22 +316,26 @@ export default function ImprovedCart() {
             </button>
           </div>
           
-          <div className="h-px bg-slate-600 mb-6"></div>
+          <div className="h-px bg-slate-600 mx-6 flex-shrink-0"></div>
           
-          {/* Mobile cart content - same structure as desktop */}
-          {cart.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ShoppingCart className="w-10 h-10 text-slate-500" />
+          {/* Mobile cart content - scrollable area */}
+          <div className="flex-1 overflow-hidden px-6 pt-4">
+            {cart.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingCart className="w-10 h-10 text-slate-500" />
+                  </div>
+                  <p className="text-slate-400 text-lg mb-2">Your cart is empty</p>
+                  <p className="text-slate-500 text-sm">Add some delicious items to get started!</p>
                 </div>
-                <p className="text-slate-400 text-lg mb-2">Your cart is empty</p>
-                <p className="text-slate-500 text-sm">Add some delicious items to get started!</p>
               </div>
-            </div>
-          ) : (
-            renderCartContent()
-          )}
+            ) : (
+              <div className="h-full">
+                {renderCartContent()}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
