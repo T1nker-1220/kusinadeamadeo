@@ -215,6 +215,9 @@ export default function AdminPage() {
               <Power size={14} />
               {isStoreOpen === null ? "Loading..." : isStoreOpen ? "Close Store" : "Open Store"}
             </button>
+            <Link href="/admin/products" className="bg-purple-500 text-white font-bold py-1 px-3 rounded hover:bg-purple-600 text-sm transition-colors">
+              Manage Products
+            </Link>
             <Link href="/admin/report" className="bg-blue-500 text-white font-bold py-1 px-3 rounded hover:bg-blue-600 text-sm transition-colors">
               Reports
             </Link>
