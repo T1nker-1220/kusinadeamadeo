@@ -15,6 +15,7 @@ type Option = {
   group_name: string;
   name: string;
   additional_price: number;
+  is_available: boolean;
 };
 
 type Product = {
@@ -24,6 +25,7 @@ type Product = {
   base_price: number;
   image_url: string | null;
   category_id: number;
+  is_available: boolean;
   options: Option[];
 };
 
@@ -37,8 +39,11 @@ export default async function NormalMenuPage() {
     { data: products, error: productsError }
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order', { ascending: true }),
-    supabase.from('products').select('*, options (*)').eq('is_available', true)
+    supabase.from('products').select('*, options (*)')
   ]);
+
+  // Debug: Log fetched products to see if is_available is present
+  console.log('Fetched products:', products?.slice(0, 2)); // Log first 2 products
 
   if (categoriesError || productsError) {
     console.error(categoriesError || productsError);
