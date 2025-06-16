@@ -7,8 +7,8 @@ import toast from 'react-hot-toast';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 
-type Option = { id: number; group_name: string; name: string; additional_price: number };
-type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; options: Option[] };
+type Option = { id: number; group_name: string; name: string; additional_price: number; is_available: boolean };
+type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; is_available: boolean; options: Option[] };
 
 type Props = {
   product: Product;
@@ -22,7 +22,10 @@ export default function OptionsModal({ product, onClose, open }: Props) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   
   const groupedOptions = product.options.reduce((acc, option) => {
-    (acc[option.group_name] = acc[option.group_name] || []).push(option);
+    // Only include available options
+    if (option.is_available) {
+      (acc[option.group_name] = acc[option.group_name] || []).push(option);
+    }
     return acc;
   }, {} as Record<string, Option[]>);
 
@@ -31,6 +34,12 @@ export default function OptionsModal({ product, onClose, open }: Props) {
   };
 
   const handleAddToCart = () => {
+    // Check if product is available
+    if (!product.is_available) {
+      toast.error(`${product.name} is currently unavailable`);
+      return;
+    }
+
     const finalSelectedOptions = Object.entries(selectedOptions).map(([groupName, optionName]) => {
       const option = product.options.find(o => o.group_name === groupName && o.name === optionName);
       return {
@@ -45,7 +54,9 @@ export default function OptionsModal({ product, onClose, open }: Props) {
     onClose();
   };
   
-  const isAddToCartDisabled = Object.keys(groupedOptions).length !== Object.keys(selectedOptions).length;
+  // Check if any option group has no available options or if not all groups have selections
+  const hasUnavailableGroups = Object.values(groupedOptions).some(options => options.length === 0);
+  const isAddToCartDisabled = hasUnavailableGroups || Object.keys(groupedOptions).length !== Object.keys(selectedOptions).length;
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -66,7 +77,10 @@ export default function OptionsModal({ product, onClose, open }: Props) {
       <div className="mt-4 space-y-4">
         {Object.entries(groupedOptions).map(([groupName, options]) => (
           <div key={groupName}>
-            <h3 className="font-semibold capitalize text-[var(--color-foreground)]">{groupName}</h3>
+            <h3 className="font-semibold capitalize text-[var(--color-foreground)]">
+              {groupName}
+              {options.length === 0 && <span className="text-red-400 text-sm ml-2">(All options unavailable)</span>}
+            </h3>
             <div className="flex flex-wrap gap-2 mt-2">
               {options.map((option) => (
                 <label key={option.id} className="cursor-pointer">
@@ -82,6 +96,9 @@ export default function OptionsModal({ product, onClose, open }: Props) {
                   </div>
                 </label>
               ))}
+              {options.length === 0 && (
+                <div className="text-slate-400 text-sm italic">No available options in this category</div>
+              )}
             </div>
           </div>
         ))}
