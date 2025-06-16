@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { saveLastOrder, saveOrderToHistory } from '@/utils/localStorage';
+import EditableOrderSummary from './EditableOrderSummary';
 
 const supabase = createClient();
 
@@ -57,7 +58,7 @@ export default function CheckOut() {
         const fileExt = paymentProof.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `receipts/${fileName}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('payment-proofs')
           .upload(filePath, paymentProof, { upsert: true });
         if (uploadError) throw uploadError;
@@ -112,8 +113,8 @@ export default function CheckOut() {
       if (isKioskMode) {
         router.replace(`/kiosk-menu/success?orderId=${newOrder.id}`);
       } else {
-        // All personal device orders get status tracking regardless of payment method
-        router.push(`/normal-menu/order-status/${newOrder.id}`);
+        // Personal device orders go to success page first
+        router.push(`/normal-menu/order-success?orderId=${newOrder.id}&method=${paymentMethod}`);
       }
     } catch (err: any) {
       console.error(err);
@@ -124,44 +125,22 @@ export default function CheckOut() {
 
   return (
     <div className="min-h-screen bg-background px-2 sm:px-4 md:px-8 pt-0 md:pt-30 pb-24 md:pb-8">
+      <div className="mb-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="!py-1 !px-3 text-xs"
+          onClick={() => router.push(isKioskMode ? '/kiosk' : '/normal-menu')}
+        >
+          ← Back to Menu
+        </Button>
+      </div>
       <h1 className="text-3xl font-bold mb-6 text-primary">Checkout</h1>
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Order Summary */}
+        {/* Editable Order Summary */}
         {!orderPlaced && (
-          <Card>
-            <h2 className="text-xl font-semibold mb-4 text-primary">Your Order</h2>
-            <div className="space-y-3">
-              {cart.map(item => (
-                <div key={item.cartItemId} className="mb-2">
-                  <div className="flex justify-between">
-                    <div>
-                      <span>{item.quantity}x {item.product.name}</span>
-                      {item.groupTag && (
-                        <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          For: {item.groupTag}
-                        </span>
-                      )}
-                    </div>
-                    <span>₱{item.itemTotal * item.quantity}</span>
-                  </div>
-                  {item.selectedOptions.length > 0 && (
-                    <div className="text-xs text-muted-foreground mt-1 ml-4">
-                      {item.selectedOptions.map((opt, idx) => (
-                        <span key={idx} className="mr-2">
-                          {opt.group_name}: {opt.name}
-                          {opt.additional_price > 0 && ` (+₱${opt.additional_price})`}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-              <div className="border-t pt-3 mt-3 flex justify-between font-bold text-lg">
-                <span>Total</span>
-                <span>₱{cartTotal()}</span>
-              </div>
-            </div>
-          </Card>
+          <EditableOrderSummary />
         )}
         {/* Payment and Details Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -178,6 +157,11 @@ export default function CheckOut() {
               {isKioskMode && (
                 <p className="text-sm text-muted-foreground mt-2">
                   Only "Pay at Store" is available on kiosk devices for security reasons.
+                </p>
+              )}
+              {paymentMethod === 'PayAtStore' && (
+                <p className="mt-2 text-sm text-danger font-semibold">
+                  Reminder: "No Pay, No Serve." Please be ready to pay the cashier before we prepare your food.
                 </p>
               )}
             </div>
