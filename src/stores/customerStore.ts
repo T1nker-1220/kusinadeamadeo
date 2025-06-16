@@ -27,12 +27,14 @@ export type CartItem = {
 type CustomerState = {
   cart: CartItem[];
   addToCart: (product: ProductInfo, options?: SelectedOption[]) => void;
+  quickAddToCart: (product: ProductInfo, options?: SelectedOption[]) => string;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, action: 'increase' | 'decrease') => void;
   updateCartItemOptions: (cartItemId: string, newOptions: SelectedOption[]) => void;
   clearCart: () => void;
   cartCount: () => number;
   cartTotal: () => number;
+  getCartItemQuantity: (signature: string) => number;
   setGroupTag: (cartItemId: string, tag: string) => void;
   isKioskMode: boolean;
   setIsKioskMode: (isKiosk: boolean) => void;
@@ -78,6 +80,12 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
     }
   },
 
+  quickAddToCart: (product, options = []) => {
+    // Same as addToCart but returns the signature for UI feedback
+    get().addToCart(product, options);
+    return `${product.id}-${options.map(o => `${o.group_name}:${o.name}`).sort().join('-')}`;
+  },
+
   removeFromCart: (cartItemId) => {
     set(state => ({
       cart: state.cart.filter(item => item.cartItemId !== cartItemId)
@@ -106,6 +114,12 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
     return get().cart.reduce((total, item) => {
       return total + (item.itemTotal * item.quantity);
     }, 0);
+  },
+
+  getCartItemQuantity: (signature) => {
+    const cart = get().cart;
+    const item = cart.find(item => item.cartItemId === signature);
+    return item ? item.quantity : 0;
   },
 
   setGroupTag: (cartItemId, tag) => {

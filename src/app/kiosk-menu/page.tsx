@@ -21,9 +21,6 @@ export default async function KioskPage() {
     supabase.from('store_settings').select('is_open, estimated_wait_time').eq('id', 1).single()
   ]);
 
-  // Debug: Log fetched products to see if is_available is present
-  console.log('Kiosk products:', products?.slice(0, 2)); // Log first 2 products
-
   if (categoriesError || productsError || settingsError) {
     console.error(categoriesError || productsError || settingsError);
     return <p className="text-center text-danger mt-10">Error loading menu. Please try again later.</p>;

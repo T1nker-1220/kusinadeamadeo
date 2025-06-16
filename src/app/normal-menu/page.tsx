@@ -42,9 +42,6 @@ export default async function NormalMenuPage() {
     supabase.from('products').select('*, options (*)')
   ]);
 
-  // Debug: Log fetched products to see if is_available is present
-  console.log('Fetched products:', products?.slice(0, 2)); // Log first 2 products
-
   if (categoriesError || productsError) {
     console.error(categoriesError || productsError);
     return <p className="text-center text-danger mt-10">Error loading menu. Please try again later.</p>;
