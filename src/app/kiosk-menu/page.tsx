@@ -4,8 +4,8 @@ import MenuContainer from '@/components/customers/menu/MenuContainer';
 
 export const revalidate = 0;
 
-type Option = { id: number; group_name: string; name: string; additional_price: number; };
-type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; category_id: number; options: Option[]; };
+type Option = { id: number; group_name: string; name: string; additional_price: number; is_available: boolean; };
+type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; category_id: number; is_available: boolean; options: Option[]; };
 type Category = { id: number; name: string };
 
 export default async function KioskPage() {
@@ -17,9 +17,12 @@ export default async function KioskPage() {
     { data: storeSettings, error: settingsError }
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order', { ascending: true }),
-    supabase.from('products').select('*, options (*)').eq('is_available', true),
+    supabase.from('products').select('*, options (*)'),
     supabase.from('store_settings').select('is_open, estimated_wait_time').eq('id', 1).single()
   ]);
+
+  // Debug: Log fetched products to see if is_available is present
+  console.log('Kiosk products:', products?.slice(0, 2)); // Log first 2 products
 
   if (categoriesError || productsError || settingsError) {
     console.error(categoriesError || productsError || settingsError);
