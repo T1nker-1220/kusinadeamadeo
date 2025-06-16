@@ -182,7 +182,7 @@ export default function CheckOut() {
               )}
             </div>
             <Input
-              label="Full Name"
+              label="Full Name / Group Name"
               type="text"
               id="fullName"
               value={fullName}

@@ -16,7 +16,7 @@ import {
   PieChart,
   UserCheck
 } from 'lucide-react';
-import { OverviewRevenueChart, AnalyticsTrendChart } from '@/components/report';
+import { OverviewRevenueChart, AnalyticsTrendChart } from '@/components/admin/report';
 import AdminGuard from '@/components/admin/AdminGuard';
 
 const supabase = createClient();
