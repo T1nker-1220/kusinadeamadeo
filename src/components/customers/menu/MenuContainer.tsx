@@ -12,6 +12,7 @@ type Option = {
   group_name: string;
   name: string;
   additional_price: number;
+  is_available: boolean;
 };
 
 type Product = {
@@ -21,6 +22,7 @@ type Product = {
   base_price: number;
   image_url: string | null;
   category_id: number;
+  is_available: boolean;
   options: Option[];
 };
 
