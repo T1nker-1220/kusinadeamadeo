@@ -26,6 +26,7 @@ type Product = {
   image_url: string | null;
   category_id: number;
   is_available: boolean;
+  owner?: string;
   options: Option[];
 };
 

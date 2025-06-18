@@ -118,7 +118,7 @@ export default function CheckOut() {
           acc[opt.group_name] = opt.name;
           return acc;
         }, {} as Record<string, string>),
-        group_tag: item.groupTag || null,
+        group_tag: item.groupTag || item.product.owner || 'Unassigned',
       }));
       const { error: itemsError } = await supabase
         .from('order_items')

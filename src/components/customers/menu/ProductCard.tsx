@@ -23,6 +23,7 @@ type Product = {
   base_price: number;
   image_url: string | null;
   is_available: boolean;
+  owner?: string;
   options: Option[];
 };
 
@@ -72,6 +73,7 @@ export default function ImprovedProductCard({
           base_price: product.base_price,
           image_url: product.image_url,
           is_available: product.is_available,
+          owner: product.owner,
         })
         
         // Show animation feedback

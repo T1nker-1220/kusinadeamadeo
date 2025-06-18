@@ -6,6 +6,7 @@ export type ProductInfo = {
   base_price: number;
   image_url: string | null;
   is_available?: boolean;
+  owner?: string;
 };
 
 export function generateSignature(product: ProductInfo, options: SelectedOption[] = []): string {

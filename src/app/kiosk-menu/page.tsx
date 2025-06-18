@@ -5,7 +5,7 @@ import MenuContainer from '@/components/customers/menu/MenuContainer';
 export const revalidate = 0;
 
 type Option = { id: number; group_name: string; name: string; additional_price: number; is_available: boolean; };
-type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; category_id: number; is_available: boolean; options: Option[]; };
+type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; category_id: number; is_available: boolean; owner?: string; options: Option[]; };
 type Category = { id: number; name: string };
 
 export default async function KioskPage() {

@@ -18,14 +18,32 @@ import {
 } from 'lucide-react';
 import { OverviewRevenueChart, AnalyticsTrendChart } from '@/components/admin/report';
 import AdminGuard from '@/components/admin/AdminGuard';
+import CompletedOrderCard from '@/components/admin/CompletedOrderCard';
 
 const supabase = createClient();
+
+type CompletedOrder = {
+  id: number;
+  customer_name: string;
+  total_price: number;
+  payment_proof_url: string | null;
+  created_at: string;
+  order_items: Array<{
+    id: number;
+    product_name: string;
+    quantity: number;
+    item_price: number;
+    selected_options: Record<string, string> | null;
+    group_tag: string | null;
+  }>;
+};
 
 type ReportData = {
   totalRevenue: number;
   totalOrders: number;
   avgOrderValue: number;
   completedOrders: number;
+  completedOrdersList: CompletedOrder[];
   popularItems: Array<{
     product_name: string;
     total_quantity: number;
@@ -68,7 +86,7 @@ export default function ReportsPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange>('30d');
-  const [selectedView, setSelectedView] = useState<'overview' | 'products' | 'analytics' | 'owner'>('overview');
+  const [selectedView, setSelectedView] = useState<'overview' | 'products' | 'analytics' | 'owner' | 'orders'>('overview');
 
   useEffect(() => {
     fetchReportData();
@@ -98,14 +116,19 @@ export default function ReportsPage() {
         .from('orders')
         .select(`
           id,
+          customer_name,
           total_price,
           status,
           payment_method,
+          payment_proof_url,
           created_at,
           order_items (
+            id,
             product_name,
             quantity,
             item_price,
+            selected_options,
+            group_tag,
             product_id,
             products!order_items_product_id_fkey (
               owner,
@@ -231,11 +254,25 @@ export default function ReportsPage() {
         })).sort((a, b) => b.revenue - a.revenue)
       })).sort((a, b) => b.total_revenue - a.total_revenue);
 
+      // Extract completed orders for the new Orders tab
+      const completedOrdersList: CompletedOrder[] = orders
+        .filter(order => order.status === 'Completed')
+        .map(order => ({
+          id: order.id,
+          customer_name: order.customer_name,
+          total_price: order.total_price,
+          payment_proof_url: order.payment_proof_url,
+          created_at: order.created_at,
+          order_items: order.order_items || []
+        }))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
       setReportData({
         totalRevenue,
         totalOrders,
         avgOrderValue,
         completedOrders,
+        completedOrdersList,
         popularItems,
         revenueByDate,
         ordersByStatus,
@@ -328,12 +365,13 @@ export default function ReportsPage() {
         </div>
         
         {/* View Tabs */}
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-4 overflow-x-auto">
           {[
             { key: 'overview', label: 'Overview', icon: BarChart3 },
             { key: 'products', label: 'Products', icon: ShoppingBag },
             { key: 'owner', label: 'Owner Sales', icon: UserCheck },
-            { key: 'analytics', label: 'Analytics', icon: PieChart }
+            { key: 'analytics', label: 'Analytics', icon: PieChart },
+            { key: 'orders', label: 'Orders', icon: Clock }
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -544,6 +582,26 @@ export default function ReportsPage() {
                       );
                     })}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Orders Tab */}
+            {selectedView === 'orders' && (
+              <div className="space-y-6">
+                <div className="bg-surface rounded-xl p-6 border border-border">
+                  <h3 className="text-xl font-bold mb-4">Completed Orders ({reportData.completedOrdersList.length})</h3>
+                  {reportData.completedOrdersList.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted text-lg">No completed orders in the selected period.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {reportData.completedOrdersList.map((order) => (
+                        <CompletedOrderCard key={order.id} order={order} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

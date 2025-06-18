@@ -10,7 +10,7 @@ import { generateSignature } from '@/utils/cart';
 import { Plus, Minus, Loader2 } from 'lucide-react';
 
 type Option = { id: number; group_name: string; name: string; additional_price: number; is_available: boolean };
-type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; is_available: boolean; options: Option[] };
+type Product = { id: number; name: string; description: string | null; base_price: number; image_url: string | null; is_available: boolean; owner?: string; options: Option[] };
 
 type Props = {
   product: Product;

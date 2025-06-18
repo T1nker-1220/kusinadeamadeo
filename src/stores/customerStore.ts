@@ -6,6 +6,7 @@ type ProductInfo = {
   base_price: number;
   image_url: string | null;
   is_available?: boolean;
+  owner?: string;
 };
 
 export type SelectedOption = {

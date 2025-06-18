@@ -18,20 +18,28 @@ async function syncMenu() {
   console.log(`📋 Found ${menuData.length} categories in menu.ts`);
 
   try {
-    // --- Step 1: Clear existing menu data (non-destructive to orders) ---
-    console.log('🗑️  Clearing old menu data (options, products, categories)...');
+    // --- Step 1: Clear existing menu data and reset sequences (non-destructive to orders) ---
+    console.log('🗑️  Clearing old menu data and resetting ID sequences...');
     
-    // Delete in correct order to respect foreign key constraints
-    const { error: optionsError } = await supabase.from('options').delete().neq('id', 0);
-    if (optionsError) throw optionsError;
+    // Delete all data in correct order to respect foreign key constraints
+    const { error: optionsDeleteError } = await supabase.from('options').delete().neq('id', 0);
+    if (optionsDeleteError) throw optionsDeleteError;
     
-    const { error: productsError } = await supabase.from('products').delete().neq('id', 0);
-    if (productsError) throw productsError;
+    const { error: productsDeleteError } = await supabase.from('products').delete().neq('id', 0);
+    if (productsDeleteError) throw productsDeleteError;
     
-    const { error: categoriesError } = await supabase.from('categories').delete().neq('id', 0);
-    if (categoriesError) throw categoriesError;
+    const { error: categoriesDeleteError } = await supabase.from('categories').delete().neq('id', 0);
+    if (categoriesDeleteError) throw categoriesDeleteError;
 
-    console.log('✅ Old menu data cleared successfully');
+    // Reset the ID sequences to start from 1
+    console.log('🔄 Resetting ID sequences to start from 1...');
+    const { error: resetSequencesError } = await supabase.rpc('reset_menu_sequences');
+    if (resetSequencesError) {
+      console.warn('⚠️  Warning: Could not reset ID sequences:', resetSequencesError.message);
+      console.log('💡 Menu will still work correctly, but IDs will continue from previous values');
+    } else {
+      console.log('✅ ID sequences reset successfully - new items will start from ID 1');
+    }
 
     // --- Step 2: Insert new data from menu.ts ---
     let categoryOrder = 1;
