@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { saveLastOrder, saveOrderToHistory } from '@/utils/localStorage';
+import { showError } from '@/utils/toast';
 import EditableOrderSummary from './EditableOrderSummary';
 
 const supabase = createClient();
@@ -53,6 +54,36 @@ export default function CheckOut() {
     setIsSubmitting(true);
     setError(null);
     try {
+      // --- AVAILABILITY VALIDATION (new) ---
+      // 1. Get all unique product IDs from the cart
+      const productIds = [...new Set(cart.map(item => item.product.id))];
+
+      // 2. Fetch the current availability status of these products from the database
+      const { data: currentProducts, error: productsError } = await supabase
+        .from('products')
+        .select('id, name, is_available')
+        .in('id', productIds);
+      
+      if (productsError) throw productsError;
+
+      // 3. Find any item in the cart that is now unavailable
+      const unavailableItems = cart.filter(cartItem => {
+        const dbProduct = currentProducts.find(p => p.id === cartItem.product.id);
+        // An item is unavailable if it's not in the DB anymore or its flag is false
+        return !dbProduct || !dbProduct.is_available;
+      });
+
+      // 4. If there are unavailable items, stop the checkout and inform the user.
+      if (unavailableItems.length > 0) {
+        const itemNames = unavailableItems.map(item => item.product.name).join(', ');
+        showError(`Sorry, ${itemNames} just became unavailable. Please remove it from your cart.`);
+        setError(`Some items are unavailable. Please review your order.`);
+        setIsSubmitting(false);
+        return; // Stop the entire process
+      }
+      // --- END OF NEW VALIDATION LOGIC ---
+
+      // If we reach here, all items are available. Proceed with the existing logic.
       let paymentProofUrl = null;
       if (paymentMethod === 'GCash' && paymentProof) {
         const fileExt = paymentProof.name.split('.').pop();

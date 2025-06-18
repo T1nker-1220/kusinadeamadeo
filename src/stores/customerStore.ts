@@ -131,33 +131,47 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
   },
 
   updateCartItemOptions: (cartItemId, newOptions) => {
-    set(state => ({
-      cart: state.cart.map(item => {
-        if (item.cartItemId === cartItemId) {
-          // Check if any new options are unavailable
-          const unavailableOptions = newOptions.filter(opt => opt.is_available === false);
-          if (unavailableOptions.length > 0) {
-            console.warn('Attempted to update cart item with unavailable options:', unavailableOptions);
-            return item; // Return unchanged item
-          }
+    set(state => {
+      const cart = state.cart;
+      const itemToUpdate = cart.find(item => item.cartItemId === cartItemId);
+      if (!itemToUpdate) return { cart }; // Item not found, do nothing
 
-          // Calculate new item total with updated options
-          const optionsTotal = newOptions.reduce((sum, opt) => sum + opt.additional_price, 0);
-          const newItemTotal = item.product.base_price + optionsTotal;
-          
-          // Generate new cartItemId based on new options (to maintain uniqueness)
-          const newSignature = `${item.product.id}-${newOptions.map(o => `${o.group_name}:${o.name}`).sort().join('-')}-${Date.now()}`;
-          
-          return {
-            ...item,
-            cartItemId: newSignature,
-            selectedOptions: newOptions,
-            itemTotal: newItemTotal,
-          };
-        }
-        return item;
-      })
-    }));
+      // Generate the new signature based on the new options
+      const newSignature = `${itemToUpdate.product.id}-${newOptions.map(o => `${o.group_name}:${o.name}`).sort().join('-')}`;
+      
+      // If the new signature is the same as the old one, no real change, so do nothing.
+      if (newSignature === cartItemId) return { cart };
+
+      // Check if an item with the new signature already exists in the cart
+      const existingItemWithNewOptions = cart.find(item => item.cartItemId === newSignature);
+      
+      let newCart = [...cart];
+
+      if (existingItemWithNewOptions) {
+        // **MERGE LOGIC:** An item with these options already exists.
+        // 1. Add the quantity of the item-being-edited to the existing one.
+        existingItemWithNewOptions.quantity += itemToUpdate.quantity;
+        // 2. Remove the original item-being-edited from the cart.
+        newCart = newCart.filter(item => item.cartItemId !== cartItemId);
+      } else {
+        // **UPDATE LOGIC:** No existing item found, so we can safely update the current one.
+        newCart = newCart.map(item => {
+          if (item.cartItemId === cartItemId) {
+            const optionsTotal = newOptions.reduce((sum, opt) => sum + opt.additional_price, 0);
+            const newItemTotal = item.product.base_price + optionsTotal;
+            return {
+              ...item,
+              cartItemId: newSignature, // Update its ID
+              selectedOptions: newOptions,
+              itemTotal: newItemTotal,
+            };
+          }
+          return item;
+        });
+      }
+
+      return { cart: newCart };
+    });
   },
 
   setIsKioskMode: (isKiosk: boolean) => set({ isKioskMode: isKiosk }),
